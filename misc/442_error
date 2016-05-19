@@ -1,0 +1,76 @@
+export PATH=$PATH:/your_stm_gcc_dir/gcc-arm-none-eabi-4_8-2013q4/bin
+
+
+zhangdaqing@zhangdaqing-pc:~/workspace/rdadroid-4.4.2_r1$ source build/envsetup.sh
+including device/rda/krosa/vendorsetup.sh
+including device/rda/jebi/vendorsetup.sh
+including device/rda/etau/vendorsetup.sh
+including device/rda/common/vendorsetup.sh
+including device/rda/haiyan/vendorsetup.sh
+including sdk/bash_completion/adb.bash
+zhangdaqing@zhangdaqing-pc:~/workspace/rdadroid-4.4.2_r1$ lunch
+
+You're building on Linux
+
+Lunch menu... pick a combo:
+     1. krosa-userdebug
+     2. krosa-user
+     3. jebi-userdebug
+     4. jebi-user
+     5. etau-userdebug
+     6. etau-user
+     7. haiyan-userdebug
+     8. haiyan-user
+
+Which would you like? [aosp_arm-eng] 5
+
+etau has multiple hardware targets:
+     1. Lensun_R635D_8810P
+     2. NollecA11S15V8810P
+     3. NollecA11S20V8810P
+     4. NollecA8V2V8810NL
+     5. NollecA9V2V8810P
+     6. NollecA9V2V8811P
+     7. RC5011_8811p
+     8. RDA8810H
+     9. RDA8850E_DEV3_3G_NOANDROID
+     10. RDA8850E_DEV3_3G_NOANDROID_U02
+     11. RDA8850E_DEV3_3G
+     12. RDA8850E_DEV3_GSM
+     13. RDA8850E_M_DDR_GSM
+     14. RDA8850E_M_DDR
+     15. RDA8850E
+     16. RDA8860EP_A6B_MIPI_V0_NOG
+     17. RDA8860EP_A6B_MIPI_V0
+     18. RDA8860EP_A6B_V2_3G
+     19. RDA8860EP_A6B_V2
+     20. RDA8860EP_A6B_V3_3G
+     21. RDA8860EP_A6B_V3
+     22. TinnoV2000AN
+
+Which one would you like? 17
+
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+/bin/bash: prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc: cannot execute binary file: 可执行文件格式错误
+============================================
+PLATFORM_VERSION_CODENAME=REL
+PLATFORM_VERSION=4.4.2
+

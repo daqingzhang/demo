@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <../inc/lib.h>
+#include <lib.h>
 
 int main(void)
 {
@@ -17,5 +17,8 @@ int main(void)
 	}
 	print("hello world\n");
 	printf("%d + %d = %d\n",a,b,add(a,b));
+	printf("%d - %d = %d\n",a,b,sub(a,b));
+	printf("%d * %d = %d\n",a,b,mul(a,b));
+	printf("%d / %d = %d\n",a,b,div(a,b));
 	return 0;
 }

@@ -20,8 +20,8 @@ src:
 	@echo "make srcs ..."
 	$(CC) -I$(INCDIR) -c $(SRCDIR)/*.c
 clean:
-	rm -f *.o
-	rm -f $(OUTDIR)/*.o
+	@rm -f *.o	\
+	rm -f $(OUTDIR)/*.o	\
 	rm -f $(BINDIR)/$(APP)
 run:
 	./$(BINDIR)/$(APP)

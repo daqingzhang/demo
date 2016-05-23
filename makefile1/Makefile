@@ -1,14 +1,17 @@
 include Makefile.common
 
-all: lib src exe
+all: libs srcs app
 	@echo "done !"
-lib:
+
+.PHONY: libs srcs clean run show
+
+libs:
 	@echo "to make libs ..."
 	@(cd $(LIBDIR);$(MAKE))
-src:
+srcs:
 	@echo "to make srcs ..."
 	@(cd $(SRCDIR);$(MAKE))
-exe:
+app:
 	@echo "to make app ..."
 	@cp -p $(SRCDIR)/*.o $(LIBDIR)/*.o $(LIBDIR)/*.a $(OUTDIR)/.
 	@$(CC) $(INCLUDE) -o $(BINDIR)/$(APP) $(OUTDIR)/*.o
@@ -17,6 +20,7 @@ clean:
 	@(cd $(OUTDIR);rm -f *.o *.a;)
 	@(cd $(LIBDIR);rm -f *.o *.a;)
 	@(cd $(SRCDIR);rm -f *.o;)
+	@(cd $(BINDIR);rm -f *;)
 	@echo "clean all done ..."
 run:
 	@cd $(BINDIR);	\

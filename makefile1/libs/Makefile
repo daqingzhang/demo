@@ -1,8 +1,8 @@
 include ../Makefile.common
 
-all:lib
+all:libs
 	@echo "done !"
-lib:
+libs:
 	@echo "make libs ..."
 	$(CC) -I../inc -Iinc -c *.c
 	$(AR) $(CRV) $(LIB) $^

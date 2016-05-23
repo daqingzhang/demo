@@ -1,26 +1,26 @@
 # libs Makefile
 include ../Makefile.common
-LIBS+=libstm32.a
+LIBS+=lcmsis.a
 CFLAGSlib+=-c
 
-all: libs
+all: cmsis
 
-.PHONY: libs clean tshow
+.PHONY: cmsis clean tshow
 
-libs: $(LIBS)
+cmsis: $(LIBS)
 
 $(LIBS):
 	@echo -n "Building $@ ..."
-	@cd $(STMLIB)/src && \
+	cd $(CMSISDIR) && \
 		$(CC) $(CFLAGSlib) \
-			-D"assert_param(expr)=((void)0)" \
-			*.c
-	@echo "build in $(LIBDIR) ..."
-	$(AR) cr $@ src/*.o 
+			system_stm32f10x.c	\
+			core_cm3.c
+#			startup/startup_stm32f10x_hd.s
+	$(AR) cr $@ $(CMSISDIR)/*.o
 	@echo "done."
 
 clean:
-	rm -f $(STMLIB)/src/*.o
+	rm -f $(CMSISDIR)/*.o
 	rm -f $(LIBS)
 tshow:
 	@echo "######################################################################################################"

@@ -4,15 +4,18 @@ include Makefile.common
 LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -nostartfiles -Wl,--gc-sections,-Tlinker.ld
 
 LDLIBS+=-lm
-LDLIBS+=-lstm32
+LDLIBS+=-$(LIBDIR)/lstm32
+LDLIBS+=-$(CMSISDIR)/lcmsis
+LDLIBS+=-$(BSPDIR)/lbsp
+LDLIBS+=-$(OSDIR)/los
 
 STARTUP=startup.s
 
-all: libs src
+all: lib cmsis bsp user os
 	@echo "make all ..."
 	$(CC) -o $(PROGRAM).elf $(LDFLAGS) \
 		-Wl,--whole-archive \
-			src/$(APPLIB) \
+			$(USERDIR)/$(APPLIB) \
 		-Wl,--no-whole-archive \
 			$(LDLIBS)
 	$(OBJCOPY) -O ihex $(PROGRAM).elf $(PROGRAM).hex
@@ -23,18 +26,32 @@ all: libs src
 	arm-none-eabi-objdump -S $(PROGRAM).elf > $(PROGRAM).info_code
 	arm-none-eabi-nm -t d -S --size-sort -s $(PROGRAM).elf > $(PROGRAM).info_symbol
 
-.PHONY: libs src clean tshow
+.PHONY: lib cmsis bsp user os clean tshow
 
-libs:
-	@echo "make libs ..."
-	$(MAKE) -C libs $@
-src:
-	@echo "make src ..."
-	$(MAKE) -C src $@
+lib:
+	@echo "Build $@ ..."
+	@(cd $(LIBDIR);$(MAKE);)
+#	$(MAKE) -C lib $@
+cmsis:
+	@echo "Build $@ ..."
+	@(cd $(CMSISDIR);$(MAKE);)
+#	$(MAKE) -C cmsis $@
+bsp:
+	@echo "Build $@ ..."
+#	$(MAKE) -C bsp $@
+user:
+	@echo "Build $@ ..."
+#	$(MAKE) -C user $@
+os:
+	@echo "Build $@ ..."
+#	$(MAKE) -C os $@
 clean:
-	@echo "make all ..."
-	$(MAKE) -C src $@
-	$(MAKE) -C libs $@
+	@echo "Clean objs ..."
+	$(MAKE) -C lib $@
+	$(MAKE) -C cmsis $@
+	$(MAKE) -C bsp $@
+	$(MAKE) -C user $@
+	$(MAKE) -C os $@
 	rm -f $(PROGRAM).elf $(PROGRAM).hex $(PROGRAM).bin $(PROGRAM).info_elf $(PROGRAM).info_size
 	rm -f $(PROGRAM).info_code
 	rm -f $(PROGRAM).info_symbol

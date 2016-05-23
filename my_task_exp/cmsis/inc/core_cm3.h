@@ -777,9 +777,9 @@ typedef struct
 #define __LDREXB(ptr)                     ((unsigned char ) __ldrex(ptr))
 #define __LDREXH(ptr)                     ((unsigned short) __ldrex(ptr))
 #define __LDREXW(ptr)                     ((unsigned int  ) __ldrex(ptr))
-#define __STREXB(value, ptr)              __strex(value, ptr)
-#define __STREXH(value, ptr)              __strex(value, ptr)
-#define __STREXW(value, ptr)              __strex(value, ptr)
+//#define __STREXB(value, ptr)              __strex(value, ptr)
+//#define __STREXH(value, ptr)              __strex(value, ptr)
+//#define __STREXW(value, ptr)              __strex(value, ptr)
 
 
 /* intrinsic unsigned long long __ldrexd(volatile void *ptr) */

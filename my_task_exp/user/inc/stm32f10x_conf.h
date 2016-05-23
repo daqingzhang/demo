@@ -82,7 +82,7 @@
  * delay duration = dly * 9 + 28 cycles
  *****************************************************************************************
  */
-__INLINE void delay(uint32_t dly)
+static __INLINE void delay(uint32_t dly)
 {
     int i;
     for (i=0;i<dly;i++){

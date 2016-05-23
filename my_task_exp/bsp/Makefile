@@ -1,26 +1,26 @@
 # libs Makefile
 include ../Makefile.common
-LIBS+=libstm32.a
+LIBS+=lbsp.a
 CFLAGSlib+=-c
 
-all: libs
+all: bsp
 
-.PHONY: libs clean tshow
+.PHONY: bsp clean tshow
 
-libs: $(LIBS)
+bsp: $(LIBS)
 
 $(LIBS):
 	@echo -n "Building $@ ..."
-	@cd $(STMLIB)/src && \
+	@cd $(BSPDIR) && \
 		$(CC) $(CFLAGSlib) \
-			-D"assert_param(expr)=((void)0)" \
+		-I$(LIBDIR)/inc	\
+		-I$(CMSISDIR)/inc	\
 			*.c
-	@echo "build in $(LIBDIR) ..."
-	$(AR) cr $@ src/*.o 
+	$(AR) cr $@ $(BSPDIR)/*.o
 	@echo "done."
 
 clean:
-	rm -f $(STMLIB)/src/*.o
+	rm -f $(BSPDIR)/*.o
 	rm -f $(LIBS)
 tshow:
 	@echo "######################################################################################################"

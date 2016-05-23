@@ -1,0 +1,36 @@
+CC=gcc
+AR=ar
+CRV=crv
+
+APP=main
+LIB=lib.a
+
+INCLUDE=-Iinc
+INCLUDE+=-Ilibs/inc
+
+LIBDIR=libs
+SRCDIR=srcs
+OUTDIR=out
+BINDIR=bin
+
+all:app
+	@echo "make done !"
+app:lib src
+	@echo "make app ..."
+	@mv *.a *.o $(OUTDIR)
+	$(CC) -o $(BINDIR)/$(APP) $(OUTDIR)/$(APP).o $(OUTDIR)/*.a
+lib:
+	@echo "make libs ..."
+	$(CC) $(INCLUDE) -c $(LIBDIR)/*.c
+	$(AR) $(CRV) $(LIB) *.o 
+src:
+	@echo "make srcs ..."
+	$(CC) $(INCLUDE) -c $(SRCDIR)/*.c
+clean:
+	@(rm -f *.o;	\
+	cd $(OUTDIR);	\
+	rm -f *.a *.o;)
+	@(cd $(BINDIR);	\
+	rm -f $(APP))
+run:
+	./$(BINDIR)/$(APP)

@@ -5,5 +5,6 @@
 #define OS_EN 1
 #endif
 
+extern uint32_t SystemCoreClock;
 #endif
 

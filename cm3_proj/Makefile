@@ -1,17 +1,18 @@
 # general Makefile
-# make OptLIB=0 OptSRC=0 all tshow  
+# make OptLIB=0 OptSRC=0 all tshow 
 include Makefile.common
 LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -nostartfiles -Wl,--gc-sections,-Tlinker.ld
 
 LDLIBS+=-lm
 LDLIBS+=-lstm32
 
-STARTUP=startup.c
+STARTUP=startup.s
 
 all: libs src
+	@echo "make all ..."
 	$(CC) -o $(PROGRAM).elf $(LDFLAGS) \
 		-Wl,--whole-archive \
-			src/app.a \
+			src/$(APPLIB) \
 		-Wl,--no-whole-archive \
 			$(LDLIBS)
 	$(OBJCOPY) -O ihex $(PROGRAM).elf $(PROGRAM).hex
@@ -25,19 +26,22 @@ all: libs src
 .PHONY: libs src clean tshow
 
 libs:
+	@echo "make libs ..."
 	$(MAKE) -C libs $@
 src:
+	@echo "make src ..."
 	$(MAKE) -C src $@
 clean:
+	@echo "make all ..."
 	$(MAKE) -C src $@
 	$(MAKE) -C libs $@
 	rm -f $(PROGRAM).elf $(PROGRAM).hex $(PROGRAM).bin $(PROGRAM).info_elf $(PROGRAM).info_size
 	rm -f $(PROGRAM).info_code
 	rm -f $(PROGRAM).info_symbol
 tshow:
-		@echo "######################################################################################################"
-		@echo "################# optimize settings: $(InfoTextLib), $(InfoTextSrc)"
-		@echo "######################################################################################################"
+	@echo "######################################################################################################"
+	@echo "################# optimize settings: $(InfoTextLib), $(InfoTextSrc)"
+	@echo "######################################################################################################"
 
 flash:all
 	./do_flash.pl $(TOP)/main.bin  

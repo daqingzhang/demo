@@ -17,19 +17,18 @@
  * INCLUDE FILES
  *****************************************************************
  */
-#include "os_global.h"
-#include "stm32f10x.h"
-
+#include <os_global.h>
+#include <stm32f10x.h>
+#include <misc.h>
 /* Kernel includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
 
-#include "my_task_exp.h"
-#include "dev_usart.h"
-#include "dev_led.h"
-#include "dev_key.h"
-
+#include <my_task_exp.h>
+#include <dev_usart.h>
+#include <dev_led.h>
+#include <dev_key.h>
 
 /*
  * FUNCTION DEFINITIONS

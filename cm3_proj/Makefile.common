@@ -31,7 +31,9 @@
 
 TOP=$(shell readlink -f "$(dir $(lastword $(MAKEFILE_LIST)))")
 PROGRAM=main
+APPLIB=app.a
 LIBDIR=$(TOP)/libs
+SRCDIR=$(TOP)/src
 
 #Adust the following line to the library in use
 STMLIB=$(LIBDIR)/STM32_USB-FS-Device_Lib_V4.0.0/Libraries

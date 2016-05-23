@@ -84,7 +84,7 @@
 #include <stdint.h>
 #include "os_global.h"
 
-extern uint32_t SystemCoreClock;
+
 //extern const uint32_t SystemFrequency;
 
 #define configUSE_PREEMPTION			1

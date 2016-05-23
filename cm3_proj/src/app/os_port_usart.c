@@ -13,27 +13,22 @@
  *****************************************************************************************************
  */
  
- 
-  /*
- * INCLUDE FILES
- *****************************************************************
- */
- 
 #include <stdarg.h>
-#include "misc.h"
+#include <misc.h>
+#include "stm32f10x_rcc.h"
 #include "stm32f10x_usart.h"
 #include "stm32f10x_gpio.h"
 #include "os_port_usart.h"
 #include "os_global.h"
 
 #ifndef OS_EN
-   #define OS_EN 1
+#define OS_EN 1
 #endif
 
 #if OS_EN
-   #include "FreeRTOS.h"
-   #include "task.h"
-   #include "queue.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 #endif
 
 #include <string.h>

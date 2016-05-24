@@ -12,5 +12,5 @@ INCLUDE+=-I$(TOP)/libs/inc
 
 LIBDIR=$(TOP)/libs
 SRCDIR=$(TOP)/srcs
-OUTDIR=$(TOP)/out
+OUTDIR=$(TOP)/obj
 BINDIR=$(TOP)/bin

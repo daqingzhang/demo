@@ -13,6 +13,10 @@ srcs:
 	@(cd $(SRCDIR);$(MAKE))
 app:
 	@echo "to make app ..."
+	@rm -rf $(BINDIR)
+	@rm -rf $(OUTDIR)
+	@mkdir $(BINDIR)
+	@mkdir $(OUTDIR)
 	@cp -p $(SRCDIR)/*.o $(LIBDIR)/*.o $(LIBDIR)/*.a $(OUTDIR)/.
 	@$(CC) $(INCLUDE) -o $(BINDIR)/$(APP) $(OUTDIR)/*.o
 clean:

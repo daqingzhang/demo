@@ -1,6 +1,5 @@
-# libs Makefile
 include ../Makefile.common
-LIBS+=lbsp.a
+LIBS+=libbsp.a
 CFLAGSlib+=-c
 
 all: bsp
@@ -13,12 +12,11 @@ $(LIBS):
 	@echo -n "Building $@ ..."
 	@cd $(BSPDIR) && \
 		$(CC) $(CFLAGSlib) \
-		-I$(LIBDIR)/inc	\
-		-I$(CMSISDIR)/inc	\
 			*.c
-	$(AR) cr $@ $(BSPDIR)/*.o
+	@echo -n "Build in $(BSPDIR) ..."
+	@cd $(BSPDIR) && \
+		$(AR) cr $@ $(BSPDIR)/*.o
 	@echo "done."
-
 clean:
 	rm -f $(BSPDIR)/*.o
 	rm -f $(LIBS)

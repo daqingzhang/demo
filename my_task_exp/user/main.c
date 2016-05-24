@@ -1,7 +1,8 @@
 /**
  *****************************************************************************************************
  *
- * @file my_task_exp1_main.c
+ * @file
+ *	my_task_exp1_main.c
  *
  * @description 
  *   This file contains the main function of task experiment 1.
@@ -13,48 +14,37 @@
  *****************************************************************************************************
  */
 
-/*
- * INCLUDE FILES
- *****************************************************************
- */
 #include "os_global.h"
 #include "stm32f10x.h"
 
-/* Kernel includes. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
+//#include "FreeRTOS.h"
+//#include "task.h"
+//#include "queue.h"
 
-#include "my_task_exp.h"
+#include <string.h>
+#include "main_task.h"
 #include "dev_usart.h"
 #include "dev_led.h"
 #include "dev_key.h"
 
-
-/*
- * FUNCTION DEFINITIONS
- *****************************************************************
- */
- 
 /**
  ****************************************************************************************
  * @brief Initial MCU hardware devices
  * @param[in] None
  * @description
- *  This function will initial NVIC, SystemTick,USART1 and GPIO.
+ *  This function will initialize NVIC, SystemTick,USART1 and GPIO.
  ****************************************************************************************
  */
-
 
 static void prvSetupHardware( void )
 {
 	/* Set the Vector Table base address at 0x08000000 */
 	NVIC_SetVectorTable( NVIC_VectTab_FLASH, 0x0 );
     
-    //All is preemptive priority
+	//All is preemptive priority
 	NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
 	
-    /* Configure HCLK clock as SysTick clock source. */
+	/* Configure HCLK clock as SysTick clock source. */
 	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
    
 	serial_init();
@@ -79,45 +69,21 @@ static void prvSetupHardware( void )
  ****************************************************************************************
  */
 
-
 int main(void)
 {
-    //Set NVIC,USART1,GPIO
-    prvSetupHardware(); 
-#if 0
-	{
-		uint64_t temp = 0x12345678ABCDEF58;
-		uint32_t hex = 0x12345678;
-		char str[24];
-
-		rprintf("Hex number is 0x%x\r\n",hex);
-		
-		hex2asc((uint8_t *)(&temp), str,sizeof(temp));
-		rprintf("the number is %s\r\n",str);
-		
-		rprintf("llx is 0x%llx\r\n",temp);
-
-		rprintf("llu number is %llu\r\n",temp);
-	}
-	
-#endif
-
-#if 0
-#include <string.h>
+	//Set NVIC,USART1,GPIO
+	prvSetupHardware(); 
+#if 1
 	{
 		char str[64] = {0};
 		rprintf("input something,input q to exit\r\n");
 		while(1) {		
-			//ch = serial_getc();
-			//serial_putc(ch);
 			serial_gets(str);
 			serial_puts("\r\n");
 			serial_puts(str);
 			serial_puts("\r\n");
 			if(strcmp(str,"exit") == 0)
 				break;
-// 			if(ch == 'q')
-// 				break;
 		}
 	}
 #endif
@@ -138,6 +104,8 @@ int main(void)
 		}
 	}
 #endif
+
+#if 0
     //Create task
 	xTaskCreate(vManagerTask,"ManagerTask",256,NULL,5,&ManagerTaskHandle);
 	xTaskCreate(vTask_Key,"KEY_TASK",256,NULL,3,&KeyTaskHandle);
@@ -146,11 +114,9 @@ int main(void)
 
     //Start task scheduler
     vTaskStartScheduler();
-
-    for(;;)
-    {
-      //Forever Loop  
-    };
+#endif
+	//Forever Loop  
+	while(1){};
 }
 
 /**
@@ -161,7 +127,7 @@ int main(void)
  *  
  ****************************************************************************************
  */
-
+#if 0
 void vApplicationTickHook( void )
 {
 //    static uint32_t app_base_tick=0;
@@ -220,4 +186,4 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 	taskDISABLE_INTERRUPTS();
 	for( ;; );
 }
-
+#endif

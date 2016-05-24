@@ -23,7 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
-
+#include <os_global.h>
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
   */
@@ -109,7 +109,7 @@ void DebugMon_Handler(void)
 {
 }
 
-#if !OS_EN
+#ifndef CONFIG_OS_ENABLE
 /**
   * @brief  This function handles SVCall exception.
   * @param  None

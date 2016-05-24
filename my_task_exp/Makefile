@@ -4,18 +4,18 @@ include Makefile.common
 LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -nostartfiles -Wl,--gc-sections,-Tlinker.ld
 
 LDLIBS+=-lm
-LDLIBS+=-$(LIBDIR)/lstm32
-LDLIBS+=-$(CMSISDIR)/lcmsis
-LDLIBS+=-$(BSPDIR)/lbsp
-LDLIBS+=-$(OSDIR)/los
+LDLIBS+=-libstm32
+LDLIBS+=-libcmsis
+LDLIBS+=-libbsp
+#LDLIBS+=-libos
 
 STARTUP=startup.s
 
-all: lib cmsis bsp user os
+all: lib cmsis bsp user
 	@echo "make all ..."
 	$(CC) -o $(PROGRAM).elf $(LDFLAGS) \
 		-Wl,--whole-archive \
-			$(USERDIR)/$(APPLIB) \
+			user/libuser.a \
 		-Wl,--no-whole-archive \
 			$(LDLIBS)
 	$(OBJCOPY) -O ihex $(PROGRAM).elf $(PROGRAM).hex
@@ -38,9 +38,11 @@ cmsis:
 #	$(MAKE) -C cmsis $@
 bsp:
 	@echo "Build $@ ..."
+	@(cd $(BSPDIR);$(MAKE);)
 #	$(MAKE) -C bsp $@
 user:
 	@echo "Build $@ ..."
+	@(cd $(USERDIR);$(MAKE);)
 #	$(MAKE) -C user $@
 os:
 	@echo "Build $@ ..."

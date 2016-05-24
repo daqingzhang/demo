@@ -336,7 +336,7 @@ void oct2asc(uint8_t *pval,char *pstr,int len)
 		str[i] = ch;
 		i++;
 	}
-	while(i >= 0) {
+	while(i > 0) {
 		--i;
 		*pstr++ = str[i];
 	}

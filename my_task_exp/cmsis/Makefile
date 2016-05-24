@@ -1,6 +1,5 @@
-# libs Makefile
 include ../Makefile.common
-LIBS+=lcmsis.a
+LIBS+=libcmsis.a
 CFLAGSlib+=-c
 
 all: cmsis
@@ -11,11 +10,12 @@ cmsis: $(LIBS)
 
 $(LIBS):
 	@echo -n "Building $@ ..."
-	cd $(CMSISDIR) && \
+	@cd $(CMSISDIR) && \
 		$(CC) $(CFLAGSlib) \
 			system_stm32f10x.c	\
 			core_cm3.c
-#			startup/startup_stm32f10x_hd.s
+#			startup/startup_stm32f10x_hd.S
+	@echo -n "Build in $(CMSISDIR) ..."
 	$(AR) cr $@ $(CMSISDIR)/*.o
 	@echo "done."
 

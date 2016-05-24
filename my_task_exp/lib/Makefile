@@ -1,4 +1,3 @@
-# libs Makefile
 include ../Makefile.common
 LIBS+=libstm32.a
 CFLAGSlib+=-c
@@ -15,8 +14,8 @@ $(LIBS):
 		$(CC) $(CFLAGSlib) \
 			-D"assert_param(expr)=((void)0)" \
 			*.c
-	@echo "build in $(LIBDIR) ..."
-	$(AR) cr $@ src/*.o 
+	@echo -n "build in $(LIBDIR) ..."
+	@$(AR) cr $@ src/*.o 
 	@echo "done."
 
 clean:

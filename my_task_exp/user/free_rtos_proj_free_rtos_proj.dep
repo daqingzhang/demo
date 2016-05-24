@@ -1,231 +1,0 @@
-Dependencies for Project 'free_rtos_proj', Target 'free_rtos_proj': (DO NOT MODIFY !)
-F (..\CMSIS\startup\startup_stm32f10x_hd.s)(0x55FAC375)(--cpu Cortex-M3 -g --apcs=interwork --pd "__MICROLIB SETA 1" -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x --list "..\Listing\startup_stm32f10x_hd.lst" --xref -o "..\Output\startup_stm32f10x_hd.o" --depend "..\Output\startup_stm32f10x_hd.d")
-F (.\stm32f10x_it.c)(0x54D0556E)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\stm32f10x_it.o" --omf_browse "..\Output\stm32f10x_it.crf" --depend "..\Output\stm32f10x_it.d")
-I (stm32f10x_it.h)(0x54AA7B62)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-I (os_global.h)(0x566EEFF5)
-F (..\FWlib\src\stm32f10x_rcc.c)(0x53DA2617)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\stm32f10x_rcc.o" --omf_browse "..\Output\stm32f10x_rcc.crf" --depend "..\Output\stm32f10x_rcc.d")
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-F (..\FWlib\src\stm32f10x_gpio.c)(0x53DA2617)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\stm32f10x_gpio.o" --omf_browse "..\Output\stm32f10x_gpio.crf" --depend "..\Output\stm32f10x_gpio.d")
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-F (..\FWlib\src\stm32f10x_usart.c)(0x53DA2617)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\stm32f10x_usart.o" --omf_browse "..\Output\stm32f10x_usart.crf" --depend "..\Output\stm32f10x_usart.d")
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-F (..\FWlib\src\misc.c)(0x53DA2617)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\misc.o" --omf_browse "..\Output\misc.crf" --depend "..\Output\misc.d")
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-F (..\CMSIS\core_cm3.c)(0x53DA2617)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\core_cm3.o" --omf_browse "..\Output\core_cm3.crf" --depend "..\Output\core_cm3.d")
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-F (..\CMSIS\system_stm32f10x.c)(0x53DA2617)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\system_stm32f10x.o" --omf_browse "..\Output\system_stm32f10x.crf" --depend "..\Output\system_stm32f10x.d")
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-F (..\FreeRTOS\Source\list.c)(0x53DB6292)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\list.o" --omf_browse "..\Output\list.crf" --depend "..\Output\list.d")
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdlib.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\USER\os_global.h)(0x566EEFF5)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-F (..\FreeRTOS\Source\queue.c)(0x53DB6291)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\queue.o" --omf_browse "..\Output\queue.crf" --depend "..\Output\queue.d")
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdlib.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\string.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\USER\os_global.h)(0x566EEFF5)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\task.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\queue.h)(0x53DB6291)
-F (..\FreeRTOS\Source\tasks.c)(0x53DB6291)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\tasks.o" --omf_browse "..\Output\tasks.crf" --depend "..\Output\tasks.d")
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdlib.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\string.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\USER\os_global.h)(0x566EEFF5)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\task.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\timers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\StackMacros.h)(0x53DB6291)
-F (..\FreeRTOS\Source\portable\RVDS\ARM_CM3\port.c)(0x53DB6291)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\port.o" --omf_browse "..\Output\port.crf" --depend "..\Output\port.d")
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\USER\os_global.h)(0x566EEFF5)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\task.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-F (..\FreeRTOS\Source\portable\MemMang\heap_2.c)(0x53DB6291)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\heap_2.o" --omf_browse "..\Output\heap_2.crf" --depend "..\Output\heap_2.d")
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdlib.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\USER\os_global.h)(0x566EEFF5)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\task.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-F (..\BSP\dev_usart.c)(0x5709E1A8)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\dev_usart.o" --omf_browse "..\Output\dev_usart.crf" --depend "..\Output\dev_usart.d")
-I (..\BSP\hal_config.h)(0x570919CB)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdarg.h)(0x50F9614E)
-I (d:\Keil\ARM\ARMCC\bin\..\include\ctype.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\string.h)(0x50F96150)
-I (..\BSP\dev_usart.h)(0x57092E21)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-F (..\BSP\dev_usart.h)(0x57092E21)()
-F (..\BSP\dev_key.h)(0x570A7BDB)()
-F (..\BSP\dev_key.c)(0x570A8027)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\dev_key.o" --omf_browse "..\Output\dev_key.crf" --depend "..\Output\dev_key.d")
-I (..\BSP\hal_config.h)(0x570919CB)
-I (d:\Keil\ARM\ARMCC\bin\..\include\string.h)(0x50F96150)
-I (..\BSP\dev_key.h)(0x570A7BDB)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-I (..\BSP\dev_usart.h)(0x57092E21)
-F (..\BSP\dev_led.c)(0x566C5CC7)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\dev_led.o" --omf_browse "..\Output\dev_led.crf" --depend "..\Output\dev_led.d")
-I (..\BSP\dev_led.h)(0x566C5BE4)
-I (..\BSP\hal_config.h)(0x570919CB)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\string.h)(0x50F96150)
-F (..\BSP\dev_led.h)(0x566C5BE4)()
-F (.\my_task_exp.c)(0x570A7EA2)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\my_task_exp.o" --omf_browse "..\Output\my_task_exp.crf" --depend "..\Output\my_task_exp.d")
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\USER\os_global.h)(0x566EEFF5)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\task.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\queue.h)(0x53DB6291)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-I (my_task_exp.h)(0x566EEB30)
-I (..\BSP\dev_usart.h)(0x57092E21)
-I (..\BSP\dev_led.h)(0x566C5BE4)
-I (..\BSP\hal_config.h)(0x570919CB)
-I (..\BSP\dev_key.h)(0x570A7BDB)
-F (.\task_main.c)(0x570A8142)(-c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork -I..\CMSIS -I..\USER -I..\FWlib\inc -I..\FWlib\src -I..\FreeRTOS\Config -I..\FreeRTOS\Source\include -I..\BSP -I..\APP --c99 -I d:\Keil\ARM\RV31\INC -I d:\Keil\ARM\CMSIS\Include -I d:\Keil\ARM\Inc\ST\STM32F10x -DUSE_STDPERIPH_DRIVER -DRVDS_ARMCM3_LM3S102 -DSTM32F10X_HD -o "..\Output\task_main.o" --omf_browse "..\Output\task_main.crf" --depend "..\Output\task_main.d")
-I (os_global.h)(0x566EEFF5)
-I (..\CMSIS\stm32f10x.h)(0x55FADA28)
-I (..\CMSIS\core_cm3.h)(0x53DA2617)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stdint.h)(0x50F96150)
-I (..\CMSIS\system_stm32f10x.h)(0x53DA2617)
-I (..\USER\stm32f10x_conf.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_gpio.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_rcc.h)(0x53DA2617)
-I (..\FWlib\inc\stm32f10x_usart.h)(0x53DA2617)
-I (..\FWlib\inc\misc.h)(0x53DA2617)
-I (..\FreeRTOS\Source\include\FreeRTOS.h)(0x53DB6291)
-I (d:\Keil\ARM\ARMCC\bin\..\include\stddef.h)(0x50F96150)
-I (..\FreeRTOS\Source\include\projdefs.h)(0x53DB6291)
-I (..\FreeRTOS\Config\FreeRTOSConfig.h)(0x55FAD98B)
-I (..\FreeRTOS\Source\include\portable.h)(0x5486A783)
-I (..\FreeRTOS\Source\include\../../Source/portable/RVDS/ARM_CM3/portmacro.h)(0x5486D541)
-I (..\FreeRTOS\Source\include\mpu_wrappers.h)(0x53DB6291)
-I (..\FreeRTOS\Source\include\task.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\list.h)(0x5486D4ED)
-I (..\FreeRTOS\Source\include\queue.h)(0x53DB6291)
-I (my_task_exp.h)(0x566EEB30)
-I (..\BSP\dev_usart.h)(0x57092E21)
-I (..\BSP\dev_led.h)(0x566C5BE4)
-I (..\BSP\hal_config.h)(0x570919CB)
-I (..\BSP\dev_key.h)(0x570A7BDB)

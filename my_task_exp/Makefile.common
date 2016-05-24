@@ -37,6 +37,7 @@ LIBDIR=$(TOP)/lib
 CMSISDIR=$(TOP)/cmsis
 BSPDIR=$(TOP)/bsp
 USERDIR=$(TOP)/user
+OSDIR=$(TOP)/os
 
 #Adust the following line to the library in use
 STMLIB=$(LIBDIR)
@@ -63,6 +64,9 @@ INCLUDE=-I$(LIBDIR)/inc
 INCLUDE+=-I$(CMSISDIR)/inc
 INCLUDE+=-I$(BSPDIR)/inc
 INCLUDE+=-I$(USERDIR)/inc
+INCLUDE+=-I$(OSDIR)/Config
+INCLUDE+=-I$(OSDIR)/Source/include
+INCLUDE+=-I$(OSDIR)/Source/portable/RVDS/ARM_CM3
 
 COMMONFLAGS=-g -mcpu=cortex-m3 -mthumb
 COMMONFLAGSlib=$(COMMONFLAGS)

@@ -1,12 +1,12 @@
 # general Makefile
 # make OptLIB=0 OptSRC=0 all tshow 
 include Makefile.common
-LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -nostartfiles -Wl,--gc-sections,-Tlinker.ld
-
+LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -L$(BSPDIR) -L$(CMSISDIR) \
+			-nostartfiles -Wl,--gc-sections,-Tlinker.ld
 LDLIBS+=-lm
-LDLIBS+=-libstm32
-LDLIBS+=-libcmsis
-LDLIBS+=-libbsp
+LDLIBS+=-lstm32
+LDLIBS+=-lcmsis
+LDLIBS+=-lbsp
 #LDLIBS+=-libos
 
 STARTUP=startup.s

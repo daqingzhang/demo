@@ -1,7 +1,6 @@
 *.o
 *.su
 *.img
-*.bin
 *.swp
 *.map
 *.a

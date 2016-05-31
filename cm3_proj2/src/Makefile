@@ -1,17 +1,15 @@
-# src Makefile
-
 include ../Makefile.common
 
-OBJS+=startup.o
-OBJS+=main.o
+all: bsp app
 
-all: src
+.PHONY: bsp app clean
 
-.PHONY: src clean tshow
-
-src: $(ALIB)
-
-$(ALIB): $(OBJS)
-		$(AR) cr $(ALIB) $(OBJS)
+bsp:
+	@echo "Building $@ ..."
+	$(MAKE) -C $@
+app:
+	@echo "Building $@ ..."
+	$(MAKE) -C $@
 clean:
-	rm -f $(ALIB) $(OBJS)
+	$(MAKE) -C bsp $@
+	$(MAKE) -C app $@

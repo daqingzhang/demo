@@ -31,8 +31,11 @@
 
 TOP	= $(shell readlink -f "$(dir $(lastword $(MAKEFILE_LIST)))")
 PROGRAM = main
-ALIB	= app.a
+APPLIB	= app.a
+BSPLIB	= bsp.a
+
 LIBDIR	= $(TOP)/lib
+SRCDIR  = $(TOP)/src
 
 #Adust the following line to the library in use
 STMLIB	= $(LIBDIR)

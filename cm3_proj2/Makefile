@@ -1,7 +1,7 @@
 # general Makefile
 # make OptLIB=0 OptSRC=0 all tshow
 include Makefile.common
-LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -nostartfiles -Wl,--gc-sections,-Tlinker.ld
+LDFLAGS=$(COMMONFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -L$(LIBDIR) -L$(SRCDIR) -nostartfiles -Wl,--gc-sections,-Tlinker.ld
 
 LDLIBS+=-lm
 LDLIBS+=-lstm32
@@ -12,7 +12,8 @@ all: lib src
 	@echo "Building @a ..."
 	$(CC) -o $(PROGRAM).elf $(LDFLAGS) \
 		-Wl,--whole-archive \
-			src/app.a \
+			src/$(APPLIB) \
+			src/$(BSPLIB) \
 		-Wl,--no-whole-archive \
 			$(LDLIBS)
 	$(OBJCOPY) -O ihex $(PROGRAM).elf $(PROGRAM).hex

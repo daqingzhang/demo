@@ -7,20 +7,18 @@ INC += -I$(TOP)/src/freertos/Source/portable/RVDS/ARM_CM3
 INC += -I$(TOP)/src/bsp/inc
 INC += -I$(TOP)/src/app/inc
 
-CFLAGS += -c
 CFLAGS += $(INC)
+CFLAGS += -c
 
-LIB := libapp.a
+LIB := $(TOP)/src/$(APPLIB)
 
 OBJS += startup.o
-OBJS += mtasks.o
 OBJS += main.o
+#OBJS += mtasks.o
 
 SRCS := $(OBJS:.o=.c)
 
 all: $(LIB)
-
-.PHONY: clean show
 
 $(LIB): $(OBJS)
 	@echo "Building $@ ..."
@@ -31,11 +29,11 @@ $(OBJS): $(SRCS)
 	$(CC) $(CFLAGS) $^
 	@echo "done."
 
-show: $(SRCS)
+.PHONY: clean show
+
+show:
 	@echo "TOP = $(TOP)"
 	@echo "INC = $(INC)"
-	@echo "@ =  $@ ..."
-	@echo "^ = $^"
 	@echo "SRCS = $(SRCS)"
 	@echo "OBJS = $(OBJS)"
 

@@ -1,32 +1,31 @@
 include ../Makefile.common
 
-LIBS+=libstm32.a
-CFLAGSlib+=-c
+CFLAGSlib += -c
 
-SYS_INC = cmsis/device/stm32f10x/include
-SYS_SRC = cmsis/device/stm32f10x/source
-LIB_SRC = stm32f10x_std_driver/src
+LIBS += libstm32.a
+
+STM_DIR := $(LIBDIR)/stm32f10x_std_driver/src
+SYS_DIR := $(LIBDIR)/cmsis/device/stm32f10x/source
+
+OBJS += $(STM_DIR)/*.o
+OBJS += $(SYS_DIR)/*.o
+
+SRCS := $(OBJS:.o=.c)
 
 all: $(LIBS)
 
 .PHONY: clean
 
-$(LIBS):
-	@echo "Building objects ..."
-	cd $(STMLIB)/$(SYS_SRC) && \
-		$(CC) $(CFLAGSlib) \
-			system_stm32f10x.c
-	cd $(STMLIB)/stm32f10x_std_driver/src && \
-		$(CC) $(CFLAGSlib) \
-			-D"assert_param(expr)=((void)0)" \
-			*.c
+$(LIBS): $(OBJS)
 	@echo "Building $@ ..."
-	$(AR) cr $(STMLIB)/$@ \
-		$(STMLIB)/$(SYS_SRC)/system_stm32f10x.o \
-		$(STMLIB)/$(LIB_SRC)/*.o
-	@echo "done."
+	$(AR) cr $@ $(LIBDIR)/*.o
+	@echo "done"
 
+$(OBJS): $(SRCS)
+	@echo "Builing $@ ..."
+	$(CC) $(CFLAGSlib) \
+		-D"assert_param(expr)=((void)0)" \
+		$^
 clean:
-	rm -f $(STMLIB)/$(SYS_SRC)/system_stm32f10x.o
-	rm -f $(STMLIB)/$(LIB_SRC)/*.o
+	rm -f *.o
 	rm -f $(LIBS)

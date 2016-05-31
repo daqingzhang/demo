@@ -3,10 +3,10 @@ include ../../Makefile.common
 INC := $(INCLUDE)
 INC += -I$(TOP)/src/bsp/inc
 
-CFLAGS += -c
 CFLAGS += $(INC)
+CFLAGS += -c
 
-LIB := libbsp.a
+LIB := $(TOP)/src/$(BSPLIB)
 
 OBJS += dev_usart.o
 OBJS += dev_led.o
@@ -21,20 +21,18 @@ all: $(LIB)
 $(LIB): $(OBJS)
 	@echo "Building $@ ..."
 	$(AR) cr $@ $^
+	@echo "done."
 
 $(OBJS): $(SRCS)
 	@echo "Building $@ ..."
 	$(CC) $(CFLAGS) $^
 	@echo "done."
 
-show: $(SRCS)
+show:
 	@echo "TOP = $(TOP)"
 	@echo "INC = $(INC)"
-	@echo "@ =  $@ ..."
-	@echo "^ = $^"
 	@echo "SRCS = $(SRCS)"
 	@echo "OBJS = $(OBJS)"
-
 clean:
 	rm -f *.o
 	rm -f $(LIB)

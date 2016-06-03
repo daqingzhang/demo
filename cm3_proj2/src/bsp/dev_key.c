@@ -5,6 +5,7 @@
 #include <stm32f10x_gpio.h>
 #include <stm32f10x_usart.h>
 #include <dev_key.h>
+
 #ifdef CONFIG_DEBUG_KEY
 #include <dev_usart.h>
 #endif
@@ -25,7 +26,7 @@
 
 #define KEY_PIN_MASK (KEY2_PIN | KEY3_PIN | KEY4_PIN)
 
-static int init_key(int key)
+int init_key(int key)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	uint16_t pin = 0;
@@ -58,7 +59,7 @@ static int init_key(int key)
 	return 0;
 }
 
-static uint32_t read_key(void)
+uint32_t read_key(void)
 {
 	uint32_t temp = 0;
 	temp = GPIO_ReadInputData(KEY_GPIOX);
@@ -269,19 +270,34 @@ int kdev_process(void)
  *
  ************************************************************
  */
-#if 0
-static int g_key_dat = 1;
+#if 1
+static int g_key_dat[] = {KEY2_ID,KEY3_ID,KEY4_ID};
+
 int key_callback(void *arg)
 {
 	int *p = (int *)(arg);
-	*p = *p + 1;
+	switch(*p) {
+	case KEY2_ID:
+		rprintf("%s, key 2 is pressed down\n",__func__);
+		break;
+	case KEY3_ID:
+		rprintf("%s, key 3 is pressed down\n",__func__);
+		break;
+	case KEY4_ID:
+		rprintf("%s, key 4 is pressed down\n",__func__);
+		break;
+	default:
+		rprintf("%s, key error, %d\n",__func__,*p);
+		break;
+	}
+
 	return 0;
 }
 
 void key_usage(void)
 {
 	key_dev_t* kdev[3];
-	key_handler_t* handler[3];
+//	key_handler_t* handler[3];
 
 	// init key device
 	kdev_init();
@@ -289,9 +305,9 @@ void key_usage(void)
 	kdev[0] = kdev_register(KEY2_ID,"key2",key_callback,&g_key_dat);
 	kdev[1] = kdev_register(KEY3_ID,"key3",key_callback,&g_key_dat);
 	kdev[2] = kdev_register(KEY4_ID,"key4",key_callback,&g_key_dat);
-	handler[0] = kdev_add(kdev[0]);
-	handler[1] = kdev_add(kdev[1]);
-	handler[2] = kdev_add(kdev[2]);
+	kdev_add(kdev[0]);
+	kdev_add(kdev[1]);
+	kdev_add(kdev[2]);
 	while(1) {
 		// start to process key event
 		kdev_process();

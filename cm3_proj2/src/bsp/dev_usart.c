@@ -137,7 +137,7 @@ static void reset_usart(usart_dev_t *usart)
 	USART_DeInit(usart);
 }
 
-static int init_usart(usart_dev_t *usart)
+int init_usart(usart_dev_t *usart)
 {
 	// reset usart
 	reset_usart(usart);
@@ -148,7 +148,7 @@ static int init_usart(usart_dev_t *usart)
 	if(config_usart_gpio(usart))
 		return -1;
 	// config usart baudrate,data,parity,stop bit
-	if(config_usart(usart,115200,8,'N',1))
+	if(config_usart(usart,19200,8,'N',1))
 		return -1;
 	return 0;
 }

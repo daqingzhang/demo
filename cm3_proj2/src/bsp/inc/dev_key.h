@@ -39,7 +39,7 @@ typedef struct key_handler key_handler_t;
 
 void kdev_init(void);
 key_dev_t* kdev_register(int id,const char *name,
-						int (*callback)(void *arg),void *arg);
+				int (*callback)(void *arg),void *arg);
 int kdev_unregister(key_dev_t *dev);
 key_handler_t* kdev_add(key_dev_t *dev);
 int kdev_process(void);

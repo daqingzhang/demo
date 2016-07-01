@@ -1,0 +1,27 @@
+
+sum.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <vectors_tab>:
+   0:	20000800 	.word	0x20000800
+   4:	00000000 	.word	0x00000000
+   8:	0000001e 	.word	0x0000001e
+   c:	00000000 	.word	0x00000000
+
+00000010 <start>:
+  10:	200a      	movs	r0, #10
+  12:	2100      	movs	r1, #0
+
+00000014 <loop>:
+  14:	1841      	adds	r1, r0, r1
+  16:	3801      	subs	r0, #1
+  18:	2800      	cmp	r0, #0
+  1a:	d1fb      	bne.n	14 <loop>
+
+0000001c <deadloop>:
+  1c:	e7fe      	b.n	1c <deadloop>
+
+0000001e <nmi_handler>:
+  1e:	4770      	bx	lr

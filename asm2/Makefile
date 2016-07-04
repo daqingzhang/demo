@@ -7,37 +7,54 @@ AS	= $(TC)-as
 AR	= $(TC)-ar
 GDB	= $(TC)-gdb
 
-AS_FLAGS = -g -mcpu=cortex-m3 -mthumb
-
+COMMFLAGS := -g -mcpu=cortex-m3 -mthumb
+ASFLAGS := $(COMMFLAGS)
+CCFLAGS := $(COMMFLAGS)
+LDFLAGS := -Tlinker.ld
 
 OBJS	:= startup.o
 OBJS	+= sum.o
 
 SRCS	:= $(OBJS:.o=.S)
-OUT	:= sum.elf
-BIN	:= $(OUT:.elf=.bin)
-TXT	:= $(OUT:.elf=.list)
+
+APP 	:= main
+OUT	:= $(APP).elf
+BIN	:= $(APP).bin
+HEX	:= $(APP).hex
+TXT	:= $(APP).txt
+MAP	:= $(APP).map
 
 all:$(OUT)
 
 .PHONY: clean
 
 $(OUT): $(OBJS)
-	$(LD) -Ttext 0x0 -o $@ $^
-	@echo "ld $(OUT) done"
+
+	$(LD) $(LDFLAGS) -Map $(MAP) -o $@ $^
+	@echo "gen $(OUT) done"
+
 	$(OBJCOPY) -O binary $@ $(BIN)
-	$(OBJDUMP) -S $@ > $(TXT)
+	@echo "gen $(BIN) done"
+
+	$(OBJCOPY) -O ihex $@ $(HEX)
+	@echo "gen $(HEX) done"
+
+	$(OBJDUMP) -S $@ > out.txt
+	$(OBJDUMP) -d sum.o > sum.txt
+	$(OBJDUMP) -d startup.o > startup.txt
+	@echo "gen *.txt done"
 
 $(OBJS):$(SRCS)
-	@echo "$@"
-	@echo "$^"
-	$(AS) $(AS_FLAGS) -o startup.o startup.S
-	$(AS) $(AS_FLAGS) -o sum.o sum.S
-	@echo "obj done"
+	$(AS) $(ASFLAGS) startup.S -o startup.o
+	$(AS) $(ASFLAGS) sum.S -o sum.o
 
 clean:
 	rm -f $(OUT)
-	rm -f $(BIN)
-	rm -f $(TXT)
-	rm -f $(OBJS)
-
+	rm -f *.o
+	rm -f *.txt
+	rm -f *.bin
+	rm -f *.hex
+	rm -f *.map
+unusd:
+	#LDFLAGS := -Ttext 0x80000000
+	$(CC) $(LDFLAGS) -o $@ $^

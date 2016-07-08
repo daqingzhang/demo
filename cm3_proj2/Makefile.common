@@ -53,6 +53,8 @@ TC	= arm-none-eabi
 CC	= $(TC)-gcc
 LD	= $(TC)-ld -v
 OBJCOPY	= $(TC)-objcopy
+AS	= $(TC)-as
+
 AR = $(TC)-ar
 GDB= $(TC)-gdb
 

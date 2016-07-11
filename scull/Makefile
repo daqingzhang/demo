@@ -13,7 +13,9 @@ else
 
 .PHONY: all clean
 
-all: $(TEST)
+all: $(TEST) $(MDL)
+
+$(MDL):
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 $(TEST): $(OBJS)
@@ -26,6 +28,6 @@ clean:
 	rm -rf .tmp_versions
 	rm $(TEST)
 mclean:
-	rm $(TEST).o
 	rm $(TEST)
+	rm *.o
 endif

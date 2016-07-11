@@ -10,35 +10,37 @@ logs="/var/log/kern.log"
 
 help()
 {
-	echo ""
-	echo "this shell is used to install scull module to linux"
-	echo "rm_mod	"
-	echo "setup_mod	"
-	echo "print_dev	"
-	echo "print_mod	"
-	echo "test_mod	"
-	echo "cat_log	"
-	echo ""
+	echo
+	echo
+	echo "		This shell is used to install scull module & test it"
+	echo
+	echo "pdev:   print device	"
+	echo "pmod:   print modules	"
+	echo "plog:   print kernel logs	"
+	echo "rmmod:  remove modules	"
+	echo "setmod: setup modules	"
+	echo "tester: call tester	"
+	echo
 }
 
-print_dev()
+pdev()
 {
 	
 	ls -l ${path}/${module}0
 	ls -l ${path}/${module}1
 }
 
-print_mod()
+pmod()
 {
 	lsmod
 }
 
-cat_log()
+plog()
 {
-	cat $logs
+	cat ${logs}
 }
 
-rm_mod()
+rmmod()
 {
 
 	sudo rm -f ${path}/${device}0
@@ -46,7 +48,7 @@ rm_mod()
 	sudo rmmod ${module}
 }
 
-setup_mod()
+setmod()
 {
 	sudo insmod ${module}.ko
 
@@ -56,10 +58,10 @@ setup_mod()
 	sudo chmod $mode ${path}/${module}0
 	sudo chmod $mode ${path}/${module}1
 
-	print_dev
+	pdev
 }
 
-test_mod()
+tester()
 {
 	sudo ./${tester}
 }

@@ -4,16 +4,18 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
-#include <linux/spinlock.h>
-#include <asm/uaccess.h>
 #include <linux/device.h>
 #include <linux/platform_device.h>
 #include <linux/errno.h>
-#include <plat/rda_debug.h>
-#include <plat/rda_scull.h>
-
+#include <linux/spinlock.h>
+#include <linux/semaphore.h>
+#include <linux/delay.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
+#include <asm/uaccess.h>
+
+#include <plat/rda_debug.h>
+#include <plat/rda_scull.h>
 
 #ifdef RDA_DBG_SCULL
 #define scull_debug rda_dbg_scull
@@ -23,11 +25,208 @@
 
 struct scull_queue
 {
-	unsigned int head;
-	unsigned int next;
-	unsigned int size;
-	void *qdata;
+	unsigned int in;   //index for write data into buffer, next empty space
+	unsigned int out;  //index for read data from buffer, current available data space
+	unsigned int size; //buffer size
+	unsigned int unit;
+	char cycle;
+	void *data;	   //data buffer
 };
+
+#define QUEUE_EMPTY_SPACE(q) ((q)->size - (q)->in)
+#define GET_MIN_VALUE(a,b) ((a) <= (b) ? (a) : (b))
+
+static void scull_empty_queue(struct scull_queue *q)
+{
+	q->in    = 0;
+	q->out   = 0;
+	q->cycle = 0;
+	memset(q->data,0,q->size);
+}
+
+static void scull_init_queue(struct scull_queue *q, int unit)
+{
+	q->unit = unit;
+	scull_empty_queue(q);
+}
+
+static int scull_enqueue(struct scull_queue *q, void *pdata, int size)
+{
+	unsigned int i,n;
+
+	if(size != q->unit)
+		return 0;
+	n = GET_MIN_VALUE(size, QUEUE_EMPTY_SPACE(q));
+	for(i = 0;i < n;i++) {
+		*((char *)(q->data) + q->in) = *((char *)pdata);
+		pdata = (char *)pdata + 1;
+		q->in++;
+	}
+	if(n < size) {
+		q->in = 0;
+		q->cycle = 1;
+		n = size - n;
+		for(i = 0;i < n;i++) {
+			*((char *)(q->data) + q->in) = *((char *)pdata);
+			pdata = (char *)pdata + 1;
+			q->in++;
+		}
+	}
+	return size;
+}
+
+static int scull_dequeue(struct scull_queue *q, void *pdata, int size)
+{
+	unsigned int i,n;
+
+	if(size != q->unit)
+		return 0;
+	if((!q->cycle) && (q->in == q->out))
+		return 0;
+
+	n = GET_MIN_VALUE(size, q->size - q->out);
+	for(i = 0;i < n;i++) {
+		*(char *)pdata = *((char *)(q->data) + q->out);
+		pdata = (char *)pdata + 1;
+		q->out++;
+	}
+	if(n < size) {
+		q->out = 0;
+		q->cycle = 0;
+		n = size - n;
+		for(i = 0;i < n;i++) {
+			*(char *)pdata = *((char *)(q->data) + q->out);
+			pdata = (char *)pdata + 1;
+			q->out++;
+		}
+	}
+	return size;
+}
+
+static void scull_dump_queue(struct scull_queue *q,int n)
+{
+	int i,size = n * q->unit;
+	for(i = 0;i < size;i++) {
+		scull_debug("%2x ",*((char *)(q->data) + i));
+		if((i+1) % q->unit == 0)
+			scull_debug("\n");
+	}
+}
+
+static int scull_queue_info(struct scull_queue *q)
+{
+	scull_debug("queue info: size: %d, in: %d, out: %d, unit: %d\n",
+			q->size,q->in,q->out,q->unit);
+
+	scull_debug("\ndump queue:\n");
+	scull_dump_queue(q,32);
+	return 0;
+}
+
+static void scull_init_queue(struct scull_queue *q, int unit);
+static int scull_enqueue(struct scull_queue *q, void *pdata, int size);
+static int scull_dequeue(struct scull_queue *q, void *pdata, int size);
+static void scull_dump_queue(struct scull_queue *q,int n);
+static int scull_queue_info(struct scull_queue *q);
+
+int scull_test_queue(struct scull_queue *q)
+{
+	unsigned char a = 0,c;
+	unsigned int b = 0;
+	unsigned int i;
+
+	scull_debug("*********************test 1\n");
+	scull_init_queue(q,sizeof(b));
+	scull_queue_info(q);
+	
+	scull_debug("*********************test 2\n");
+	scull_init_queue(q,sizeof(a));
+	scull_queue_info(q);
+	for(i = 0;i < 3;i++) {
+		a++;
+		scull_enqueue(q,&a, sizeof(a));
+	}
+	scull_queue_info(q);
+
+	scull_debug("*********************test 3\n");
+	scull_init_queue(q,sizeof(a));
+	scull_queue_info(q);
+	a=0;
+	for(i = 0;i < 3;i++) {
+		a++;
+		scull_enqueue(q,&a, sizeof(a));
+	}
+	scull_queue_info(q);
+
+	for(i = 0;i < 3;i++) {
+		scull_dequeue(q,&c, sizeof(c));
+		scull_debug("c[%d]: %x\n",i,c);
+	}
+	scull_queue_info(q);
+
+	scull_debug("*********************test 4\n");
+	scull_init_queue(q,sizeof(a));
+	scull_queue_info(q);
+	a=0;
+	for(i = 0;i < 32;i++) {
+		a++;
+		scull_enqueue(q,&a, sizeof(a));
+	}
+	scull_queue_info(q);
+
+	for(i = 0;i < 32;i++) {
+		scull_dequeue(q,&c, sizeof(c));
+		scull_debug("c[%d]: %x\n",i,c);
+	}
+	scull_queue_info(q);
+
+	scull_debug("*********************test 5\n");
+	scull_init_queue(q,sizeof(a));
+	scull_queue_info(q);
+	a=0;
+	for(i = 0;i < 35;i++) {
+		a++;
+		scull_enqueue(q,&a, sizeof(a));
+	}
+	scull_queue_info(q);
+
+	for(i = 0;i < 32;i++) {
+		scull_dequeue(q,&c, sizeof(c));
+		scull_debug("c[%d]: %x\n",i,c);
+	}
+	for(i = 0;i < 3;i++) {
+		scull_dequeue(q,&c, sizeof(c));
+		scull_debug("c[%d]: %x\n",i,c);
+	}
+	scull_queue_info(q);
+
+	scull_debug("*********************test 6\n");
+	scull_init_queue(q,sizeof(a));
+	scull_queue_info(q);
+	a=0;
+	for(i = 0;i < 30;i++) {
+		a++;
+		scull_enqueue(q,&a, sizeof(a));
+	}
+	scull_queue_info(q);
+
+	for(i = 0;i < 30;i++) {
+		scull_dequeue(q,&c, sizeof(c));
+		scull_debug("c[%d]: %x\n",i,c);
+	}
+
+	for(i = 0;i < 5;i++) {
+		a++;
+		scull_enqueue(q,&a, sizeof(a));
+	}
+	for(i = 0;i < 5;i++) {
+		scull_dequeue(q,&c, sizeof(c));
+		scull_debug("c[%d]: %x\n",i,c);
+	}
+	scull_queue_info(q);
+
+	return 0;
+}
 
 struct scull_device
 {
@@ -35,6 +234,7 @@ struct scull_device
 	int major;
 	int minor;
 	spinlock_t lock;
+	struct semaphore sem;
 	struct cdev chr_dev;
 	struct scull_queue queue;
 };
@@ -42,8 +242,24 @@ struct scull_device
 /*
  * SCULL Device Driver
  */
+
+int test_semaphore(struct scull_device *scu)
+{
+	down_interruptible(&scu->sem);
+	msleep(1000);
+	scull_debug("%s, test sem\n",__func__);
+	msleep(1000);
+	scull_debug("%s, test sem\n",__func__);
+	msleep(1000);
+	scull_debug("%s, test sem\n",__func__);
+	up(&scu->sem);
+	return 0;
+}
+
 static int scull_open(struct inode *node, struct file *f)
 {
+//	struct scull_device *scull = container_of(node->i_cdev,
+//					struct scull_device,chr_dev);
 	scull_debug("%s, scull open\n",__func__);
 	return 0;
 }
@@ -68,6 +284,7 @@ static ssize_t scull_read(struct file *f, char __user *pbuf, size_t len, loff_t 
 
 static ssize_t scull_write(struct file *f, const char __user *pdata, size_t len, loff_t *poffs)
 {
+
 	scull_debug("%s, scull module write\n",__func__);
 	return 0;
 }
@@ -116,13 +333,13 @@ end_setup:
 	cdev_del(&pdev->chr_dev);
 	return -EFAULT;
 }
-#if 0
+
 static void scull_free_cdev(struct scull_device *pdev)
 {
 	cdev_del(&pdev->chr_dev);
 	scull_debug("scull free cdev %d, %d done\n",pdev->major, pdev->minor);
 }
-#endif
+
 static int scull_setup_queue(struct scull_device *pdev,int queue_size)
 {
 	struct scull_queue *q = &pdev->queue;
@@ -137,10 +354,10 @@ static int scull_setup_queue(struct scull_device *pdev,int queue_size)
 		scull_debug("alloc queue buffer failed\n");
 		return -EFAULT;
 	}
-	q->qdata = pbuf;
+	q->data = pbuf;
 	q->size  = queue_size;
-	q->head  = 0;
-	q->next  = 0;
+	q->in  = 0;
+	q->out  = 0;
 
 	return 0;
 }
@@ -148,7 +365,7 @@ static int scull_setup_queue(struct scull_device *pdev,int queue_size)
 static void scull_free_queue(struct scull_device *pdev)
 {
 	struct scull_queue *q = &pdev->queue;
-	void *qdata = q->qdata;
+	void *qdata = q->data;
 
 	kfree(qdata);
 	q->size = 0;
@@ -196,15 +413,15 @@ static int scull_seq_show(struct seq_file *sfile, void *v)
 	//struct scull_device *scull = (struct scull_device *)v;
 	struct scull_device *scull = sfile->private;
 	struct scull_queue *q = &scull->queue;
-	unsigned int *pdat = q->qdata;
+	unsigned int *pdat = q->data;
 	int i,len;
 	unsigned long flags;
 
 	scull_debug("%s\n",__func__);
 	spin_lock_irqsave(&scull->lock,flags);
-	seq_printf(sfile, "major = %d, minor = %d, type = %d, head = %d, next = %d, size = %d\n",
+	seq_printf(sfile, "major = %d, minor = %d, type = %d, in = %d, out = %d, size = %d\n",
 			scull->major,scull->minor,scull->type,
-			q->head,q->next,q->size);
+			q->in,q->out,q->size);
 	//len = q->size;
 	len = 32;
 	for(i = 0;i < len;i++) {
@@ -273,6 +490,7 @@ static int scull_probe(struct platform_device *pdev)
 	pscull = &scull_dev[pdata->minor];
 #endif
 	spin_lock_init(&pscull->lock);
+	sema_init(&pscull->sem,1);
 	pscull->type  = pdata->type;
 	pscull->major = pdata->major;
 	pscull->minor = pdata->minor;
@@ -292,6 +510,10 @@ static int scull_probe(struct platform_device *pdev)
 	scull_create_proc(pscull);
 	dev_info(&pdev->dev, "scull probe done, major: %d, minor: %d, size: %d\n",
 		pscull->major,pscull->minor,pscull->queue.size);
+
+	//test_semaphore(pscull);
+	if(pscull->minor == 0)
+		scull_test_queue(&pscull->queue);
 	return 0;
 
 end_setup_cdev:
@@ -302,19 +524,19 @@ end_setup_queue:
 
 static int scull_remove(struct platform_device *pdev)
 {
-//	struct scull_platdata *pdata = pdev->dev.platform_data;
-//	struct scull_device *pscull = pdata->priv;
+	struct scull_device *pscull = platform_get_drvdata(pdev);
 
-//	scull_free_cdev(pscull);
-//	scull_free_queue(pscull);
-//	kfree(pscull);
+	scull_free_cdev(pscull);
+	scull_free_queue(pscull);
+	scull_debug("%s, major: %d, minor: %d, type: %d\n",__func__,
+			pscull->major,pscull->minor,pscull->type);
 	scull_debug("%s, scull remove done\n",__func__);
 	return 0;
 }
 
 static void scull_shutdown(struct platform_device *pdev)
 {
-	scull_debug("%s, scull shutdown done\n",__func__);
+	scull_remove(pdev);
 }
 
 static int scull_suspend(struct platform_device *pdev, pm_message_t state)
@@ -331,9 +553,9 @@ static int scull_resume(struct platform_device *pdev)
 
 static struct platform_driver scull_driver = {
 	.probe		= scull_probe,
-	.remove		= scull_remove,
 	.suspend	= scull_suspend,
 	.shutdown	= scull_shutdown,
+	.remove		= scull_remove,
 	.resume		= scull_resume,
 	.driver	= {
 		.name  = "rda-scull",

@@ -13,7 +13,6 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <asm/uaccess.h>
-
 #include <plat/rda_debug.h>
 #include <plat/rda_scull.h>
 
@@ -36,7 +35,7 @@ struct scull_queue
 #define QUEUE_EMPTY_SPACE(q) ((q)->size - (q)->in)
 #define GET_MIN_VALUE(a,b) ((a) <= (b) ? (a) : (b))
 
-static void scull_empty_queue(struct scull_queue *q)
+static void sq_clear(struct scull_queue *q)
 {
 	q->in    = 0;
 	q->out   = 0;
@@ -44,187 +43,284 @@ static void scull_empty_queue(struct scull_queue *q)
 	memset(q->data,0,q->size);
 }
 
-static void scull_init_queue(struct scull_queue *q, int unit)
+static int sq_init(struct scull_queue *q, int unit)
 {
 	q->unit = unit;
-	scull_empty_queue(q);
-}
-
-static int scull_enqueue(struct scull_queue *q, void *pdata, int size)
-{
-	unsigned int i,n;
-
-	if(size != q->unit)
-		return 0;
-	n = GET_MIN_VALUE(size, QUEUE_EMPTY_SPACE(q));
-	for(i = 0;i < n;i++) {
-		*((char *)(q->data) + q->in) = *((char *)pdata);
-		pdata = (char *)pdata + 1;
-		q->in++;
-	}
-	if(n < size) {
-		q->in = 0;
-		q->cycle = 1;
-		n = size - n;
-		for(i = 0;i < n;i++) {
-			*((char *)(q->data) + q->in) = *((char *)pdata);
-			pdata = (char *)pdata + 1;
-			q->in++;
-		}
-	}
-	return size;
-}
-
-static int scull_dequeue(struct scull_queue *q, void *pdata, int size)
-{
-	unsigned int i,n;
-
-	if(size != q->unit)
-		return 0;
-	if((!q->cycle) && (q->in == q->out))
-		return 0;
-
-	n = GET_MIN_VALUE(size, q->size - q->out);
-	for(i = 0;i < n;i++) {
-		*(char *)pdata = *((char *)(q->data) + q->out);
-		pdata = (char *)pdata + 1;
-		q->out++;
-	}
-	if(n < size) {
-		q->out = 0;
-		q->cycle = 0;
-		n = size - n;
-		for(i = 0;i < n;i++) {
-			*(char *)pdata = *((char *)(q->data) + q->out);
-			pdata = (char *)pdata + 1;
-			q->out++;
-		}
-	}
-	return size;
-}
-
-static void scull_dump_queue(struct scull_queue *q,int n)
-{
-	int i,size = n * q->unit;
-	for(i = 0;i < size;i++) {
-		scull_debug("%2x ",*((char *)(q->data) + i));
-		if((i+1) % q->unit == 0)
-			scull_debug("\n");
-	}
-}
-
-static int scull_queue_info(struct scull_queue *q)
-{
-	scull_debug("queue info: size: %d, in: %d, out: %d, unit: %d\n",
-			q->size,q->in,q->out,q->unit);
-
-	scull_debug("\ndump queue:\n");
-	scull_dump_queue(q,32);
+	sq_clear(q);
 	return 0;
 }
 
-static void scull_init_queue(struct scull_queue *q, int unit);
-static int scull_enqueue(struct scull_queue *q, void *pdata, int size);
-static int scull_dequeue(struct scull_queue *q, void *pdata, int size);
-static void scull_dump_queue(struct scull_queue *q,int n);
-static int scull_queue_info(struct scull_queue *q);
+static int sq_enqueue(struct scull_queue *q, const void *obj)
+{
+	unsigned int i,n;
+	char *des = q->data;
+	const char *src = obj;
 
-int scull_test_queue(struct scull_queue *q)
+	n = GET_MIN_VALUE(q->unit, QUEUE_EMPTY_SPACE(q));
+	for(i = 0;i < n;i++) {
+		*(des + q->in) = *src;
+		src++;
+		q->in++;
+	}
+	if(n < q->unit) {
+		q->in = 0;
+		q->cycle = 1;
+		n = q->unit - n;
+		for(i = 0;i < n;i++) {
+			*(des + q->in) = *src;
+			src++;
+			q->in++;
+		}
+	}
+	return 0;
+}
+
+static int sq_isempty(struct scull_queue *q)
+{
+	if((q->in == q->out) && (!q->cycle))
+		return 1;//queue is empty
+	else
+		return 0;//queue is not empty
+}
+
+static int sq_dequeue(struct scull_queue *q, void *obj)
+{
+	unsigned int i,n;
+	char *des = obj;
+	const char *src = q->data;
+
+	if(sq_isempty(q))
+		return -ENODATA;
+
+	n = GET_MIN_VALUE(q->unit, q->size - q->out);
+	for(i = 0;i < n;i++) {
+		*des = *(src + q->out);
+		des++;
+		q->out++;
+	}
+	if(n < q->unit) {
+		q->out = 0;
+		q->cycle = 0;
+		n = q->unit - n;
+		for(i = 0;i < n;i++) {
+			*des = *(src + q->out);
+			des++;
+			q->out++;
+		}
+	}
+	return 0;
+}
+
+static int sq_dump_one_obj(struct scull_queue *q, unsigned int offs)
+{
+	unsigned i;
+	char *pdata = q->data + offs * q->unit;
+
+	for(i = 0;i < q->unit;i++) {
+		scull_debug("%2X ", *pdata);
+		pdata++;
+	}
+	return 0;
+}
+
+static int sq_dump(struct scull_queue *q,int offs, int n)
+{
+	int i;
+	int pos = q->unit * offs;
+
+	if(offs < 0)
+		return -EINVAL;
+
+	scull_debug("dump queue:\n");
+	for(i = 0;i < n;i++) {
+		pos = offs * q->unit;
+		if(pos >= q->size)
+			offs = 0;
+		sq_dump_one_obj(q,offs);
+		offs++;
+		scull_debug("\n");
+	}
+	scull_debug("\n");
+	return 0;
+}
+
+static void sq_info(struct scull_queue *q)
+{
+	scull_debug("queue info: size: %d, in: %d, out: %d, unit: %d\n",
+			q->size,q->in,q->out,q->unit);
+	sq_dump(q,0,q->size/q->unit);
+}
+
+struct scull_queue_ops {
+	int (*init)(struct scull_queue *q, int unit);
+	int (*enqueue)(struct scull_queue *q, const void *obj);
+	int (*dequeue)(struct scull_queue *q, void *obj);
+	int (*isempty)(struct scull_queue *q);
+	int (*dump)(struct scull_queue *q, int offs, int n);
+	void (*info)(struct scull_queue *q);
+	void (*clear)(struct scull_queue *q);
+};
+
+static struct scull_queue_ops scull_queue_ops[] = 
+{
+	{
+		.init    = sq_init,
+		.enqueue = sq_enqueue,
+		.dequeue = sq_dequeue,
+		.dump    = sq_dump,
+		.info    = sq_info,
+		.clear   = sq_clear,
+		.isempty = sq_isempty,
+	},
+};
+
+struct xxdata {
+	char a;
+	char *p;
+	short c;
+	int d;
+};
+
+int sq_test(struct scull_queue *q)
 {
 	unsigned char a = 0,c;
 	unsigned int b = 0;
 	unsigned int i;
+	int r;
+	struct xxdata x,y;
 
 	scull_debug("*********************test 1\n");
-	scull_init_queue(q,sizeof(b));
-	scull_queue_info(q);
+	sq_init(q,sizeof(b));
+	sq_info(q);
 	
 	scull_debug("*********************test 2\n");
-	scull_init_queue(q,sizeof(a));
-	scull_queue_info(q);
+	sq_init(q,sizeof(a));
+	sq_info(q);
 	for(i = 0;i < 3;i++) {
 		a++;
-		scull_enqueue(q,&a, sizeof(a));
+		sq_enqueue(q,&a);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	scull_debug("*********************test 3\n");
-	scull_init_queue(q,sizeof(a));
-	scull_queue_info(q);
+	sq_init(q,sizeof(a));
+	sq_info(q);
 	a=0;
 	for(i = 0;i < 3;i++) {
 		a++;
-		scull_enqueue(q,&a, sizeof(a));
+		sq_enqueue(q,&a);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	for(i = 0;i < 3;i++) {
-		scull_dequeue(q,&c, sizeof(c));
+		sq_dequeue(q,&c);
 		scull_debug("c[%d]: %x\n",i,c);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	scull_debug("*********************test 4\n");
-	scull_init_queue(q,sizeof(a));
-	scull_queue_info(q);
+	sq_init(q,sizeof(a));
+	sq_info(q);
 	a=0;
 	for(i = 0;i < 32;i++) {
 		a++;
-		scull_enqueue(q,&a, sizeof(a));
+		sq_enqueue(q,&a);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	for(i = 0;i < 32;i++) {
-		scull_dequeue(q,&c, sizeof(c));
+		sq_dequeue(q,&c);
 		scull_debug("c[%d]: %x\n",i,c);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	scull_debug("*********************test 5\n");
-	scull_init_queue(q,sizeof(a));
-	scull_queue_info(q);
+	sq_init(q,sizeof(a));
+	sq_info(q);
 	a=0;
 	for(i = 0;i < 35;i++) {
 		a++;
-		scull_enqueue(q,&a, sizeof(a));
+		sq_enqueue(q,&a);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	for(i = 0;i < 32;i++) {
-		scull_dequeue(q,&c, sizeof(c));
+		sq_dequeue(q,&c);
 		scull_debug("c[%d]: %x\n",i,c);
 	}
 	for(i = 0;i < 3;i++) {
-		scull_dequeue(q,&c, sizeof(c));
+		sq_dequeue(q,&c);
 		scull_debug("c[%d]: %x\n",i,c);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	scull_debug("*********************test 6\n");
-	scull_init_queue(q,sizeof(a));
-	scull_queue_info(q);
+	sq_init(q,sizeof(a));
+	sq_info(q);
 	a=0;
 	for(i = 0;i < 30;i++) {
 		a++;
-		scull_enqueue(q,&a, sizeof(a));
+		sq_enqueue(q,&a);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
 	for(i = 0;i < 30;i++) {
-		scull_dequeue(q,&c, sizeof(c));
+		sq_dequeue(q,&c);
 		scull_debug("c[%d]: %x\n",i,c);
 	}
 
 	for(i = 0;i < 5;i++) {
 		a++;
-		scull_enqueue(q,&a, sizeof(a));
+		sq_enqueue(q,&a);
 	}
 	for(i = 0;i < 5;i++) {
-		scull_dequeue(q,&c, sizeof(c));
+		sq_dequeue(q,&c);
 		scull_debug("c[%d]: %x\n",i,c);
 	}
-	scull_queue_info(q);
+	sq_info(q);
 
+	scull_debug("*********************test 7\n");
+	sq_init(q,sizeof(a));
+	a=0;
+
+	r = sq_dequeue(q,&c);
+	if(r)
+		scull_debug("dequeue result: %d\n",r);
+	a = 0xAA;
+	sq_enqueue(q,&a);
+	r = sq_dequeue(q,&c);
+	if(r)
+		scull_debug("dequeue result: %d\n",r);
+	scull_debug("c = %x\n",c);
+
+	r = sq_dequeue(q,&c);
+	if(r)
+		scull_debug("dequeue result: %d\n",r);
+
+	scull_debug("*********************test 8\n");
+	scull_debug("sizeof(struct xxdata) = %d\n",sizeof(struct xxdata));
+	scull_debug("sizeof(x) = %d\n",sizeof(x));
+	scull_debug("sizeof(x.a) = %d\n",sizeof(x.a));
+	scull_debug("sizeof(x.p) = %d\n",sizeof(x.p));
+	scull_debug("sizeof(x.c) = %d\n",sizeof(x.c));
+	scull_debug("sizeof(x.d) = %d\n",sizeof(x.d));
+	scull_debug("sizeof(char) = %d\n",sizeof(char));
+	scull_debug("sizeof(short) = %d\n",sizeof(short));
+	scull_debug("sizeof(int) = %d\n",sizeof(int));
+
+	sq_init(q,sizeof(x));
+	x.a = 0x55;
+	x.p = &a;
+	x.c = 0x1234;
+	x.d = 0x1A2B3C4D;
+
+	sq_info(q);
+	sq_enqueue(q,&x);
+	sq_info(q);
+	sq_dequeue(q,&y);
+	scull_debug("a = %x, p = %x, c = %x, d = %x\n",
+			y.a, (unsigned int)(y.p), y.c, y.d);
+	sq_info(q);
 	return 0;
 }
 
@@ -237,6 +333,7 @@ struct scull_device
 	struct semaphore sem;
 	struct cdev chr_dev;
 	struct scull_queue queue;
+	struct scull_queue_ops *qops;
 };
 
 /*
@@ -358,7 +455,7 @@ static int scull_setup_queue(struct scull_device *pdev,int queue_size)
 	q->size  = queue_size;
 	q->in  = 0;
 	q->out  = 0;
-
+	pdev->qops = scull_queue_ops;
 	return 0;
 }
 
@@ -513,7 +610,7 @@ static int scull_probe(struct platform_device *pdev)
 
 	//test_semaphore(pscull);
 	if(pscull->minor == 0)
-		scull_test_queue(&pscull->queue);
+		sq_test(&pscull->queue);
 	return 0;
 
 end_setup_cdev:

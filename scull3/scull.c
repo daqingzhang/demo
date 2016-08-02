@@ -13,23 +13,25 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <asm/uaccess.h>
-#include <plat/rda_debug.h>
 #include <plat/rda_scull.h>
 
-#ifdef RDA_DBG_SCULL
-#define scull_debug rda_dbg_scull
+#define SCULL_DEBUG
+
+#ifdef SCULL_DEBUG
+#define scull_debug(fmt,args...) printk(KERN_INFO fmt, ##args)
+//#define scull_debug(fmt,args...) printk( KERN_INFO "scull: " fmt, ##args)
 #else
 #define scull_debug(...) do{}while(0)
 #endif
 
 struct scull_queue
 {
-	unsigned int in;   //index for write data into buffer, next empty space
-	unsigned int out;  //index for read data from buffer, current available data space
-	unsigned int size; //buffer size
-	unsigned int unit;
-	char cycle;
-	void *data;	   //data buffer
+	unsigned char  	cycle;
+	unsigned short 	unit;
+	unsigned int   	in;   //index for write data into buffer, next empty space
+	unsigned int   	out;  //index for read data from buffer, current available data space
+	unsigned int   	size; //buffer size
+	void 		*data;	   //data buffer
 };
 
 #define QUEUE_EMPTY_SPACE(q) ((q)->size - (q)->in)
@@ -41,6 +43,23 @@ static void sq_clear(struct scull_queue *q)
 	q->out   = 0;
 	q->cycle = 0;
 	memset(q->data,0,q->size);
+}
+
+static int sq_alloc_data(struct scull_queue *q, int size)
+{
+	void *pdata;
+
+	if(size <= 0)
+		return -EINVAL;
+
+	pdata = kzalloc(size,GFP_KERNEL);
+	if(!pdata)
+		return -EFAULT;
+
+	q->data = pdata;
+	q->size = size;
+
+	return 0;
 }
 
 static int sq_init(struct scull_queue *q, int unit)
@@ -152,6 +171,7 @@ static void sq_info(struct scull_queue *q)
 }
 
 struct scull_queue_ops {
+	int (*alloc_data)(struct scull_queue *q, int size);
 	int (*init)(struct scull_queue *q, int unit);
 	int (*enqueue)(struct scull_queue *q, const void *obj);
 	int (*dequeue)(struct scull_queue *q, void *obj);
@@ -161,7 +181,7 @@ struct scull_queue_ops {
 	void (*clear)(struct scull_queue *q);
 };
 
-static struct scull_queue_ops scull_queue_ops[] = 
+static struct scull_queue_ops sq_ops[] = 
 {
 	{
 		.init    = sq_init,
@@ -171,6 +191,7 @@ static struct scull_queue_ops scull_queue_ops[] =
 		.info    = sq_info,
 		.clear   = sq_clear,
 		.isempty = sq_isempty,
+		.alloc_data = sq_alloc_data,
 	},
 };
 
@@ -336,7 +357,11 @@ struct scull_device
 
 int test_semaphore(struct scull_device *scu)
 {
-	down_interruptible(&scu->sem);
+	int r;
+	r = down_interruptible(&scu->sem);
+	if(r) {
+		return -ERESTARTSYS;
+	}
 	msleep(1000);
 	scull_debug("%s, test sem\n",__func__);
 	msleep(1000);
@@ -349,15 +374,54 @@ int test_semaphore(struct scull_device *scu)
 
 static int scull_open(struct inode *node, struct file *f)
 {
-//	struct scull_device *scull = container_of(node->i_cdev,
-//					struct scull_device,chr_dev);
+	struct scull_device *scull = container_of(node->i_cdev,
+					struct scull_device,chr_dev);
+	unsigned long flags;
+
 	scull_debug("%s, scull open\n",__func__);
+
+	spin_lock_irqsave(&scull->lock, flags);
+	f->private_data = scull;
+	spin_unlock_irqrestore(&scull->lock,flags);
 	return 0;
 }
 
+enum
+{
+	LLS_SET_POS,
+	LLS_CUR_POS,
+	LLS_END_POS,
+};
+
 static loff_t scull_seek(struct file *f, loff_t offs, int cmd)
 {
-	scull_debug("%s, scull seek\n",__func__);
+	loff_t npos;
+	int max_size = 0;
+	struct scull_device *scull = f->private_data;
+	unsigned long flag;
+
+	spin_lock_irqsave(&scull->lock,flag);
+
+	switch(cmd) {
+	case LLS_SET_POS:
+		npos = offs;
+		break;
+	case LLS_CUR_POS:
+		npos = f->f_pos + offs;
+		break;
+	case LLS_END_POS:
+		npos = max_size;
+		break;
+	default:
+		return -EINVAL;
+	}
+	if((npos < 0) || (npos > max_size))
+		return -EINVAL;
+	f->f_pos = npos;
+
+	spin_unlock_irqrestore(&scull->lock,flag);
+
+	scull_debug("%s, scull seek f_ops = %d\n",__func__,(int)npos);
 	return 0;
 }
 
@@ -367,15 +431,45 @@ static int scull_flush(struct file *f, fl_owner_t id)
 	return 0;
 }
 
-static ssize_t scull_read(struct file *f, char __user *pbuf, size_t len, loff_t *poffs)
+static ssize_t scull_read(struct file *f, char __user *pbuf, size_t len, loff_t *offs)
 {
-	scull_debug("%s, scull read\n",__func__);
+	struct scull_device *ptr_scull = f->private_data;
+	struct scull_queue  *ptr_queue = &ptr_scull->queue;
+	unsigned long pos = *offs,count = len,flag;
+
+	scull_debug("%s, scull read, len = %d, offs = %d\n",
+			__func__,len,(int)(*offs));
+	spin_lock_irqsave(&ptr_scull->lock, flag);
+
+	if(pos >= ptr_queue->size)
+		return 0;
+	if(count > ptr_queue->size - pos)
+		count = ptr_queue->size - pos;
+	if(copy_to_user(pbuf,ptr_queue->data + pos, count))
+		return -EFAULT;
+	*offs = pos + count;
+
+	spin_unlock_irqrestore(&ptr_scull->lock,flag);
 	return 0;
 }
 
-static ssize_t scull_write(struct file *f, const char __user *pdata, size_t len, loff_t *poffs)
+static ssize_t scull_write(struct file *f, const char __user *pdata, size_t len, loff_t *offs)
 {
+	struct scull_device *ptr_scull = f->private_data;
+	struct scull_queue  *ptr_queue = &ptr_scull->queue;
+	unsigned long pos = *offs, count = len,flag;
 
+	spin_lock_irqsave(&ptr_scull->lock,flag);
+
+	if(pos >= ptr_queue->size)
+		return 0;
+	if(count > ptr_queue->size - pos)
+		count = ptr_queue->size - pos;
+	if(copy_from_user(ptr_queue->data + pos,pdata,count))
+		return -EFAULT;
+	*offs = pos + count;
+
+	spin_unlock_irqrestore(&ptr_scull->lock,flag);
 	scull_debug("%s, scull module write\n",__func__);
 	return 0;
 }
@@ -431,25 +525,17 @@ static void scull_free_cdev(struct scull_device *pdev)
 	scull_debug("scull free cdev %d, %d done\n",pdev->major, pdev->minor);
 }
 
-static int scull_setup_queue(struct scull_device *pdev,int queue_size)
+static int scull_setup_queue(struct scull_device *pdev, int queue_size)
 {
 	struct scull_queue *q = &pdev->queue;
-	void *pbuf;
+	int r;
 
-	if(queue_size <= 0) {
-		scull_debug("queue size is invalid\n");
-		return -EINVAL;
+	r = pdev->qops->alloc_data(q,queue_size);
+	if(r) {
+		scull_debug("alloc queue data failed, %d\n",r);
+		return r;
 	}
-	pbuf = kzalloc(queue_size, GFP_KERNEL);
-	if(!pbuf) {
-		scull_debug("alloc queue buffer failed\n");
-		return -EFAULT;
-	}
-	q->data = pbuf;
-	q->size  = queue_size;
-	q->in  = 0;
-	q->out  = 0;
-	pdev->qops = scull_queue_ops;
+	pdev->qops->init(q,1);
 	return 0;
 }
 
@@ -585,7 +671,7 @@ static int scull_probe(struct platform_device *pdev)
 	pscull->type  = pdata->type;
 	pscull->major = pdata->major;
 	pscull->minor = pdata->minor;
-
+	pscull->qops  = sq_ops;
 	r = scull_setup_queue(pscull,pdata->size);
 	if(r) {
 		dev_err(&pdev->dev, "scull setup queue failed, %d\n",r);
@@ -604,7 +690,7 @@ static int scull_probe(struct platform_device *pdev)
 
 	//test_semaphore(pscull);
 	if(pscull->minor == 0)
-		sq_test(&pscull->queue);
+		//sq_test(&pscull->queue);
 	return 0;
 
 end_setup_cdev:

@@ -175,11 +175,13 @@ static struct scull_queue_ops scull_queue_ops[] =
 };
 
 struct xxdata {
-	char a;
-	char *p;
-	short c;
-	int d;
+	char  a;
+	short b;
+	int   c;
+	char *d;
 };
+
+struct xxdata x,y;
 
 int sq_test(struct scull_queue *q)
 {
@@ -187,7 +189,6 @@ int sq_test(struct scull_queue *q)
 	unsigned int b = 0;
 	unsigned int i;
 	int r;
-	struct xxdata x,y;
 
 	scull_debug("*********************test 1\n");
 	sq_init(q,sizeof(b));
@@ -300,26 +301,19 @@ int sq_test(struct scull_queue *q)
 	scull_debug("*********************test 8\n");
 	scull_debug("sizeof(struct xxdata) = %d\n",sizeof(struct xxdata));
 	scull_debug("sizeof(x) = %d\n",sizeof(x));
-	scull_debug("sizeof(x.a) = %d\n",sizeof(x.a));
-	scull_debug("sizeof(x.p) = %d\n",sizeof(x.p));
-	scull_debug("sizeof(x.c) = %d\n",sizeof(x.c));
-	scull_debug("sizeof(x.d) = %d\n",sizeof(x.d));
-	scull_debug("sizeof(char) = %d\n",sizeof(char));
-	scull_debug("sizeof(short) = %d\n",sizeof(short));
-	scull_debug("sizeof(int) = %d\n",sizeof(int));
 
 	sq_init(q,sizeof(x));
 	x.a = 0x55;
-	x.p = &a;
-	x.c = 0x1234;
-	x.d = 0x1A2B3C4D;
+	x.b = 0x1234;
+	x.c = 0x1A2B3C4D;
+	x.d = &a;
 
 	sq_info(q);
 	sq_enqueue(q,&x);
 	sq_info(q);
 	sq_dequeue(q,&y);
-	scull_debug("a = %x, p = %x, c = %x, d = %x\n",
-			y.a, (unsigned int)(y.p), y.c, y.d);
+	scull_debug("a = %x, b = %x, c = %x, d = %x\n",
+			y.a, y.b, y.c, (unsigned int)(y.d));
 	sq_info(q);
 	return 0;
 }

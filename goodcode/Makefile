@@ -1,13 +1,13 @@
 
-TC = arm-none-eabi
+TC = arm-eabi
 CC = $(TC)-gcc
 OBJDUMP = $(TC)-objdump
 
 .PHONY: all clean
 
 all:
-	$(CC) -c -O1 test1.c
-	$(OBJDUMP) -d test1.o > test1.txt
+	$(CC) -c -O2 test1.c
+	$(OBJDUMP) -d test1.o > info.txt
 clean:
 	rm *.o
 	rm *.txt

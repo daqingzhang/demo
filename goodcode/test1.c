@@ -7,12 +7,21 @@ int checksum1(int *data)
 	return sum;
 }
 
-short checksum3(short *data)
+short checksum2(short *data)
 {
 	unsigned int i;
 	short sum = 0;
 	for(i = 0;i < 64;i++)
 		sum = (short)(sum + data[i]);
+	return sum;
+}
+
+short checksum3(short *data)
+{
+	unsigned int i;
+	short sum = 0;
+	for(i = 0;i < 64;i++)
+		sum += data[i];
 	return sum;
 }
 
@@ -96,3 +105,66 @@ void u32_to_hex(unsigned char *phex, unsigned int dat)
 	}
 }
 
+int add8_1(int a, int b)
+{
+	return(a+b);
+}
+
+char add8_2(char a, char b)
+{
+	return(a+b);
+}
+
+short add8_3(short a,short b)
+{
+	return(a+b);
+}
+
+int add9_1(int a,int b,int c, int d)
+{
+	a += b;
+	a += c;
+	a += d;
+	return a;
+}
+
+int add9_2(int a,int b,int c, int d,int e)
+{
+	a += b;
+	a += c;
+	a += d;
+	a += e;
+	return a;
+}
+
+int add9_3(int a,int b,int c, int d,int e,int f)
+{
+	a += b;
+	a += c;
+	a += d;
+	a += e;
+	a += f;
+	return a;
+}
+
+struct abc
+{
+	int a;
+	int b;
+	int c;
+	int d;
+	int e;
+	int f;
+};
+
+int add9_4(struct abc *t)
+{
+	int n;
+	n += t->a;
+	n += t->b;
+	n += t->c;
+	n += t->d;
+	n += t->e;
+	n += t->f;
+	return n;
+}

@@ -1,0 +1,177 @@
+
+test1.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <checksum1>:
+   0:	e3a03000 	mov	r3, #0
+   4:	e1a02003 	mov	r2, r3
+   8:	e7901003 	ldr	r1, [r0, r3]
+   c:	e2833004 	add	r3, r3, #4
+  10:	e3530c01 	cmp	r3, #256	; 0x100
+  14:	e0822001 	add	r2, r2, r1
+  18:	1afffffa 	bne	8 <checksum1+0x8>
+  1c:	e1a00002 	mov	r0, r2
+  20:	e12fff1e 	bx	lr
+
+00000024 <checksum2>:
+  24:	e3a03000 	mov	r3, #0
+  28:	e1a02003 	mov	r2, r3
+  2c:	e19010b3 	ldrh	r1, [r0, r3]
+  30:	e2833002 	add	r3, r3, #2
+  34:	e0812002 	add	r2, r1, r2
+  38:	e1a02802 	lsl	r2, r2, #16
+  3c:	e3530080 	cmp	r3, #128	; 0x80
+  40:	e1a02822 	lsr	r2, r2, #16
+  44:	1afffff8 	bne	2c <checksum2+0x8>
+  48:	e1a00802 	lsl	r0, r2, #16
+  4c:	e1a00840 	asr	r0, r0, #16
+  50:	e12fff1e 	bx	lr
+
+00000054 <checksum3>:
+  54:	e3a03000 	mov	r3, #0
+  58:	e1a02003 	mov	r2, r3
+  5c:	e19010b3 	ldrh	r1, [r0, r3]
+  60:	e2833002 	add	r3, r3, #2
+  64:	e0812002 	add	r2, r1, r2
+  68:	e1a02802 	lsl	r2, r2, #16
+  6c:	e3530080 	cmp	r3, #128	; 0x80
+  70:	e1a02822 	lsr	r2, r2, #16
+  74:	1afffff8 	bne	5c <checksum3+0x8>
+  78:	e1a00802 	lsl	r0, r2, #16
+  7c:	e1a00840 	asr	r0, r0, #16
+  80:	e12fff1e 	bx	lr
+
+00000084 <checksum4>:
+  84:	e2801080 	add	r1, r0, #128	; 0x80
+  88:	e3a03000 	mov	r3, #0
+  8c:	e0d020f2 	ldrsh	r2, [r0], #2
+  90:	e1500001 	cmp	r0, r1
+  94:	e0833002 	add	r3, r3, r2
+  98:	1afffffb 	bne	8c <checksum4+0x8>
+  9c:	e1a00803 	lsl	r0, r3, #16
+  a0:	e1a00840 	asr	r0, r0, #16
+  a4:	e12fff1e 	bx	lr
+
+000000a8 <checksum5>:
+  a8:	e2801080 	add	r1, r0, #128	; 0x80
+  ac:	e3a03000 	mov	r3, #0
+  b0:	e0d020f2 	ldrsh	r2, [r0], #2
+  b4:	e1500001 	cmp	r0, r1
+  b8:	e0833002 	add	r3, r3, r2
+  bc:	1afffffb 	bne	b0 <checksum5+0x8>
+  c0:	e1a00803 	lsl	r0, r3, #16
+  c4:	e1a00840 	asr	r0, r0, #16
+  c8:	e12fff1e 	bx	lr
+
+000000cc <checksum6_1>:
+  cc:	e1a03000 	mov	r3, r0
+  d0:	e2801c01 	add	r1, r0, #256	; 0x100
+  d4:	e3a00000 	mov	r0, #0
+  d8:	e4932004 	ldr	r2, [r3], #4
+  dc:	e1530001 	cmp	r3, r1
+  e0:	e0800002 	add	r0, r0, r2
+  e4:	1afffffb 	bne	d8 <checksum6_1+0xc>
+  e8:	e12fff1e 	bx	lr
+
+000000ec <checksum6_2>:
+  ec:	e1a03000 	mov	r3, r0
+  f0:	e2801c01 	add	r1, r0, #256	; 0x100
+  f4:	e3a00000 	mov	r0, #0
+  f8:	e4932004 	ldr	r2, [r3], #4
+  fc:	e1530001 	cmp	r3, r1
+ 100:	e0800002 	add	r0, r0, r2
+ 104:	1afffffb 	bne	f8 <checksum6_2+0xc>
+ 108:	e12fff1e 	bx	lr
+
+0000010c <checksum7_1>:
+ 10c:	e1a03000 	mov	r3, r0
+ 110:	e2801c01 	add	r1, r0, #256	; 0x100
+ 114:	e3a00000 	mov	r0, #0
+ 118:	e4932004 	ldr	r2, [r3], #4
+ 11c:	e1530001 	cmp	r3, r1
+ 120:	e0800002 	add	r0, r0, r2
+ 124:	1afffffb 	bne	118 <checksum7_1+0xc>
+ 128:	e12fff1e 	bx	lr
+
+0000012c <checksum7_2>:
+ 12c:	e1a03000 	mov	r3, r0
+ 130:	e2801c01 	add	r1, r0, #256	; 0x100
+ 134:	e3a00000 	mov	r0, #0
+ 138:	e4932004 	ldr	r2, [r3], #4
+ 13c:	e1530001 	cmp	r3, r1
+ 140:	e0800002 	add	r0, r0, r2
+ 144:	1afffffb 	bne	138 <checksum7_2+0xc>
+ 148:	e12fff1e 	bx	lr
+
+0000014c <u32_to_hex>:
+ 14c:	e280c008 	add	ip, r0, #8
+ 150:	e1a01e61 	ror	r1, r1, #28
+ 154:	e201300f 	and	r3, r1, #15
+ 158:	e3530009 	cmp	r3, #9
+ 15c:	e2832030 	add	r2, r3, #48	; 0x30
+ 160:	82832037 	addhi	r2, r3, #55	; 0x37
+ 164:	e4c02001 	strb	r2, [r0], #1
+ 168:	e150000c 	cmp	r0, ip
+ 16c:	1afffff7 	bne	150 <u32_to_hex+0x4>
+ 170:	e12fff1e 	bx	lr
+
+00000174 <add8_1>:
+ 174:	e0800001 	add	r0, r0, r1
+ 178:	e12fff1e 	bx	lr
+
+0000017c <add8_2>:
+ 17c:	e0810000 	add	r0, r1, r0
+ 180:	e20000ff 	and	r0, r0, #255	; 0xff
+ 184:	e12fff1e 	bx	lr
+
+00000188 <add8_3>:
+ 188:	e0810000 	add	r0, r1, r0
+ 18c:	e1a00800 	lsl	r0, r0, #16
+ 190:	e1a00840 	asr	r0, r0, #16
+ 194:	e12fff1e 	bx	lr
+
+00000198 <add9_1>:
+ 198:	e0800001 	add	r0, r0, r1
+ 19c:	e0800002 	add	r0, r0, r2
+ 1a0:	e0800003 	add	r0, r0, r3
+ 1a4:	e12fff1e 	bx	lr
+
+000001a8 <add9_2>:
+ 1a8:	e0801001 	add	r1, r0, r1
+ 1ac:	e0812002 	add	r2, r1, r2
+ 1b0:	e59d0000 	ldr	r0, [sp]
+ 1b4:	e0823003 	add	r3, r2, r3
+ 1b8:	e0830000 	add	r0, r3, r0
+ 1bc:	e12fff1e 	bx	lr
+
+000001c0 <add9_3>:
+ 1c0:	e0801001 	add	r1, r0, r1
+ 1c4:	e0812002 	add	r2, r1, r2
+ 1c8:	e0823003 	add	r3, r2, r3
+ 1cc:	e59d2000 	ldr	r2, [sp]
+ 1d0:	e0830002 	add	r0, r3, r2
+ 1d4:	e59d2004 	ldr	r2, [sp, #4]
+ 1d8:	e0800002 	add	r0, r0, r2
+ 1dc:	e12fff1e 	bx	lr
+
+000001e0 <add9_4>:
+ 1e0:	e890000a 	ldm	r0, {r1, r3}
+ 1e4:	e5902008 	ldr	r2, [r0, #8]
+ 1e8:	e0811003 	add	r1, r1, r3
+ 1ec:	e590300c 	ldr	r3, [r0, #12]
+ 1f0:	e0811002 	add	r1, r1, r2
+ 1f4:	e5902010 	ldr	r2, [r0, #16]
+ 1f8:	e0811003 	add	r1, r1, r3
+ 1fc:	e5903014 	ldr	r3, [r0, #20]
+ 200:	e0810002 	add	r0, r1, r2
+ 204:	e0800003 	add	r0, r0, r3
+ 208:	e12fff1e 	bx	lr
+
+0000020c <add9_5>:
+ 20c:	e5902008 	ldr	r2, [r0, #8]
+ 210:	e590300c 	ldr	r3, [r0, #12]
+ 214:	e2820001 	add	r0, r2, #1
+ 218:	e0800003 	add	r0, r0, r3
+ 21c:	e12fff1e 	bx	lr

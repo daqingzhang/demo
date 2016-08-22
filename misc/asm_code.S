@@ -74,11 +74,11 @@ do_sn2:
 
 
 /*
- * void *memcpy_s(void *dst,const void *src, unsigned size);
+ * void *memcpy_s0(void *dst,const void *src, unsigned size);
  * r0 = dst, r1 = src, r2 = size
  */
-.globl memcpy_s
-memcpy_s:
+.globl memcpy_s0
+memcpy_s0:
 	stmfd sp!,{r3-r8,lr}
 	mov r8,#0
 	mov r3,r0
@@ -111,8 +111,8 @@ e_mcpy_1b:
 .globl memset_s1
 memset_s1:
 	stmfd sp!,{r4,lr}
-	mov r4,r0	;r4 = start address
-	add r2,r2,r0	;r2 = end address
+	mov r4,r0	
+	add r2,r2,r0
 
 memset_s1_begin:
 	cmp r2,r4
@@ -131,8 +131,8 @@ memset_s1_end:
 memset_s2:
 	stmfd sp!,{r3-r8,lr}
 
-	mov r4,r0;	;r4 = dst
-	add r5,r0,r2	;r5 = end addr
+	mov r4,r0
+	add r5,r0,r2
 
 	cmp r2,#4
 	bls memset_less_4B
@@ -150,8 +150,8 @@ memset_less_4B:
 
 memset_less_16B:
 
-	bic r6,r4,#0x3	;r4 = dst
-	orr r6,r6,#0x4	;r6 = align32 addr >= dst
+	bic r6,r4,#0x3
+	orr r6,r6,#0x4
 	cmp r4,r6
 	beq memset_align32
 

@@ -2,19 +2,19 @@
 #include "task.h"
 #include "asm.h"
 
-extern uxCriticalNesting;
-extern pxCurrentTCB;
-extern vTaskSwitchContext;
+.global uxCriticalNesting;
+.global pxCurrentTCB;
+.global vTaskSwitchContext;
 
 
-.globl __dsb
+.global __dsb
 __dsb:
 	mov r0,r0
 	dsb
 	mov pc,lr
 
 
-.glob __isb
+.global __isb
 __isb:
 	mov r0, r0
 	isb
@@ -22,9 +22,9 @@ __isb:
 
 //__asm void vPortSVCHandler( void )
 
-.globl vPortSVCHandler
+.global vPortSVCHandler
 vPortSVCHandler:
-	PRESERVE8
+	.align 3
 
 	ldr	r3, =pxCurrentTCB	/* Restore the context. */
 	ldr r1, [r3]			/* Use pxCurrentTCBConst to get the pxCurrentTCB address. */
@@ -39,10 +39,10 @@ vPortSVCHandler:
 
 //__asm void prvStartFirstTask( void )
 
-.globl prvStartFirstTask
+.global prvStartFirstTask
 prvStartFirstTask:
 
-	PRESERVE8
+	.align 8
 
 	/* Use the NVIC offset register to locate the stack. */
 	ldr r0, =0xE000ED08
@@ -61,10 +61,10 @@ prvStartFirstTask:
 
 //__asm void xPortPendSVHandler( void )
 
-.globl xPortPendSVHandler
+.global xPortPendSVHandler
 xPortPendSVHandler:
 
-	PRESERVE8
+	.align 8
 
 	mrs r0, psp
 	isb
@@ -94,9 +94,9 @@ xPortPendSVHandler:
 
 //__asm uint32_t ulPortSetInterruptMask( void )
 
-.globl ulPortSetInterruptMask
+.global ulPortSetInterruptMask
 ulPortSetInterruptMask:
-	PRESERVE8
+	.align 8
 
 	mrs r0, basepri
 	mov r1, #configMAX_SYSCALL_INTERRUPT_PRIORITY
@@ -105,18 +105,18 @@ ulPortSetInterruptMask:
 
 //__asm void vPortClearInterruptMask( uint32_t ulNewMask )
 
-.globl vPortClearInterruptMask
+.global vPortClearInterruptMask
 vPortClearInterruptMask:
-	PRESERVE8
+	.align 8
 
 	msr basepri, r0
 	bx r14
 
 //__asm uint32_t vPortGetIPSR( void )
 
-.globl vPortGetIPSR
+.global vPortGetIPSR
 vPortGetIPSR:
-	PRESERVE8
+	.align 8
 
 	mrs r0, ipsr
 	bx r14

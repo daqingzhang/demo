@@ -65,6 +65,7 @@ INCLUDE +=-I$(STMLIB)/stm32f10x_std_driver/inc
 
 COMMONFLAGS=-g -mcpu=cortex-m3 -mthumb
 COMMONFLAGSlib=$(COMMONFLAGS)
+ASFLAGS=-g -mcpu=cortex-m3 -mthumb
 
 #Commands for src Makefile
 ifeq ($(OptSRC),0)

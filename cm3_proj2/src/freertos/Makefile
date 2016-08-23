@@ -10,10 +10,7 @@ INC += -I$(TOP)/src/app/inc
 OS_SRCS := $(TOP)/src/freertos/Source
 OS_PORT := $(TOP)/src/freertos/Source/portable/RVDS/ARM_CM3
 
-ASM_CFLAGS := $(CFLAGS)
-ASM_CFLAGS += -c
-ASM_CFLAGS += -o
-ASM_CFLAGS += $(INC)
+ASFLAGS += $(INC)
 
 CFLAGS += -c
 CFLAGS += $(INC)
@@ -27,21 +24,22 @@ OBJS += $(OS_PORT)/port.o
 
 SRCS := $(OBJS:.o=.c)
 
-ASM_SRCS += asm.S
-ASM_OBJS += $(OS_PORT)/asm.o
+ASSRCS := $(OS_PORT)/asm.S
+ASOBJS += $(OS_PORT)/asm.o
 
 all: $(LIB)
 
 .PHONY: clean show
 
-$(LIB): $(OBJS) $(ASM_OBJS)
+$(LIB): $(OBJS) $(ASOBJS)
 	@echo "Building $@ ..."
 	$(AR) cr $@ $^
 	@echo "done."
 
-$(ASM_OBJS): $(ASM_SRCS)
+$(ASOBJS): $(ASSRCS)
 	@echo "Building $@ ..."
-	$(CC) $(ASM_CFLAGS) $(ASM_SRCS)
+	@echo "AS flags $(ASFLAGS) ..."
+	$(AS) $(ASFLAGS) -o $@ $^
 	@echo "done."
 
 $(OBJS): $(SRCS)

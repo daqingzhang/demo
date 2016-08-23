@@ -20,17 +20,9 @@ extern int num_sum(int n);
  */
 extern int num_sn(int x,int d,int n);
 
-void *xmemdump(const void *dst, unsigned size);
-void *xmemcpy1(void *dst, const void *res, unsigned int size);
-void *xmemcpy2(void *dst, const void *res, unsigned int size);
-void *xmemset1(void *s, int n, unsigned int size);
-void *xmemset2(void *s, int n, unsigned int size);
-
-int test_pfm_memset(void *addr, unsigned nMB);
-int test_pfm_memcpy(void *to, const void *from,unsigned nMB);
-
 extern void *memcpy_s(void *dst, const void *src,unsigned size);
 extern void *memset_s(void *dst, int n,unsigned size);
+extern int operate_bits1(int org, int val, int mask);
 
 #define MEM_ADDR_DST 0x80000000
 #define MEM_ADDR_SRC 0x84000000
@@ -38,78 +30,54 @@ extern void *memset_s(void *dst, int n,unsigned size);
 unsigned char dst_buf[BUF_LEN] = {0};
 unsigned char src_buf[BUF_LEN] = {0};
 
-int test_func_memset(void *addr, unsigned max_size)
-{
-	void *pmem;
-	unsigned int offs;
-	unsigned int size = max_size >> 1;
-	int n;
+void *xmemdump(const void *dst, unsigned size);
 
-	for(offs = 0;offs < size;offs++) {
-		n = offs + 1;
-		printf("\n%s, addr = %x, n = %d,  size = %d\n\n",__func__,
-			(unsigned int)(addr + offs),n,size);
-	
-		xmemset1(addr,0x0,max_size);
-		xmemdump(addr,max_size);
+void *xmemcpy1(void *dst, const void *res, unsigned int size);
+void *xmemcpy2(void *dst, const void *res, unsigned int size);
+void *xmemcpy3(void *dst, const void *res, unsigned int size);
+void *xmemcpy4(void *dst, const void *res, unsigned int size);
 
-		//pmem = xmemset1((addr + offs),n,size);
-		pmem = xmemset2((addr + offs),n,size);
-		xmemdump(addr,max_size);
-	}
-	pmem = pmem;
-	return 0;
-}
+void *xmemset1(void *s, int n, unsigned int size);
+void *xmemset2(void *s, int n, unsigned int size);
+void *xmemset3(void *s, int n, unsigned int size);
+void *xmemset4(void *s, int n, unsigned int size);
 
-int test_func_memcpy(void *to, void *from, unsigned max_size)
-{
-	void *pmem;
-	unsigned int offs = 0;
-
-	printf("%s, init data...\n",__func__);
-
-	xmemset1(to,0x0,max_size);
-	for(offs = 0;offs < max_size;offs++)
-		xmemset1(from + offs,offs+1,1);
-	xmemdump(to,max_size);
-	xmemdump(from,max_size);
-
-	for(offs = 0;offs < max_size;offs++) {
-		printf("\nmem clear, to = %x, size = %d\n",
-			(unsigned int)to,max_size);
-		xmemset1(to,0x0,max_size);
-		xmemdump(to,max_size);
-
-		printf("\nmem copy, to = %x, from = %x, offs = %x, size = %d\n",
-		(unsigned int )to, (unsigned int)from, offs, (max_size - offs));
-
-		xmemcpy2(to + offs,from + offs,max_size - offs);
-		xmemdump(to,max_size);
-		printf("\n");
-	}
-	pmem = pmem;
-	return 0;
-}
+int test_pfm_memset(void *addr, unsigned nMB);
+int test_pfm_memcpy(void *to, const void *from,unsigned nMB);
+int test_func_memset(void *addr, unsigned max_size);
+int test_func_memcpy(void *to, void *from, unsigned max_size);
 
 int asm_code_tests(int times)
 {
 	int r = 0,i = 0,len = 0;
 	void *addr = 0;
+	int val = 0;
 
 	r = r;
 	i = i;
 	len = len;
 	addr = addr;
+	val = val;
+#if 0
+	val = operate_bits1(0xABC97FEF,0x0801,0x0FFF);
+	printf("val = %x\n",val);
+	val = operate_bits1(0xFFFFFFFF,0x0,0x0FFF);
+	printf("val = %x\n",val);
+	val = operate_bits1(0x0,0x0FFF,0x0FFF);
+	printf("val = %x\n",val);
+#endif
 
 #if 1
 	test_func_memset((void *)dst_buf,BUF_LEN);
-	test_func_memcpy((void *)dst_buf,(void *)src_buf,BUF_LEN);
+//	test_func_memcpy((void *)dst_buf,(void *)src_buf,BUF_LEN);
 #endif
 
 #if 1
 	test_pfm_memset((void *)MEM_ADDR_DST,100);
 	test_pfm_memset((void *)MEM_ADDR_SRC,100);
+#endif
 
+#if 0
 	test_pfm_memcpy((void *)MEM_ADDR_DST,(void *)MEM_ADDR_SRC,100);
 	test_pfm_memcpy((void *)MEM_ADDR_DST,(void *)MEM_ADDR_SRC,200);
 
@@ -223,8 +191,7 @@ void *xmemcpy2(void *to, const void *from, unsigned int size)
 	} else {
 		unsigned int ifrom = (unsigned int)from;
 		unsigned int ito = (unsigned int)to;
-		unsigned int bto = ito & (~0x3);
-		unsigned int ato = bto + 0x4;
+		unsigned int ato = (ito & (~0x3)) + 0x4;
 		m = ato - ito;
 		if(m % 0x4) {
 			char *dstmem = (char *)ito;
@@ -278,8 +245,7 @@ void *xmemset2(void *s, int n, unsigned int size)
 			*(cs++) = (char)n;
 	} else {
 		unsigned int iaddr = (unsigned int)s;
-		unsigned int baddr = iaddr & (~0x3);
-		unsigned int aaddr = baddr + 0x4;
+		unsigned int aaddr = (iaddr & (~0x3)) + 0x4;
 
 		m = aaddr - iaddr;
 		if(m % 4) {
@@ -316,27 +282,52 @@ int test_pfm_memset(void *addr, unsigned nMB)
 	void *pmem;
 	unsigned size = nMB << 20;
 	int n = 0x5A;
-	unsigned long long tick1,tick2;
+	unsigned long long tick;
 
 	printf("xmemset1 test... %x, %d\n",(unsigned int )addr,nMB);
-	tick1 = get_ticks();
+	tick = get_ticks();
 	pmem = xmemset1(addr,n,size);
-	tick1 = get_ticks() - tick1;
+	tick = get_ticks() - tick;
 	if(pmem != addr) {
 		printf("memory address error ! %x\n",(unsigned int)pmem);
 		return -1;
 	}
-	printf("xmemset1 cost: tick = %llu\n",tick1);
+	printf("xmemset1 cost: tick = %llu\n",tick);
+
 
 	printf("xmemset2 test... %x, %d\n",(unsigned int )addr,nMB);
-	tick2 = get_ticks();
+	tick = get_ticks();
 	pmem = xmemset2(addr,n,size);
-	tick2 = get_ticks() - tick2;
+	tick = get_ticks() - tick;
 	if(pmem != addr) {
 		printf("memory address error ! %x\n",(unsigned int)pmem);
 		return -1;
 	}
-	printf("xmemset2 cost: tick = %llu\n",tick2);
+	printf("xmemset2 cost: tick = %llu\n",tick);
+
+
+	printf("xmemset3 test... %x, %d\n",(unsigned int )addr,nMB);
+	tick = get_ticks();
+	pmem = xmemset3(addr,n,size);
+	tick = get_ticks() - tick;
+	if(pmem != addr) {
+		printf("memory address error ! %x\n",(unsigned int)pmem);
+		return -1;
+	}
+	printf("xmemset3 cost: tick = %llu\n",tick);
+
+
+	printf("xmemset4 test... %x, %d\n",(unsigned int )addr,nMB);
+	tick = get_ticks();
+	pmem = xmemset4(addr,n,size);
+	tick = get_ticks() - tick;
+	if(pmem != addr) {
+		printf("memory address error ! %x\n",(unsigned int)pmem);
+		return -1;
+	}
+	printf("xmemset4 cost: tick = %llu\n",tick);
+
+
 	printf("\ntest done !!!\n");
 	return 0;
 }
@@ -384,4 +375,57 @@ int test_pfm_memcpy(void *to, const void *from,unsigned nMB)
 
 }
 
+int test_func_memset(void *addr, unsigned max_size)
+{
+	void *pmem;
+	unsigned int offs;
+	unsigned int size = max_size >> 1;
+	int n;
 
+	for(offs = 0;offs < size;offs++) {
+		n = offs + 1;
+		printf("\n%s, addr = %x, n = %d,  size = %d\n\n",__func__,
+			(unsigned int)(addr + offs),n,size);
+	
+		xmemset1(addr,0x0,max_size);
+		xmemdump(addr,max_size);
+
+		//pmem = xmemset1((addr + offs),n,size);
+		//pmem = xmemset2((addr + offs),n,size);
+		//pmem = xmemset3((addr + offs),n,size);
+		pmem = xmemset4((addr + offs),n,size);
+		xmemdump(addr,max_size);
+	}
+	pmem = pmem;
+	return 0;
+}
+
+int test_func_memcpy(void *to, void *from, unsigned max_size)
+{
+	void *pmem = 0;
+	unsigned int offs = 0;
+
+	printf("%s, init data...\n",__func__);
+
+	xmemset1(to,0x0,max_size);
+	for(offs = 0;offs < max_size;offs++)
+		xmemset1(from + offs,offs+1,1);
+	xmemdump(to,max_size);
+	xmemdump(from,max_size);
+
+	for(offs = 0;offs < max_size;offs++) {
+		printf("\nmem clear, to = %x, size = %d\n",
+			(unsigned int)to,max_size);
+		xmemset1(to,0x0,max_size);
+		xmemdump(to,max_size);
+
+		printf("\nmem copy, to = %x, from = %x, offs = %x, size = %d\n",
+		(unsigned int )to, (unsigned int)from, offs, (max_size - offs));
+
+		xmemcpy2(to + offs,from + offs,max_size - offs);
+		xmemdump(to,max_size);
+		printf("\n");
+	}
+	pmem = pmem;
+	return 0;
+}

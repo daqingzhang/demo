@@ -1,0 +1,227 @@
+test_func_memset, addr = 9cb854d8, n = 1,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 1  1  1  1  1  1  1  1 
+ 1  1  1  1  1  1  1  1 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854d9, n = 2,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  2  2  2  2  2  2  2 
+ 2  2  2  2  2  2  2  2 
+ 2  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854da, n = 3,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  3  3  3  3  3  3 
+ 3  3  3  3  3  3  3  3 
+ 3  3  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854db, n = 4,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  4  4  4  4  4 
+ 4  4  4  4  4  4  4  4 
+ 4  4  4  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854dc, n = 5,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  5  5  5  5 
+ 5  5  5  5  5  5  5  5 
+ 5  5  5  5  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854dd, n = 6,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  6  6  6 
+ 6  6  6  6  6  6  6  6 
+ 6  6  6  6  6  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854de, n = 7,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  7  7 
+ 7  7  7  7  7  7  7  7 
+ 7  7  7  7  7  7  0  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854df, n = 8,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  8 
+ 8  8  8  8  8  8  8  8 
+ 8  8  8  8  8  8  8  0 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854e0, n = 9,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 9  9  9  9  9  9  9  9 
+ 9  9  9  9  9  9  9  9 
+ 0  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854e1, n = 10,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  a  a  a  a  a  a  a 
+ a  a  a  a  a  a  a  a 
+ a  0  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854e2, n = 11,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  b  b  b  b  b  b 
+ b  b  b  b  b  b  b  b 
+ b  b  0  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854e3, n = 12,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  c  c  c  c  c 
+ c  c  c  c  c  c  c  c 
+ c  c  c  0  0  0  0  0 
+
+test_func_memset, addr = 9cb854e4, n = 13,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  d  d  d  d 
+ d  d  d  d  d  d  d  d 
+ d  d  d  d  0  0  0  0 
+
+test_func_memset, addr = 9cb854e5, n = 14,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  e  e  e 
+ e  e  e  e  e  e  e  e 
+ e  e  e  e  e  0  0  0 
+
+test_func_memset, addr = 9cb854e6, n = 15,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  f  f 
+ f  f  f  f  f  f  f  f 
+ f  f  f  f  f  f  0  0 
+
+test_func_memset, addr = 9cb854e7, n = 16,  size = 16
+
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0  0 
+
+ 0  0  0  0  0  0  0  0 
+ 0  0  0  0  0  0  0 10 
+10 10 10 10 10 10 10 10 
+10 10 10 10 10 10 10  0 
+xmemset1 test... 80000000, 100
+xmemset1 cost: tick = 711823
+xmemset2 test... 80000000, 100
+xmemset2 cost: tick = 201643
+xmemset3 test... 80000000, 100
+xmemset3 cost: tick = 948941
+xmemset4 test... 80000000, 100
+xmemset4 cost: tick = 201644
+
+test done !!!
+xmemset1 test... 84000000, 100
+xmemset1 cost: tick = 711822
+xmemset2 test... 84000000, 100
+xmemset2 cost: tick = 201643
+xmemset3 test... 84000000, 100
+xmemset3 cost: tick = 948940
+xmemset4 test... 84000000, 100
+xmemset4 cost: tick = 201643
+
+test done !!!

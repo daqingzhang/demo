@@ -1,0 +1,366 @@
+
+string.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <memcpy>:
+   0:	fd010113          	addi	sp,sp,-48
+   4:	02812623          	sw	s0,44(sp)
+   8:	03010413          	addi	s0,sp,48
+   c:	fca42e23          	sw	a0,-36(s0)
+  10:	fcb42c23          	sw	a1,-40(s0)
+  14:	fcc42a23          	sw	a2,-44(s0)
+  18:	fdc42703          	lw	a4,-36(s0)
+  1c:	fd842783          	lw	a5,-40(s0)
+  20:	00f76733          	or	a4,a4,a5
+  24:	fd442783          	lw	a5,-44(s0)
+  28:	00f767b3          	or	a5,a4,a5
+  2c:	0037f793          	andi	a5,a5,3
+  30:	04079863          	bnez	a5,80 <.L2>
+			30: R_RISCV_BRANCH	.L2
+  34:	fd842783          	lw	a5,-40(s0)
+  38:	fef42623          	sw	a5,-20(s0)
+  3c:	fdc42783          	lw	a5,-36(s0)
+  40:	fef42423          	sw	a5,-24(s0)
+  44:	0240006f          	j	68 <.L3>
+			44: R_RISCV_JAL	.L3
+
+00000048 <.L4>:
+  48:	fe842783          	lw	a5,-24(s0)
+  4c:	00478713          	addi	a4,a5,4
+  50:	fee42423          	sw	a4,-24(s0)
+  54:	fec42703          	lw	a4,-20(s0)
+  58:	00470693          	addi	a3,a4,4
+  5c:	fed42623          	sw	a3,-20(s0)
+  60:	00072703          	lw	a4,0(a4)
+  64:	00e7a023          	sw	a4,0(a5)
+
+00000068 <.L3>:
+  68:	fdc42703          	lw	a4,-36(s0)
+  6c:	fd442783          	lw	a5,-44(s0)
+  70:	00f70733          	add	a4,a4,a5
+  74:	fe842783          	lw	a5,-24(s0)
+  78:	fce7e8e3          	bltu	a5,a4,48 <.L4>
+			78: R_RISCV_BRANCH	.L4
+  7c:	04c0006f          	j	c8 <.L5>
+			7c: R_RISCV_JAL	.L5
+
+00000080 <.L2>:
+  80:	fd842783          	lw	a5,-40(s0)
+  84:	fef42223          	sw	a5,-28(s0)
+  88:	fdc42783          	lw	a5,-36(s0)
+  8c:	fef42023          	sw	a5,-32(s0)
+  90:	0240006f          	j	b4 <.L6>
+			90: R_RISCV_JAL	.L6
+
+00000094 <.L7>:
+  94:	fe042783          	lw	a5,-32(s0)
+  98:	00178713          	addi	a4,a5,1
+  9c:	fee42023          	sw	a4,-32(s0)
+  a0:	fe442703          	lw	a4,-28(s0)
+  a4:	00170693          	addi	a3,a4,1
+  a8:	fed42223          	sw	a3,-28(s0)
+  ac:	00074703          	lbu	a4,0(a4)
+  b0:	00e78023          	sb	a4,0(a5)
+
+000000b4 <.L6>:
+  b4:	fdc42703          	lw	a4,-36(s0)
+  b8:	fd442783          	lw	a5,-44(s0)
+  bc:	00f70733          	add	a4,a4,a5
+  c0:	fe042783          	lw	a5,-32(s0)
+  c4:	fce7e8e3          	bltu	a5,a4,94 <.L7>
+			c4: R_RISCV_BRANCH	.L7
+
+000000c8 <.L5>:
+  c8:	fdc42783          	lw	a5,-36(s0)
+  cc:	00078513          	mv	a0,a5
+  d0:	02c12403          	lw	s0,44(sp)
+  d4:	03010113          	addi	sp,sp,48
+  d8:	00008067          	ret
+
+000000dc <memset>:
+  dc:	fd010113          	addi	sp,sp,-48
+  e0:	02812623          	sw	s0,44(sp)
+  e4:	03010413          	addi	s0,sp,48
+  e8:	fca42e23          	sw	a0,-36(s0)
+  ec:	fcb42c23          	sw	a1,-40(s0)
+  f0:	fcc42a23          	sw	a2,-44(s0)
+  f4:	fdc42703          	lw	a4,-36(s0)
+  f8:	fd442783          	lw	a5,-44(s0)
+  fc:	00f767b3          	or	a5,a4,a5
+ 100:	0037f793          	andi	a5,a5,3
+ 104:	06079863          	bnez	a5,174 <.L10>
+			104: R_RISCV_BRANCH	.L10
+ 108:	fd842783          	lw	a5,-40(s0)
+ 10c:	0ff7f793          	andi	a5,a5,255
+ 110:	fef42223          	sw	a5,-28(s0)
+ 114:	fe442783          	lw	a5,-28(s0)
+ 118:	00879793          	slli	a5,a5,0x8
+ 11c:	fe442703          	lw	a4,-28(s0)
+ 120:	00f767b3          	or	a5,a4,a5
+ 124:	fef42223          	sw	a5,-28(s0)
+ 128:	fe442783          	lw	a5,-28(s0)
+ 12c:	01079793          	slli	a5,a5,0x10
+ 130:	fe442703          	lw	a4,-28(s0)
+ 134:	00f767b3          	or	a5,a4,a5
+ 138:	fef42223          	sw	a5,-28(s0)
+ 13c:	fdc42783          	lw	a5,-36(s0)
+ 140:	fef42623          	sw	a5,-20(s0)
+ 144:	0180006f          	j	15c <.L11>
+			144: R_RISCV_JAL	.L11
+
+00000148 <.L12>:
+ 148:	fec42783          	lw	a5,-20(s0)
+ 14c:	00478713          	addi	a4,a5,4
+ 150:	fee42623          	sw	a4,-20(s0)
+ 154:	fe442703          	lw	a4,-28(s0)
+ 158:	00e7a023          	sw	a4,0(a5)
+
+0000015c <.L11>:
+ 15c:	fdc42703          	lw	a4,-36(s0)
+ 160:	fd442783          	lw	a5,-44(s0)
+ 164:	00f70733          	add	a4,a4,a5
+ 168:	fec42783          	lw	a5,-20(s0)
+ 16c:	fce7eee3          	bltu	a5,a4,148 <.L12>
+			16c: R_RISCV_BRANCH	.L12
+ 170:	03c0006f          	j	1ac <.L13>
+			170: R_RISCV_JAL	.L13
+
+00000174 <.L10>:
+ 174:	fdc42783          	lw	a5,-36(s0)
+ 178:	fef42423          	sw	a5,-24(s0)
+ 17c:	01c0006f          	j	198 <.L14>
+			17c: R_RISCV_JAL	.L14
+
+00000180 <.L15>:
+ 180:	fe842783          	lw	a5,-24(s0)
+ 184:	00178713          	addi	a4,a5,1
+ 188:	fee42423          	sw	a4,-24(s0)
+ 18c:	fd842703          	lw	a4,-40(s0)
+ 190:	0ff77713          	andi	a4,a4,255
+ 194:	00e78023          	sb	a4,0(a5)
+
+00000198 <.L14>:
+ 198:	fdc42703          	lw	a4,-36(s0)
+ 19c:	fd442783          	lw	a5,-44(s0)
+ 1a0:	00f70733          	add	a4,a4,a5
+ 1a4:	fe842783          	lw	a5,-24(s0)
+ 1a8:	fce7ece3          	bltu	a5,a4,180 <.L15>
+			1a8: R_RISCV_BRANCH	.L15
+
+000001ac <.L13>:
+ 1ac:	fdc42783          	lw	a5,-36(s0)
+ 1b0:	00078513          	mv	a0,a5
+ 1b4:	02c12403          	lw	s0,44(sp)
+ 1b8:	03010113          	addi	sp,sp,48
+ 1bc:	00008067          	ret
+
+000001c0 <strlen>:
+ 1c0:	fd010113          	addi	sp,sp,-48
+ 1c4:	02812623          	sw	s0,44(sp)
+ 1c8:	03010413          	addi	s0,sp,48
+ 1cc:	fca42e23          	sw	a0,-36(s0)
+ 1d0:	fdc42783          	lw	a5,-36(s0)
+ 1d4:	fef42623          	sw	a5,-20(s0)
+ 1d8:	0100006f          	j	1e8 <.L18>
+			1d8: R_RISCV_JAL	.L18
+
+000001dc <.L19>:
+ 1dc:	fec42783          	lw	a5,-20(s0)
+ 1e0:	00178793          	addi	a5,a5,1
+ 1e4:	fef42623          	sw	a5,-20(s0)
+
+000001e8 <.L18>:
+ 1e8:	fec42783          	lw	a5,-20(s0)
+ 1ec:	0007c783          	lbu	a5,0(a5)
+ 1f0:	fe0796e3          	bnez	a5,1dc <.L19>
+			1f0: R_RISCV_BRANCH	.L19
+ 1f4:	fec42703          	lw	a4,-20(s0)
+ 1f8:	fdc42783          	lw	a5,-36(s0)
+ 1fc:	40f707b3          	sub	a5,a4,a5
+ 200:	00078513          	mv	a0,a5
+ 204:	02c12403          	lw	s0,44(sp)
+ 208:	03010113          	addi	sp,sp,48
+ 20c:	00008067          	ret
+
+00000210 <strnlen>:
+ 210:	fd010113          	addi	sp,sp,-48
+ 214:	02812623          	sw	s0,44(sp)
+ 218:	03010413          	addi	s0,sp,48
+ 21c:	fca42e23          	sw	a0,-36(s0)
+ 220:	fcb42c23          	sw	a1,-40(s0)
+ 224:	fdc42783          	lw	a5,-36(s0)
+ 228:	fef42623          	sw	a5,-20(s0)
+ 22c:	0100006f          	j	23c <.L22>
+			22c: R_RISCV_JAL	.L22
+
+00000230 <.L24>:
+ 230:	fec42783          	lw	a5,-20(s0)
+ 234:	00178793          	addi	a5,a5,1
+ 238:	fef42623          	sw	a5,-20(s0)
+
+0000023c <.L22>:
+ 23c:	fd842783          	lw	a5,-40(s0)
+ 240:	fff78713          	addi	a4,a5,-1
+ 244:	fce42c23          	sw	a4,-40(s0)
+ 248:	00078863          	beqz	a5,258 <.L23>
+			248: R_RISCV_BRANCH	.L23
+ 24c:	fec42783          	lw	a5,-20(s0)
+ 250:	0007c783          	lbu	a5,0(a5)
+ 254:	fc079ee3          	bnez	a5,230 <.L24>
+			254: R_RISCV_BRANCH	.L24
+
+00000258 <.L23>:
+ 258:	fec42703          	lw	a4,-20(s0)
+ 25c:	fdc42783          	lw	a5,-36(s0)
+ 260:	40f707b3          	sub	a5,a4,a5
+ 264:	00078513          	mv	a0,a5
+ 268:	02c12403          	lw	s0,44(sp)
+ 26c:	03010113          	addi	sp,sp,48
+ 270:	00008067          	ret
+
+00000274 <strcmp>:
+ 274:	fd010113          	addi	sp,sp,-48
+ 278:	02812623          	sw	s0,44(sp)
+ 27c:	03010413          	addi	s0,sp,48
+ 280:	fca42e23          	sw	a0,-36(s0)
+ 284:	fcb42c23          	sw	a1,-40(s0)
+
+00000288 <.L28>:
+ 288:	fdc42783          	lw	a5,-36(s0)
+ 28c:	00178713          	addi	a4,a5,1
+ 290:	fce42e23          	sw	a4,-36(s0)
+ 294:	0007c783          	lbu	a5,0(a5)
+ 298:	fef407a3          	sb	a5,-17(s0)
+ 29c:	fd842783          	lw	a5,-40(s0)
+ 2a0:	00178713          	addi	a4,a5,1
+ 2a4:	fce42c23          	sw	a4,-40(s0)
+ 2a8:	0007c783          	lbu	a5,0(a5)
+ 2ac:	fef40723          	sb	a5,-18(s0)
+ 2b0:	fef44783          	lbu	a5,-17(s0)
+ 2b4:	00078863          	beqz	a5,2c4 <.L27>
+			2b4: R_RISCV_BRANCH	.L27
+ 2b8:	fef44703          	lbu	a4,-17(s0)
+ 2bc:	fee44783          	lbu	a5,-18(s0)
+ 2c0:	fcf704e3          	beq	a4,a5,288 <.L28>
+			2c0: R_RISCV_BRANCH	.L28
+
+000002c4 <.L27>:
+ 2c4:	fef44703          	lbu	a4,-17(s0)
+ 2c8:	fee44783          	lbu	a5,-18(s0)
+ 2cc:	40f707b3          	sub	a5,a4,a5
+ 2d0:	00078513          	mv	a0,a5
+ 2d4:	02c12403          	lw	s0,44(sp)
+ 2d8:	03010113          	addi	sp,sp,48
+ 2dc:	00008067          	ret
+
+000002e0 <strcpy>:
+ 2e0:	fd010113          	addi	sp,sp,-48
+ 2e4:	02812623          	sw	s0,44(sp)
+ 2e8:	03010413          	addi	s0,sp,48
+ 2ec:	fca42e23          	sw	a0,-36(s0)
+ 2f0:	fcb42c23          	sw	a1,-40(s0)
+ 2f4:	fdc42783          	lw	a5,-36(s0)
+ 2f8:	fef42623          	sw	a5,-20(s0)
+ 2fc:	00000013          	nop
+
+00000300 <.L31>:
+ 300:	fec42783          	lw	a5,-20(s0)
+ 304:	00178713          	addi	a4,a5,1
+ 308:	fee42623          	sw	a4,-20(s0)
+ 30c:	fd842703          	lw	a4,-40(s0)
+ 310:	00170693          	addi	a3,a4,1
+ 314:	fcd42c23          	sw	a3,-40(s0)
+ 318:	00074703          	lbu	a4,0(a4)
+ 31c:	00e78023          	sb	a4,0(a5)
+ 320:	0007c783          	lbu	a5,0(a5)
+ 324:	fc079ee3          	bnez	a5,300 <.L31>
+			324: R_RISCV_BRANCH	.L31
+ 328:	fdc42783          	lw	a5,-36(s0)
+ 32c:	00078513          	mv	a0,a5
+ 330:	02c12403          	lw	s0,44(sp)
+ 334:	03010113          	addi	sp,sp,48
+ 338:	00008067          	ret
+
+0000033c <atol>:
+ 33c:	fd010113          	addi	sp,sp,-48
+ 340:	02812623          	sw	s0,44(sp)
+ 344:	03010413          	addi	s0,sp,48
+ 348:	fca42e23          	sw	a0,-36(s0)
+ 34c:	fe042623          	sw	zero,-20(s0)
+ 350:	fe042423          	sw	zero,-24(s0)
+ 354:	0100006f          	j	364 <.L34>
+			354: R_RISCV_JAL	.L34
+
+00000358 <.L35>:
+ 358:	fdc42783          	lw	a5,-36(s0)
+ 35c:	00178793          	addi	a5,a5,1
+ 360:	fcf42e23          	sw	a5,-36(s0)
+
+00000364 <.L34>:
+ 364:	fdc42783          	lw	a5,-36(s0)
+ 368:	0007c703          	lbu	a4,0(a5)
+ 36c:	02000793          	li	a5,32 # 20 <memcpy+0x20>
+ 370:	fef704e3          	beq	a4,a5,358 <.L35>
+			370: R_RISCV_BRANCH	.L35
+ 374:	fdc42783          	lw	a5,-36(s0)
+ 378:	0007c703          	lbu	a4,0(a5)
+ 37c:	02d00793          	li	a5,45 # 2d <memcpy+0x2d>
+ 380:	00f70a63          	beq	a4,a5,394 <.L36>
+			380: R_RISCV_BRANCH	.L36
+ 384:	fdc42783          	lw	a5,-36(s0)
+ 388:	0007c703          	lbu	a4,0(a5)
+ 38c:	02b00793          	li	a5,43 # 2b <memcpy+0x2b>
+ 390:	06f71063          	bne	a4,a5,3f0 <.L38>
+			390: R_RISCV_BRANCH	.L38
+
+00000394 <.L36>:
+ 394:	fdc42783          	lw	a5,-36(s0)
+ 398:	0007c783          	lbu	a5,0(a5)
+ 39c:	fd378793          	addi	a5,a5,-45
+ 3a0:	0017b793          	seqz	a5,a5
+ 3a4:	0ff7f793          	andi	a5,a5,255
+ 3a8:	fef42423          	sw	a5,-24(s0)
+ 3ac:	fdc42783          	lw	a5,-36(s0)
+ 3b0:	00178793          	addi	a5,a5,1
+ 3b4:	fcf42e23          	sw	a5,-36(s0)
+ 3b8:	0380006f          	j	3f0 <.L38>
+			3b8: R_RISCV_JAL	.L38
+
+000003bc <.L39>:
+ 3bc:	fec42783          	lw	a5,-20(s0)
+ 3c0:	00179793          	slli	a5,a5,0x1
+ 3c4:	00279713          	slli	a4,a5,0x2
+ 3c8:	00e787b3          	add	a5,a5,a4
+ 3cc:	fef42623          	sw	a5,-20(s0)
+ 3d0:	fdc42783          	lw	a5,-36(s0)
+ 3d4:	00178713          	addi	a4,a5,1
+ 3d8:	fce42e23          	sw	a4,-36(s0)
+ 3dc:	0007c783          	lbu	a5,0(a5)
+ 3e0:	fd078793          	addi	a5,a5,-48
+ 3e4:	fec42703          	lw	a4,-20(s0)
+ 3e8:	00f707b3          	add	a5,a4,a5
+ 3ec:	fef42623          	sw	a5,-20(s0)
+
+000003f0 <.L38>:
+ 3f0:	fdc42783          	lw	a5,-36(s0)
+ 3f4:	0007c783          	lbu	a5,0(a5)
+ 3f8:	fc0792e3          	bnez	a5,3bc <.L39>
+			3f8: R_RISCV_BRANCH	.L39
+ 3fc:	fe842783          	lw	a5,-24(s0)
+ 400:	00078863          	beqz	a5,410 <.L40>
+			400: R_RISCV_BRANCH	.L40
+ 404:	fec42783          	lw	a5,-20(s0)
+ 408:	40f007b3          	neg	a5,a5
+ 40c:	0080006f          	j	414 <.L42>
+			40c: R_RISCV_JAL	.L42
+
+00000410 <.L40>:
+ 410:	fec42783          	lw	a5,-20(s0)
+
+00000414 <.L42>:
+ 414:	00078513          	mv	a0,a5
+ 418:	02c12403          	lw	s0,44(sp)
+ 41c:	03010113          	addi	sp,sp,48
+ 420:	00008067          	ret

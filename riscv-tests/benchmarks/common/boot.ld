@@ -1,9 +1,0 @@
-MEMORY
-{
-
-}
-
-SECTIONS
-{
-
-}

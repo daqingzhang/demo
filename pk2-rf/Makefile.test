@@ -30,12 +30,17 @@ TARGET_RISCV_DUMP:=$(TARGET).riscv.dump
 TARGET_LIST	 :=$(TARGET).list
 TARGET_SYMBOLS	 :=$(TARGET).symbols
 
+
+#====================================================================
+# TEST MACRO DEFINITIONS
+#====================================================================
 TARGET_DEFS	:= -DPREALLOCATE=1 -DHOST_DEBUG=0
 #TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
 #TARGET_DEFS	+= -DCONFIG_MEM32_TEST
-TARGET_DEFS	+= -DCONFIG_IRQ_TEST
 TARGET_DEFS	+= -DCONFIG_MATH_TEST
-#TARGET_DEFS	+= -DCONFIG_LSU_EXCP_TEST
+TARGET_DEFS	+= -DCONFIG_IRQ_TEST
+#TARGET_DEFS	+= -DCONFIG_LSU_TEST
+#====================================================================
 
 TARGET_CYCLES	:= 80000
 
@@ -50,7 +55,7 @@ $(TARGET_RISCV_DUMP): $(TARGET_RISCV)
 	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(BOOT_DIR)/string.o > $(OUT_DIR)/string.txt
 	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(BOOT_DIR)/serial.o > $(OUT_DIR)/serial.txt
 	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(BOOT_DIR)/interrupts.o > $(OUT_DIR)/interrupts.txt
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(TEST_DIR)/test_main.o > $(OUT_DIR)/test_main.txt
+	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(TEST_DIR)/main.o > $(OUT_DIR)/main.txt
 	$(RISCV_OBJDUMP) -t $< > $(OUT_DIR)/$(TARGET_SYMBOLS)
 	$(RISCV_OBJDUMP) -h $< > $(OUT_DIR)/$(TARGET_LIST)
 	mv $(TEST_DIR)/*.o $(OUT_DIR)/.

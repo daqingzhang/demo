@@ -1,6 +1,3 @@
-// See LICENSE for license details.
-
-#ifdef CONFIG_MULTIPLY_TEST
 
 int data32_sum(int max)
 {
@@ -56,4 +53,3 @@ int multiply( int x, int y )
 	} 
 	return result;
 }
-#endif

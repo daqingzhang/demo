@@ -118,7 +118,7 @@ int main( int argc, char* argv[] )
 		err |= 0x200000;
 #endif
 
-#ifdef CONFIG_LSU_EXCP_TEST
+#ifdef CONFIG_LSU_TEST
 	if(mem32_invalid_access() != 0)
 		err |= 0x80000000;
 #endif

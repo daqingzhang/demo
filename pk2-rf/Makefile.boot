@@ -41,7 +41,7 @@ $(TARGET_RISCV_DUMP): $(TARGET_RISCV)
 	$(RISCV_OBJDUMP) -r $(BOOT_DIR)/syscall.o > $(OUT_DIR)/syscall.txt
 	$(RISCV_OBJDUMP) -r $(BOOT_DIR)/string.o > $(OUT_DIR)/string.txt
 	$(RISCV_OBJDUMP) -r $(BOOT_DIR)/serial.o > $(OUT_DIR)/serial.txt
-	$(RISCV_OBJDUMP) -r $(BOOT_DIR)/boot_main.o > $(OUT_DIR)/boot_main.txt
+	$(RISCV_OBJDUMP) -r $(BOOT_DIR)/main.o > $(OUT_DIR)/main.txt
 	mv $(BOOT_DIR)/*.o $(OUT_DIR)/.
 	cp $(TARGET_RISCV) $(OUT_DIR)/.
 	cp $(TARGET_RISCV_DUMP) $(OUT_DIR)/.

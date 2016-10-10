@@ -1,8 +1,6 @@
 #include <config.h>
 #include <util.h>
 
-#ifdef CONFIG_MEM32_TEST
-
 #define DATA_SRAM_BASE (0x00010000)
 #define DATA_SRAM_SIZE ((16 - 4) * (1024))
 
@@ -473,16 +471,3 @@ int mem32_bit_0_rw_last512B(void)
 	}
 	return 0;
 }
-#endif
-
-#ifdef CONFIG_LSU_EXCP_TEST
-int mem32_invalid_access(void)
-{
-	unsigned int t = 0;
-
-	t += *(unsigned int *)(CONFIG_SRAM1_BASE - 4);
-	t += *(unsigned int *)(CONFIG_SRAM1_BASE + CONFIG_SRAM1_SIZE + 4);
-
-	return t;
-}
-#endif

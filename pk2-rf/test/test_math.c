@@ -1,7 +1,5 @@
 #include <config.h>
 
-#ifdef CONFIG_MATH_TEST
-
 static int add_num32(int a,int b)
 {
 	return (a + b);
@@ -242,5 +240,3 @@ int shift_right_test(void)
 
 	return err;
 }
-
-#endif /* CONFIG_MATH_TEST */

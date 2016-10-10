@@ -15,3 +15,5 @@ tags
 bin
 img
 out
+*.riscv
+*.dump

@@ -16,6 +16,8 @@ int add_test(void);
 int sub_test(void);
 int mul_test(void);
 int div_test(void);
+int shift_right_test(void);
+int shift_left_test(void);
 
 void do_ecall_test(void);
 

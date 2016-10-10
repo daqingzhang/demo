@@ -1,4 +1,4 @@
-ABS_TOP_DIR	:= /home/zhangdaqing/workspace/iot/riscv/pk2-rf
+ABS_TOP_DIR	:= /home/zhangdaqing/workspace/github/demo/pk2-rf
 PREFIX          := target
 INSTALLDIR	:= $(ABS_TOP_DIR)/$(PREFIX)
 XLEN		:= 32

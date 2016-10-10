@@ -6,7 +6,7 @@
 #ifndef WCDMA_TABLE_H
 #define WCDMA_TABLE_H
 
-#include "calib_wcdma.h"
+#include <rf/calib_wcdma.h>
 
 #define WCDMA_AGC_HB_DIG_LEN  96
 #define WCDMA_AGC_HB_ANA_NUM  8//7

@@ -5,8 +5,8 @@
 #ifndef AUXILIARY_H
 #define AUXILIARY_H
 
-#include "register.h"
-#include "calib_wcdma.h"
+#include <rf/register.h>
+#include <rf/calib_wcdma.h>
 
 /* Global macro definitions  */
 

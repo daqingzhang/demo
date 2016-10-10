@@ -8,13 +8,11 @@ XLEN	?= 32
 BOOT_DIR:= $(TOP_DIR)/boot
 TEST_DIR:= $(TOP_DIR)/test
 OUT_DIR := $(TOP_DIR)/out/boot
-LIB_DIR := $(TOP_DIR)/lib
 
 INCS	:= -I$(BOOT_DIR)
 INCS	+= -I$(BOOT_DIR)/include
 INCS	+= -I$(TEST_DIR)
 INCS	+= -I$(TEST_DIR)/include
-INCS	+= -I$(LIB_DIR)
 
 RISCV_PREFIX	:= riscv$(XLEN)-unknown-elf-
 RISCV_GCC	:= $(RISCV_PREFIX)gcc

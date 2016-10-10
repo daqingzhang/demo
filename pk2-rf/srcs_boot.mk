@@ -10,4 +10,5 @@ C_OBJS = \
 	./boot/string.o	\
 	./boot/serial.o	\
 	./boot/syscall.o	\
+	./boot/register.o	\
 	./boot/main.o

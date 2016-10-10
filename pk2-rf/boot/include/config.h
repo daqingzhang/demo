@@ -8,6 +8,10 @@
 #define readl(addr) (*(volatile unsigned int *)(addr))
 #define writel(val,addr) (*(volatile unsigned int *)(addr) = (val))
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 typedef volatile unsigned int __REG32_R__;
 typedef volatile unsigned int __REG32_RW_;
 typedef volatile unsigned int __REG32_RW1;

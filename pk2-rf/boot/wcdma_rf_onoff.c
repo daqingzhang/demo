@@ -1,16 +1,10 @@
-//-------------------------
-//
-//
-//------------------------
-
-#include "register.h"
-#include "wcdma_table.h"
-#include "calib_wcdma.h"
-#include "auxiliary.h"
+#include <rf/register.h>
+#include <rf/wcdma_table.h>
+#include <rf/calib_wcdma.h>
+#include <rf/auxiliary.h>
 
 /* W extern function declaration  */
-extern unsigned short wcdma_tx_comp(unsigned short base, short offset) property(loop_levels_0);
-
+extern unsigned short wcdma_tx_comp(unsigned short base, short offset);
 
 /* W variables declaration  */
 static char (*wcdma_agc_calib_ana)[2];
@@ -27,7 +21,7 @@ short last_band_select_flag=H_BAND;
 short last_rf_state=0;
 
 /* W function definition */
-void wcdma_rx_tx_on(void) property(loop_levels_0)
+void wcdma_rx_tx_on(void)
 {
     
     short data_12h,data_7bh;
@@ -250,7 +244,8 @@ void wcdma_narrow_bw_patch_off(void)
 }
 
 short spll_count=1;
-static void wcdma_spll_on(void){// backup switch
+static void wcdma_spll_on(void)
+{// backup switch
     
     short data_111h;
     
@@ -268,8 +263,8 @@ static void wcdma_spll_on(void){// backup switch
     write_register(0x77,spll_count++); 
 }
 
-static void wcdma_tx_on_br(void){
-    
+static void wcdma_tx_on_br(void)
+{
     short data_12h,data_13h;
     
     data_12h=read_register(0x12);
@@ -279,8 +274,8 @@ static void wcdma_tx_on_br(void){
     write_register(0x13,(data_13h|0x60));                 
 }  
 
-static void wcdma_tx_off_br(void){
-    
+static void wcdma_tx_off_br(void)
+{
     short data_12h,data_13h;
     
     data_12h=read_register(0x12);
@@ -290,8 +285,8 @@ static void wcdma_tx_off_br(void){
     write_register(0x13,(data_13h&0x9f));                 
 } 
 
-void wcdma_rx_tx_off(void){//item:8850E_RF_OFF
-    
+void wcdma_rx_tx_off(void)//item:8850E_RF_OFF
+{
     short data_12h,data_7bh;
     data_12h=read_register(0x12);
     data_7bh=read_register(0x7b);
@@ -1520,7 +1515,7 @@ static void wcdma_tx_freq_target(int txfreq){
     }   
 }  
 
-void wcdma_irat_switch(void) property(loop_levels_1)
+void wcdma_irat_switch(void)
 {
     int data_5ch,data_5dh,ivalue;
     int rx_freq,tx_freq;
@@ -1546,7 +1541,7 @@ void wcdma_irat_switch(void) property(loop_levels_1)
 }
      
 // 7
-extern "C" void wcdma_rf_initial_isr() property(isr)
+void wcdma_rf_initial_isr()
 {
     //*WADDR_EXT_REG = 0xff00e804;
     //*WADDR_EXT_REG = 0xdf00e804;
@@ -1563,7 +1558,7 @@ extern "C" void wcdma_rf_initial_isr() property(isr)
 
 
 // 6
-extern "C" void wcdma_rf_on_isr() property(isr loop_levels_0)
+void wcdma_rf_on_isr()
 {
 
     last_rf_state = 6;
@@ -1579,7 +1574,7 @@ extern "C" void wcdma_rf_on_isr() property(isr loop_levels_0)
 }
 
 // 5
-extern "C" void wcdma_rf_off_isr() property(isr loop_levels_0)
+void wcdma_rf_off_isr()
 {
 
     last_rf_state = 5;
@@ -1596,7 +1591,7 @@ extern "C" void wcdma_rf_off_isr() property(isr loop_levels_0)
 }
 
 // 4
-extern "C" void wcdma_tx_on_isr() property(isr loop_levels_0)
+void wcdma_tx_on_isr()
 {
 
     response_bb(4,5,(0xa0));
@@ -1607,7 +1602,7 @@ extern "C" void wcdma_tx_on_isr() property(isr loop_levels_0)
 }
 
 // 3
-extern "C" void wcdma_tx_off_isr() property(isr loop_levels_0)
+void wcdma_tx_off_isr()
 {
     response_bb(3,5,(0xa0));
     clear_interrupt(0x05,0x08);
@@ -1616,7 +1611,7 @@ extern "C" void wcdma_tx_off_isr() property(isr loop_levels_0)
     response_bb(3,5,(0x40));   
 }
 //0x50/0x51  15
-extern "C" void wcdma_rx_freq_hw_isr() property(isr loop_levels_1)
+void wcdma_rx_freq_hw_isr()
 {
 
     response_bb(15,5,(0xa0));
@@ -1630,7 +1625,7 @@ extern "C" void wcdma_rx_freq_hw_isr() property(isr loop_levels_1)
 
 
 //0x52/0x59  14
-extern "C" void wcdma_rx_gain_hw_isr() property(isr loop_levels_0)
+void wcdma_rx_gain_hw_isr()
 {
 
     response_bb(14,5,(0xa0));
@@ -1644,7 +1639,7 @@ extern "C" void wcdma_rx_gain_hw_isr() property(isr loop_levels_0)
 
 
 //0x54/0xd1  13
-extern "C" void wcdma_tx_freq_hw_isr() property(isr loop_levels_0)
+void wcdma_tx_freq_hw_isr()
 {
 
     response_bb(13,5,(0xa0));
@@ -1658,7 +1653,7 @@ extern "C" void wcdma_tx_freq_hw_isr() property(isr loop_levels_0)
 }
 
 //0x56/0xe1  12
-extern "C" void wcdma_tx_pwr_hw_isr() property(isr loop_levels_0)
+void wcdma_tx_pwr_hw_isr()
 {
 
     response_bb(12,5,(0xa0));
@@ -1671,7 +1666,7 @@ extern "C" void wcdma_tx_pwr_hw_isr() property(isr loop_levels_0)
 
 }
 //0x5e
-extern "C" void wcdma_spll_hw_isr() property(isr)
+void wcdma_spll_hw_isr()
 {
     response_bb(8,5,(0xa0));
     short data_5eh,data_5fh;
@@ -1694,7 +1689,7 @@ extern "C" void wcdma_spll_hw_isr() property(isr)
 }
 
 //0x5c
-extern "C" void wcdma_irat_hw_isr() property(isr loop_levels_1)
+void wcdma_irat_hw_isr()
 {
 
     response_bb(9,5,(0xa0));

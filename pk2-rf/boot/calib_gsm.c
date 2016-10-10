@@ -1,10 +1,5 @@
-//---------------
-//
-//
-//-----------------
-
-#include "register.h"
-#include "auxiliary.h"
+#include <rf/register.h>
+#include <rf/auxiliary.h>
 
 extern void gsm_rx_tx_off(void) property(loop_free);
 extern unsigned short gsm_agc_table_analog[12][3];
@@ -14,13 +9,38 @@ extern short rda_8850e_tcxo;// flag of tcxo or crystal pass from modem
 #define H_BAND 1
 #define L_BAND 0
 
-short gsm_agc_calib_ana_hband[12][2] = {{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}};
-short gsm_agc_calib_dig_hband[12][4] = {{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{33,0,0,0},{33,0,0,0},{33,0,0,0},{33,0,0,0}};
-short gsm_agc_calib_ana_lband[12][2] = {{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}};
-short gsm_agc_calib_dig_lband[12][4] = {{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0},{33,0,0,0},{33,0,0,0},{33,0,0,0},{33,0,0,0}};
+short gsm_agc_calib_ana_hband[12][2] = {
+	{0,0},{0,0},{0,0},{0,0},
+	{0,0},{0,0},{0,0},{0,0},
+	{0,0},{0,0},{0,0},{0,0},
+};
 
-static void gsm_rx_calib_freq_hband(void){ //take rx_freq=1900MHz as example, gaokun
-          
+short gsm_agc_calib_dig_hband[12][4] = {
+	{1,0,0,0},{1,0,0,0},
+	{1,0,0,0},{1,0,0,0},
+	{1,0,0,0},{1,0,0,0},
+	{1,0,0,0},{1,0,0,0},
+	{33,0,0,0},{33,0,0,0},
+	{33,0,0,0},{33,0,0,0},
+};
+
+short gsm_agc_calib_ana_lband[12][2] = {
+	{0,0},{0,0},{0,0},{0,0},
+	{0,0},{0,0},{0,0},{0,0},
+	{0,0},{0,0},{0,0},{0,0},
+};
+
+short gsm_agc_calib_dig_lband[12][4] = {
+	{1,0,0,0},{1,0,0,0},
+	{1,0,0,0},{1,0,0,0},
+	{1,0,0,0},{1,0,0,0},
+	{1,0,0,0},{1,0,0,0},
+	{33,0,0,0},{33,0,0,0},
+	{33,0,0,0},{33,0,0,0},
+};
+
+static void gsm_rx_calib_freq_hband(void) //take rx_freq=1900MHz as example, gaokun
+{ 
     //mdll
     write_register(0xbc,0x7c);
 
@@ -36,8 +56,8 @@ static void gsm_rx_calib_freq_hband(void){ //take rx_freq=1900MHz as example, ga
     write_register(0x49,0x1c);  
 }
 
-static void gsm_rx_calib_freq_lband(void){ //take rx_freq=900MHz as example, gaokun     
-    
+static void gsm_rx_calib_freq_lband(void) //take rx_freq=900MHz as example, gaokun     
+{
     //mdll_div_num      
     write_register(0xbc,0x7c);
 
@@ -53,8 +73,8 @@ static void gsm_rx_calib_freq_lband(void){ //take rx_freq=900MHz as example, gao
     
 }
 
-static void gsm_rx_calib_ana_gain(char band,short index){
-    
+static void gsm_rx_calib_ana_gain(char band,short index)
+{
     unsigned short (*analog_p)[3];
     /*
     int data_cch;
@@ -128,8 +148,8 @@ static void gsm_rx_calib_ana_gain(char band,short index){
 }
 
 
-static int dummy_read(int addr){
-
+static int dummy_read(int addr)
+{
     unsigned short data=0;
     unsigned short y=0;
     delay_calib(330); //delay 10us
@@ -138,8 +158,8 @@ static int dummy_read(int addr){
     return(data);
 }
 
-static void approach(void) property(loop_levels_1){
-    
+static void approach(void)
+{
     unsigned short loop_num=0;
     
     volatile unsigned short data_88h;
@@ -167,14 +187,13 @@ static void approach(void) property(loop_levels_1){
     }
 }
 
-static void ana_dc_calib_save(char band, short index){
-    
+static void ana_dc_calib_save(char band, short index)
+{
     unsigned short data_19h;
     unsigned short data_1ah;
-    
+  
     data_19h=read_register(0x19);
     data_1ah=read_register(0x1a);
-    
     
     if(H_BAND==band){        
         gsm_agc_calib_ana_hband[index][0]=data_19h;
@@ -186,14 +205,14 @@ static void ana_dc_calib_save(char band, short index){
     } 
 }
         
-static void gsm_rx_ana_dc_cal_indicator(char band, short index){
-
+static void gsm_rx_ana_dc_cal_indicator(char band, short index)
+{
     approach();
     ana_dc_calib_save(band,index);
-       
 }
 
-static void gsm_rx_dig_dc_cal_indicator(char band,int index) property(loop_free){
+static void gsm_rx_dig_dc_cal_indicator(char band,int index)
+{
     short data_1f0h,data_1f1h,data_1f2h,data_1f3h;    
     short data_i,data_q;
     
@@ -249,9 +268,8 @@ static void gsm_rx_dig_dc_cal_indicator(char band,int index) property(loop_free)
     
 }
 
-
-static void gsm_rx_on_hband(void){
-
+static void gsm_rx_on_hband(void)
+{
         //write_register(0x46,(data_46h&0x0f)|0x00); //freq_former_shift set, must set in RX? gaokun
         
         //mixer,pga,vco dac set
@@ -388,9 +406,8 @@ static void gsm_rx_on_lband(void){
         write_register(0x7b,0x83); //Digrf_en=1,Dsp_resetn_rx=1,Dsp_resetn_tx=1
 }
 
-
-
-extern "C" void gsm_dc_calib_isr() property(isr loop_levels_1){
+void gsm_dc_calib_isr()
+{
 
     response_bb(21,3,(0xa0));
     unsigned short index_ana;
@@ -456,5 +473,3 @@ extern "C" void gsm_dc_calib_isr() property(isr loop_levels_1){
   
     response_bb(21,3,(0x40));
 }
-
-         

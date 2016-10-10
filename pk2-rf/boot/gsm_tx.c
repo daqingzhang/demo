@@ -1,10 +1,10 @@
 /*
--- File : test.c
--- Contents : Example program with interrupts
+-- File : gsm_tx.c
+-- Contents : program for GSM communications
 -- Copyright (c) 2013 by Target Compiler Technologies N.V.
 */
-#include "register.h"
-#include "auxiliary.h"
+#include <rf/register.h>
+#include <rf/auxiliary.h>
 
 extern void gsm_wcdma_rf_initial(void) property(loop_free);
 extern void gsm_wcdma_rf_initial_d(void) property(loop_free);
@@ -29,16 +29,16 @@ unsigned short gsm_agc_table_analog[12][3] = {
     {0x48,0x22,0x11},
     {0x08,0x02,0x11},
 };
-  
+ 
 void gsm_rx_off(void){
-    
+
     //item:8850E_RF_OFF
     write_register(0xfe,0x00); // GSM_Spi chaos debug
-    
+
     short data_12h,data_7bh;
     data_12h=read_register(0x12);
     data_7bh=read_register(0x7b);
-    
+
     write_register(0x61,0xc0); //Com_mode=11
     write_register(0x12,(data_12h&0x80));
     //write_register(0x13,0x04); //pu function down
@@ -115,9 +115,8 @@ void gsm_rx_tx_off(void){
     ThermFsm.GPathWorking = FALSE;
 
 }  
-  
-    
-extern "C" void gsm_rxon_isr() property(isr loop_levels_1){
+
+void gsm_rxon_isr() {
       
     write_register(0xfe,0x00); // GSM_Spi chaos debug
     last_rf_state = 31;
@@ -403,7 +402,7 @@ extern "C" void gsm_rxon_isr() property(isr loop_levels_1){
     response_bb(31,3,(0x40));//0xfb
 }
     
-extern "C" void gsm_rxoff_isr() property(isr) 
+void gsm_rxoff_isr() 
 {
     last_rf_state = 30;
     response_bb(30,3,(0xa0));
@@ -418,7 +417,7 @@ extern "C" void gsm_rxoff_isr() property(isr)
 } 
 
 
-extern "C" void gsm_txon_isr() property(isr loop_levels_1)
+void gsm_txon_isr()
 {
 
     write_register(0xfe,0x00); // GSM_Spi chaos debug
@@ -640,7 +639,7 @@ extern "C" void gsm_txon_isr() property(isr loop_levels_1)
     response_bb(29,3,(0x40));//0xeb
 }
     
-extern "C" void gsm_txoff_isr() property(isr) 
+void gsm_txoff_isr() 
 {
     last_rf_state = 28;
     response_bb(28,3,(0xa0));
@@ -653,7 +652,7 @@ extern "C" void gsm_txoff_isr() property(isr)
      
 }       
 
-extern "C" void gsm_initial_isr() property(isr) 
+void gsm_initial_isr() 
 {
     response_bb(23,3,(0xa0));
     clear_interrupt(0x01,0x80);
@@ -664,7 +663,7 @@ extern "C" void gsm_initial_isr() property(isr)
 } 
 
 
-extern "C" void gsm_initial_d_isr() property(isr) 
+void gsm_initial_d_isr() 
 {
     response_bb(22,3,(0xa0));
     clear_interrupt(0x01,0x40);
@@ -673,6 +672,3 @@ extern "C" void gsm_initial_d_isr() property(isr)
     
     response_bb(22,3,(0x40));//0xbb
 } 
-
-
-

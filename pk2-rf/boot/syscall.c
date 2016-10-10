@@ -26,7 +26,7 @@ void do_ecall(void)
 	writel(0x88,STR_ADDR_EXCP);
 }
 
-static void dispatch_irqs(int irqs);
+void dispatch_isr(int irqs);
 void do_interrupts(void)
 {
 	unsigned int irqs = irq_get_status(HWP_IRQ,0xFFFFFFFF);
@@ -35,7 +35,7 @@ void do_interrupts(void)
 	irq_tester(irqs);//just for test
 #endif
 
-//	dispatch_irqs(irqs);
+	dispatch_isr(irqs);
 
 	writel(irqs,STR_ADDR_EXCP);
 	irq_clr_pending(HWP_IRQ,irqs);

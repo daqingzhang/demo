@@ -1,11 +1,6 @@
-//--------------------------
-//
-//
-//-----------------------------
-
-#include "register.h"
-#include "calib_wcdma.h"
-#include "auxiliary.h"
+#include <rf/register.h>
+#include <rf/calib_wcdma.h>
+#include <rf/auxiliary.h>
 
 /* external therm calib data definition */
 
@@ -309,7 +304,7 @@ void mipi_rffe_register_write(char sa, char address, char data) property(loop_le
 
 
 //0x58
-extern "C" void wcdma_therm_hw_isr() property(isr loop_levels_1)
+void wcdma_therm_hw_isr()
 {
     response_bb(11,5,(0xa0));
     clear_interrupt(0x04,0x08);
@@ -353,7 +348,7 @@ extern "C" void wcdma_therm_hw_isr() property(isr loop_levels_1)
 }
 /*         
 // 16
-extern "C" void thermometer_isr() property(isr loop_levels_0)
+void thermometer_isr()
 {
 
     clear_interrupt(0x05,0x08);
@@ -362,7 +357,7 @@ extern "C" void thermometer_isr() property(isr loop_levels_0)
       
 }*/
 // warning, only called before xcpu&wcpu deep sleep
-extern "C" void gsm_therm_off_isr() property(isr loop_levels_0)
+void gsm_therm_off_isr()
 {
     write_register(0xfe,0x00); // GSM_Spi chaos debug
     response_bb(18,3,(0xa0));
@@ -383,7 +378,7 @@ extern "C" void gsm_therm_off_isr() property(isr loop_levels_0)
     response_bb(18,3,(0x40));
 }
 // warning, should called after initial_isr&calib_isr 
-extern "C" void gsm_therm_on_isr() property(isr loop_levels_0)
+void gsm_therm_on_isr()
 {
     write_register(0xfe,0x00); // GSM_Spi chaos debug
     response_bb(19,3,(0xa0));
@@ -396,7 +391,7 @@ extern "C" void gsm_therm_on_isr() property(isr loop_levels_0)
     response_bb(19,3,(0x40));
 }
 // therm update during flight mode when no rx_off&rf_off
-extern "C" void gsm_therm_update_isr() property(isr loop_levels_0)
+void gsm_therm_update_isr()
 {
     write_register(0xfe,0x00); // GSM_Spi chaos debug
     response_bb(17,3,(0xa0));

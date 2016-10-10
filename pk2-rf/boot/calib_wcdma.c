@@ -1,11 +1,6 @@
-//---------------
-//
-//
-//-----------------
-
-#include "register.h"
-#include "calib_wcdma.h"
-#include "auxiliary.h"
+#include <rf/register.h>
+#include <rf/calib_wcdma.h>
+#include <rf/auxiliary.h>
 
 extern void gsm_wcdma_rf_initial(void) property(loop_free);
 extern void wcdma_rx_tx_on(void) property(loop_free);
@@ -874,7 +869,7 @@ static void wcdma_tx_calib(void) property(loop_levels_1){
 }
 
 
-extern "C" void irat_dc_calib_isr() property(isr loop_levels_1)
+void irat_dc_calib_isr()
 {
    
     response_bb(20,3,(0xa0));
@@ -889,7 +884,7 @@ extern "C" void irat_dc_calib_isr() property(isr loop_levels_1)
 } 
 
 // 3         
-extern "C" void wcdma_rx_calib_isr() property(isr loop_levels_1)
+void wcdma_rx_calib_isr()
 {
     
     response_bb(2,5,(0xa0));
@@ -903,7 +898,7 @@ extern "C" void wcdma_rx_calib_isr() property(isr loop_levels_1)
 
 }
 
-extern "C" void wcdma_tx_calib_isr() property(isr loop_levels_1)
+void wcdma_tx_calib_isr()
 {
     
     response_bb(1,5,(0xa0));

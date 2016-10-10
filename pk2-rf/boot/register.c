@@ -52,7 +52,7 @@ void hw_int_accum(const short index){
 			write_register(0xcf,++w_hw_int_count[3]);//wcdma_apc
 			break; 
 	}
-} 
+}
 
 void response_bb(const int index,const int code,const int location){
 	int reply_data = 0;

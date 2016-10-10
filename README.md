@@ -1,1 +1,1 @@
-# demo and examples for linux
+# examples for linux

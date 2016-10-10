@@ -39,8 +39,6 @@ extern volatile unsigned int chess_storage(IM) _imsk_var_;
 
 inline void set_interrupt_mask(unsigned int i) { _imsk_var_ = i; }
 
-
-
 inline assembly int get_interrupt_mask()  
     clobbers() 
     property(volatile functional loop_free)

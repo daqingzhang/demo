@@ -31,18 +31,14 @@ void do_interrupts(void)
 {
 	unsigned int irqs = irq_get_status(HWP_IRQ,0xFFFFFFFF);
 
-	dispatch_irqs(irqs);
-
-	writel(irqs,STR_ADDR_EXCP);
-	irq_clr_pending(HWP_IRQ,irqs);
-}
-
-static void dispatch_irqs(int irqs)
-{
-	//TODO: to process interrupts
 #ifdef CONFIG_IRQ_TEST
 	irq_tester(irqs);//just for test
 #endif
+
+//	dispatch_irqs(irqs);
+
+	writel(irqs,STR_ADDR_EXCP);
+	irq_clr_pending(HWP_IRQ,irqs);
 }
 
 void board_init(int flag)

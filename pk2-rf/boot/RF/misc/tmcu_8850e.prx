@@ -1,0 +1,13 @@
+<project name="Project" processor="tmcu" lib="/home/ruiminwang/projects/ldpc/ipd_study/tmcu/lib">
+    <file type="a" name="init.s" path=""/>
+    <file type="c" name="main.c" path=""/>
+    <file type="c" name="register.c" path=""/>
+    <file type="c" name="calib_gsm.c" path=""/>
+    <file type="c" name="calib_wcdma.c" path=""/>
+    <file type="c" name="gsm_tx.c" path=""/>
+    <file type="c" name="wcdma_rf_onoff.c" path=""/>
+    <file type="c" name="auxiliary.c" path=""/>
+    <option id="bridge.cfg" value="interrupt.bcf"/>
+    <option id="project.name" value="tmcu_8850e"/>
+    <option id="project.type" value="exe"/>
+</project>

@@ -1,0 +1,18 @@
+
+// input map for linker
+
+_entry_point _ivt
+_reserved DMb 0..3 // used by ocd
+//_constant_memory DMb 4..2047
+//_stack DMb 2048..32767
+//_constant_memory DMb 4..2047
+_constant_memory DMb 4..6143
+//_rodata DMb 4..256
+
+_symbol ThermComp _in_segment calibration_data_area
+_segment calibration_data_area DMb 6144..7167
+
+//_stack DMb 1024..2047
+_stack DMb 7168..8191
+//_mem_size DMw 2048
+

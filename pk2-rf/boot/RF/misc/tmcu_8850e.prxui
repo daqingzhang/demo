@@ -1,0 +1,20 @@
+<prxusersettings>
+    <zlayout>
+        <perspective type="dev">
+            <VerPaneNode>
+                <HorPaneNode size="2">
+                    <ViewBookNode size="2">
+                        <window name="::ProjectView" visible="1" select="1"/>
+                        <window name="::SrcRefView" visible="0" select="0"/>
+                    </ViewBookNode>
+                    <EditorBookNode size="3"/>
+                </HorPaneNode>
+                <ViewBookNode size="1">
+                    <window name="::ConsoleView" visible="1" select="1"/>
+                </ViewBookNode>
+            </VerPaneNode>
+        </perspective>
+    </zlayout>
+    <active cfg="Release" dbg="&lt;None&gt;"/>
+    <selectsim type="ISSCA" exe="&lt;PROCDIR&gt;/../iss/tmcu_ca"/>
+</prxusersettings>

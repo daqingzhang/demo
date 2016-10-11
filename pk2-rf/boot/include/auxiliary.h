@@ -2,16 +2,17 @@
 // register releated stuff
 //-------------------------------
 
-#ifndef AUXILIARY_H
-#define AUXILIARY_H
-
-#include <rf/register.h>
-#include <rf/calib_wcdma.h>
+#ifndef __AUXILIARY_H__
+#define __AUXILIARY_H__
 
 /* Global macro definitions  */
-
+#ifndef TRUE
 #define TRUE    1
+#endif
+
+#ifndef FALSE
 #define FALSE   0
+#endif
 
 /* Therm variables and struct definitions */
 typedef struct{
@@ -44,11 +45,11 @@ typedef struct{
 
 /*  Therm functions declaration  */
 
-extern void therm_state_init(void) property(loop_levels_0);
-extern void therm_internal_trigger(void) property(loop_levels_0);
-extern void therm_value_update(void) property(loop_levels_0);
-extern void thermometer_cycle(void) property(loop_levels_0);
-extern void mipi_rffe_register_write(char sa, char address, char data) property(loop_levels_1);
+extern void therm_state_init(void);
+extern void therm_internal_trigger(void);
+extern void therm_value_update(void);
+extern void thermometer_cycle(void);
+extern void mipi_rffe_register_write(char sa, char address, char data);
 
 /* Therm variables declaration  */
 

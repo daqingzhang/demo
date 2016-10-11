@@ -4,13 +4,13 @@
 #
 
 A_OBJS = \
-	./boot/crt.o
+	./lib/crt.o
 
 C_OBJS = \
-	./boot/string.o	\
-	./boot/serial.o	\
-	./boot/interrupts.o	\
-	./boot/syscall.o	\
+	./lib/string.o	\
+	./lib/serial.o	\
+	./lib/irq.o	\
+	./lib/syscall.o	\
 	./test/main.o
 
 ifneq ($(findstring CONFIG_MULTIPLY_TEST,$(TARGET_DEFS)),)

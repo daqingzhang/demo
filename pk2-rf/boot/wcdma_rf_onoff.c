@@ -1,7 +1,7 @@
-#include <rf/register.h>
-#include <rf/wcdma_table.h>
-#include <rf/calib_wcdma.h>
-#include <rf/auxiliary.h>
+#include <register.h>
+#include <wcdma_table.h>
+#include <calib_wcdma.h>
+#include <auxiliary.h>
 
 /* W extern function declaration  */
 extern unsigned short wcdma_tx_comp(unsigned short base, short offset);

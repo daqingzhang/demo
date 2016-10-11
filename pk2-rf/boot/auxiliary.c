@@ -1,6 +1,6 @@
-#include <rf/register.h>
-#include <rf/calib_wcdma.h>
-#include <rf/auxiliary.h>
+#include <register.h>
+#include <calib_wcdma.h>
+#include <auxiliary.h>
 
 /* external therm calib data definition */
 
@@ -31,7 +31,7 @@ void therm_state_init(void)
     
 }
 
-void therm_internal_trigger(void) property(loop_levels_0)
+void therm_internal_trigger(void)
 {
     short data_12h,data_13h,data_7bh;
     
@@ -92,7 +92,7 @@ void therm_pwd_trigger(void)
     write_register(0x7b,(data_7bh|0x04));
 }
 
-void therm_value_update(void) property(loop_levels_0)
+void therm_value_update(void)
 {
     short data_1f4h,data_1f5h;
     
@@ -197,7 +197,7 @@ inline void mipi_clock_simu(void){
     write_register(0xcd,mipi_count++);
 }
 
-void thermometer_cycle(void) property(loop_levels_0)
+void thermometer_cycle(void)
 {
     therm_internal_trigger();
     delay_calib(33000*2);
@@ -239,7 +239,8 @@ void ThermTxComp(short CurrHeat)
     ThermTemp.TxCurrTemper = CurrHeat;			
 }
 
-inline assembly void sendsequence(int* chess_storage(r9) se, int chess_storage(r8) wr) clobbers(r0,r8,r9) property(loop_levels_1)
+#if 0
+inline assembly void sendsequence(int* chess_storage(r9) se, int chess_storage(r8) wr) clobbers(r0,r8,r9)
 {
     asm_begin
         do 25,12
@@ -260,9 +261,13 @@ inline assembly void sendsequence(int* chess_storage(r9) se, int chess_storage(r
     
     asm_end
 }
-
-
-void mipi_rffe_register_write(char sa, char address, char data) property(loop_levels_1)// 25 bits
+#else
+void sendsequence(int *se, int wr)
+{
+	//TODO: add your code here
+}
+#endif
+void mipi_rffe_register_write(char sa, char address, char data)// 25 bits
 {
     unsigned char dataparity=1,senddata=data;
     unsigned short addrparity=1,sendaddr;

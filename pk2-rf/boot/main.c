@@ -1,5 +1,5 @@
-#include <rf/register.h>
-#include <rf/tmcu_irq.h>
+#include <register.h>
+#include <tmcu_irq.h>
 
 #if 0
 void test_do_loop(void) property(loop_levels_2)
@@ -33,6 +33,7 @@ void test_do_loop(void) property(loop_levels_2)
 }
 #endif
 
+#if 1
 //#define TMCU_INT_MASK 0xF0FE0000
 #define TMCU_INT_MASK 0xF0FEFFFF//0xFCFFFFFF//0xf0fff0fe
 
@@ -85,3 +86,9 @@ int main(void)
 	}
 	return 0;
 }
+#else
+int main(void)
+{
+	return 0;
+}
+#endif

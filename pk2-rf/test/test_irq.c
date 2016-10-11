@@ -1,4 +1,4 @@
-#include <interrupts.h>
+#include <irq.h>
 
 struct rda_irq_tag {
 	int flag;
@@ -51,6 +51,7 @@ void irq_tester(int irqs)
 			switch(irqtag.count) {
 			case 1:
 				mask = 1 << irqtag.id;
+				core_irq_enable();
 				irq_enable(HWP_IRQ,mask);
 				irq_set_pending(HWP_IRQ,mask);
 				while(irqtag.count == 1);
@@ -89,6 +90,7 @@ void irq_tester(int irqs)
 			case 1:
 				// pend a new IRQ
 				mask = 1 << irqtag.id;
+				core_irq_enable();
 				irq_enable(HWP_IRQ,mask);
 				irq_set_pending(HWP_IRQ,mask);
 				//delay

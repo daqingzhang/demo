@@ -134,6 +134,6 @@ static uint64_t lfsr(uint64_t x)
              stringify(code), _c, _c/iter, 10*_c/iter%10, _c/_i, 10*_c/_i%10); \
   } while(0)
 
-#include <interrupts.h>
+#include <irq.h>
 #include <serial.h>
 #endif //__UTIL_H

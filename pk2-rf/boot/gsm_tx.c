@@ -3,11 +3,12 @@
 -- Contents : program for GSM communications
 -- Copyright (c) 2013 by Target Compiler Technologies N.V.
 */
-#include <rf/register.h>
-#include <rf/auxiliary.h>
+#include <register.h>
+#include <calib_wcdma.h>
+#include <auxiliary.h>
 
-extern void gsm_wcdma_rf_initial(void) property(loop_free);
-extern void gsm_wcdma_rf_initial_d(void) property(loop_free);
+extern void gsm_wcdma_rf_initial(void);
+extern void gsm_wcdma_rf_initial_d(void);
 extern short gsm_agc_calib_dig_hband[12][4];
 extern short gsm_agc_calib_ana_hband[12][2];
 extern short gsm_agc_calib_dig_lband[12][4];

@@ -11,11 +11,18 @@
 -- provided this note is retained.  Any other use or disclosure requires the
 -- explicit consent of Target Compiler Technologies.
 */
+#ifndef __TMCU_IRQ_H__
+#define __TMCU_IRQ_H__
 
+void enable_interrupts(void);
+void disable_interrupts(void);
+int  get_interrupt_mask(void); 
+void set_interrupt_mask(unsigned int mask);
+void set_interrupt_unmask(unsigned int mask);
+void core_halt(void);
+void software_interrupt(int vector_addr);
 
-#ifndef _tmcu_irq_h
-#define _tmcu_irq_h
-
+#if 0
 inline assembly void enable_interrupts()
     clobbers() 
     property(volatile functional loop_free)
@@ -35,7 +42,6 @@ inline assembly void disable_interrupts()
 }
 
 extern volatile unsigned int chess_storage(IM) _imsk_var_;
-
 
 inline void set_interrupt_mask(unsigned int i) { _imsk_var_ = i; }
 
@@ -68,5 +74,6 @@ inline assembly void software_interrupt_(int chess_storage() vector_addr)
         swi vector_addr
     asm_end
 }
+#endif
 
-#endif /* _tmcu_irq_h */
+#endif /* __TMCU_IRQ_H_ */

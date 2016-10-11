@@ -1,4 +1,4 @@
-#include <interrupts.h>
+#include <irq.h>
 
 void irq_enable(hwp_irq_t *irqs, u32 mask)
 {
@@ -8,6 +8,11 @@ void irq_enable(hwp_irq_t *irqs, u32 mask)
 void irq_disable(hwp_irq_t *irqs, u32 mask)
 {
 	irqs->enable &= ~mask;
+}
+
+u32 irq_get_enable_status(hwp_irq_t *irqs)
+{
+	return irqs->enable;
 }
 
 void irq_set_pending(hwp_irq_t *irqs, u32 mask)

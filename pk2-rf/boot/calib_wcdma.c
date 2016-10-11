@@ -1,10 +1,10 @@
-#include <rf/register.h>
-#include <rf/calib_wcdma.h>
-#include <rf/auxiliary.h>
+#include <register.h>
+#include <calib_wcdma.h>
+#include <auxiliary.h>
 
-extern void gsm_wcdma_rf_initial(void) property(loop_free);
-extern void wcdma_rx_tx_on(void) property(loop_free);
-extern void wcdma_rx_tx_off(void) property(loop_free);
+extern void gsm_wcdma_rf_initial(void);
+extern void wcdma_rx_tx_on(void);
+extern void wcdma_rx_tx_off(void);
 extern unsigned char wcdma_agc_hb_table_analog[CALIB_WCDMA_RX_ANA_GAIN_NUM][3];
 extern unsigned char wcdma_agc_hb_table_analog_ln41[CALIB_WCDMA_RX_ANA_GAIN_NUM][3];
 extern unsigned short wcdma_apc_hb_table_ana_gain_0[CALIB_WCDMA_TX_ANA_GAIN_NUM];
@@ -25,7 +25,8 @@ short wcdma_apc_calib_ana_hb[CALIB_WCDMA_TX_ANA_GAIN_NUM][2] = {{22,55},{22,55},
 short wcdma_apc_calib_ana_lb[CALIB_WCDMA_TX_ANA_GAIN_NUM][2] = {{22,55},{22,55},{22,55},{22,55},{22,55},{22,55},{22,55},{22,55},{22,55},{22,55},{22,55}};
 
 
-void wcdma_calib_rx_tx_on(short band_sel) property(loop_levels_1){
+void wcdma_calib_rx_tx_on(short band_sel)
+{
     
     write_register(0x22,0xcb);//enlarge pll bandwidth to avoid freq shift
     write_register(0x70,0x40);
@@ -484,7 +485,8 @@ static void ana_dc_calib_save(char band, short index, char path){
     } 
 }      
 
-static void approach_max(char band, short index) property(loop_levels_1){
+static void approach_max(char band, short index)
+{
     int loop_num=0;
     volatile int data_88h;
     volatile int data_19h;
@@ -530,7 +532,8 @@ static void approach_max(char band, short index) property(loop_levels_1){
     
 
  
-static void wcdma_rx_dig_dc_cal_indicator(char band, int index) property(loop_free){
+static void wcdma_rx_dig_dc_cal_indicator(char band, int index)
+{
 
     unsigned int data_1f0h,data_1f1h,data_1f2h,data_1f3h;    
     unsigned int data_i,data_q;
@@ -658,7 +661,8 @@ static void ana_tx_dc_calib_save(char band, short index, char path, short calib_
     } 
 } 
 
-static short accumulate_88h_half(short total_num,char path) property(loop_levels_1){
+static short accumulate_88h_half(short total_num,char path)
+{
     short num;
     volatile short data_88h=0;
     volatile short accu_88h=0;
@@ -681,7 +685,8 @@ static short accumulate_88h_half(short total_num,char path) property(loop_levels
 }
 
 
-static void tx_dc_adjust_half(char band, short index) property(loop_levels_1){
+static void tx_dc_adjust_half(char band, short index)
+{
     short count_num;
     volatile short i_dac=0x800;
     volatile short q_dac=0x800;
@@ -717,7 +722,8 @@ static void tx_dc_adjust_half(char band, short index) property(loop_levels_1){
     ana_tx_dc_calib_save(band,index,QPATH,q_dac);
 }
 
-static void tx_dc_approach(char band, short index) property(loop_levels_1){// for test only, but failed
+static void tx_dc_approach(char band, short index)// for test only, but failed
+{
     int loop_num=0;
     short i_dac=0x800;
     short q_dac=0x800;
@@ -753,7 +759,8 @@ static void tx_dc_approach(char band, short index) property(loop_levels_1){// fo
 }
 
 
-static void wcdma_rx_calib(void) property(loop_levels_1){
+static void wcdma_rx_calib(void)
+{
     
     short index_ana;
     
@@ -815,7 +822,8 @@ static void wcdma_rx_calib(void) property(loop_levels_1){
     wcdma_rx_tx_off();
 }   
 
-static void wcdma_tx_calib(void) property(loop_levels_1){
+static void wcdma_tx_calib(void)
+{
     
     short index_ana=0;
     

@@ -4,17 +4,21 @@
 #
 
 A_OBJS = \
-	./boot/crt.o
+	./lib/crt.o
 
 C_OBJS = \
-	./boot/string.o		\
-	./boot/serial.o		\
-	./boot/syscall.o	\
+	./lib/string.o		\
+	./lib/serial.o		\
+	./lib/irq.o		\
+	./lib/syscall.o		\
+	./boot/init.o		\
+	./boot/delay.o		\
+	./boot/tmcu_irq.o		\
+	./boot/main.o		\
+	./boot/register.o	\
 	./boot/gsm_tx.o		\
 	./boot/calib_gsm.o	\
 	./boot/calib_wcdma.o	\
 	./boot/auxiliary.o	\
-	./boot/wcdma_rf_onoff.o	\
-	./boot/init.o		\
-	./boot/register.o	\
-	./boot/main.o
+	./boot/wcdma_rf_onoff.o
+

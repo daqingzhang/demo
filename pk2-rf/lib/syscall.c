@@ -2,7 +2,7 @@
 #include <string.h>
 #include <util.h>
 #include <serial.h>
-#include <interrupts.h>
+#include <irq.h>
 
 #define BOARD_INIT_ADDR  0x00011FF4
 #define STR_ADDR_EXCP	 0x00011FF8
@@ -35,7 +35,9 @@ void do_interrupts(void)
 	irq_tester(irqs);//just for test
 #endif
 
+#ifndef CONFIG_PROJ_TEST
 	dispatch_isr(irqs);
+#endif
 
 	writel(irqs,STR_ADDR_EXCP);
 	irq_clr_pending(HWP_IRQ,irqs);

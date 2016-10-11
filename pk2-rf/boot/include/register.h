@@ -2,16 +2,25 @@
 // register releated stuff
 //-------------------------------
 
-#ifndef REGISTER_H
-#define REGISTER_H
+#ifndef __REGISTER_H__
+#define __REGISTER_H__
 
+#if 0
 extern int read_register(int addr) property(loop_free);
 extern void write_register(int addr,int data)  property(loop_free);
 extern void clear_interrupt(const int addr,const int value) property(loop_free);
 extern void response_bb(const int index,const int code,const int location) property(loop_free);
 extern void hw_int_accum(const short index) property(loop_free);
 extern volatile signed int *WADDR_EXT_REG;
+#endif
+extern int  read_register(int addr);
+extern void write_register(int addr,int data);
+extern void clear_interrupt(const int addr,const int value);
+extern void response_bb(const int index,const int code,const int location);
+extern void hw_int_accum(const short index);
+extern volatile signed int *WADDR_EXT_REG;
 
+#if 0
 // extern function definition
 inline assembly void delay_1us(void)//1us
     clobbers() 
@@ -57,3 +66,10 @@ inline assembly void delay_calib(int chess_storage(r1) repeat_num) property(vola
     asm_end
 }
 #endif
+
+void delay_1us(void);
+void delay(int us);
+void delay_n(int us);
+void delay_calib(int us);
+
+#endif /* __REGISTER_H__ */

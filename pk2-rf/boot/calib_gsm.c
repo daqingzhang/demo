@@ -1,7 +1,8 @@
-#include <rf/register.h>
-#include <rf/auxiliary.h>
+#include <register.h>
+#include <calib_wcdma.h>
+#include <auxiliary.h>
 
-extern void gsm_rx_tx_off(void) property(loop_free);
+extern void gsm_rx_tx_off(void);
 extern unsigned short gsm_agc_table_analog[12][3];
 extern short rda_8850e_logic_version;
 extern short rda_8850e_tcxo;// flag of tcxo or crystal pass from modem

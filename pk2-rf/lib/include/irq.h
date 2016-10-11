@@ -10,6 +10,7 @@ void irq_disable(hwp_irq_t *irqs, u32 mask);
 void irq_set_pending(hwp_irq_t *irqs, u32 mask);
 void irq_clr_pending(hwp_irq_t *irqs, u32 mask);
 u32  irq_get_status(hwp_irq_t *irqs, u32 mask);
+u32  irq_get_enable_status(hwp_irq_t *irqs);
 
 void core_irq_enable(void);
 void core_irq_disable(void);

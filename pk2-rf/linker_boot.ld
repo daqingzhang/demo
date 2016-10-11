@@ -17,8 +17,8 @@ SECTIONS
 	/* text segment */
 	. = 0x00000000;
 	.text : {
-		boot/crt.o	(.text)
-		boot/syscall.o	(.text)
+		lib/crt.o	(.text)
+		lib/syscall.o	(.text)
 		*(.text)
 		. = ALIGN(4);
 	}

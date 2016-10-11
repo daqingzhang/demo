@@ -51,9 +51,14 @@ void irq_tester(int irqs)
 			switch(irqtag.count) {
 			case 1:
 				mask = 1 << irqtag.id;
+				// clear current pending state
+				irq_clr_pending(HWP_IRQ,irqs);
+				// enable global irq again in ISRs
 				core_irq_enable();
+				// enable interrupt and pend a new interrupt
 				irq_enable(HWP_IRQ,mask);
 				irq_set_pending(HWP_IRQ,mask);
+				// wait until new interrupt is responed
 				while(irqtag.count == 1);
 				break;
 			case 2:
@@ -82,22 +87,22 @@ void irq_tester(int irqs)
 		 *
 		 */
 		{
-			u32 tick = 1000;
+			u32 tick = 100;
 
 			irqtag.irqs[irqtag.count++] = irqs;
 
 			switch(irqtag.count) {
 			case 1:
-				// pend a new IRQ
+				// enable and pend a new interrupt
 				mask = 1 << irqtag.id;
-				core_irq_enable();
 				irq_enable(HWP_IRQ,mask);
 				irq_set_pending(HWP_IRQ,mask);
 				//delay
 				while(tick--) {
-					sdelay(8000);
-					sdelay(8000);
+					sdelay(100);
 				}
+				// enable global ISR, now there are more than one IRQ is in pending state.
+				core_irq_enable();
 				break;
 			case 2:
 				if(irqs < irqtag.irqs[0])

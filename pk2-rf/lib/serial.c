@@ -76,16 +76,3 @@ void printstr(const char *str)
 void rprintf(const char *fmt, ...)
 {
 }
-
-void printArray(const char *name, int n, const int arr[])
-{
-}
-
-void setStats(int enable)
-{
-}
-
-int verify(int n, const int* test, const int *verify)
-{
-	return 0;
-}

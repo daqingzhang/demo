@@ -41,13 +41,6 @@ _start:
 	jal x0, lsu_handler
 
 	.align 2
-do_deadloop:
-	nop
-	nop
-	nop
-9:	j 9b
-
-	.align 2
 interrupt_handler:
 	addi sp, sp, -IRQ_STACK_FRAME_SIZE
 	SREG x1, 0x0*REGBYTES(sp)
@@ -121,8 +114,9 @@ clrbss_e:
 	addi a1,zero,0
 	jal x1, main
 
-# jump to do_deadloop after exit main
-	jal x0, do_deadloop
+# jump to dead loop after exit main
+9:	nop
+	j 9b
 
 	.align 2
 illegal_inst_handler:
@@ -150,6 +144,7 @@ ecall_handler:
 
 	.align 2
 save_regs:
+	/* save X2 - X31 */
 	SREG x2,  1*REGBYTES(sp)
 	SREG x3,  2*REGBYTES(sp)
 	SREG x4,  3*REGBYTES(sp)
@@ -180,7 +175,12 @@ save_regs:
 	SREG x29, 28*REGBYTES(sp)
 	SREG x30, 29*REGBYTES(sp)
 	SREG x31, 30*REGBYTES(sp)
-	jalr x0,x1			/* pc = ra, go back */
+	/* save mepc */
+	csrr x31, mepc
+	SREG x31, 31*REGBYTES(sp)
+	LREG x31, 30*REGBYTES(sp)
+	/* pc = ra, go back */
+	jalr x0,x1
 
 	.align 2
 restore_regs_excp:
@@ -194,6 +194,7 @@ restore_regs_excp:
 	nop
 	nop
 restore_regs:
+	/* restore X1 - X29 */
 	LREG x1, 0x0*REGBYTES(sp)	/* ra = [sp + 0] */
 	LREG x2,  1*REGBYTES(sp)
 	LREG x3,  2*REGBYTES(sp)
@@ -224,7 +225,11 @@ restore_regs:
 	LREG x28, 27*REGBYTES(sp)
 	LREG x29, 28*REGBYTES(sp)
 	LREG x30, 29*REGBYTES(sp)
+	/* restore mepc,X30 */
+	LREG x31, 31*REGBYTES(sp)
+	csrw mepc,x31
 	LREG x31, 30*REGBYTES(sp)
+
 	addi sp, sp, IRQ_STACK_FRAME_SIZE
 	eret
 
@@ -235,14 +240,14 @@ restore_regs:
  */
 .globl core_irq_enable
 core_irq_enable:
-	csrci mstatus,0x1
+	csrsi mstatus,0x1
 	ret
 /*
  * void core_irq_disable(void)
  */
 .globl core_irq_disable
 core_irq_disable:
-	csrsi mstatus,0x1
+	csrci mstatus,0x1
 	ret
 /*
  * void do_ecall_test(void);

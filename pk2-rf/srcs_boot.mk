@@ -13,7 +13,7 @@ C_OBJS = \
 	./lib/syscall.o		\
 	./boot/init.o		\
 	./boot/delay.o		\
-	./boot/tmcu_irq.o		\
+	./boot/tmcu_irq.o	\
 	./boot/main.o		\
 	./boot/register.o	\
 	./boot/gsm_tx.o		\

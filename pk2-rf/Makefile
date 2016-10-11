@@ -6,7 +6,7 @@ REL_OUTDIR	:= out
 REL_OBOOTDIR	:= $(REL_OUTDIR)/boot
 REL_OTESTDIR	:= $(REL_OUTDIR)/test
 
-all: clean test
+all: clean boot test
 
 boot:
 	mkdir -p $(REL_OUTDIR) $(REL_OBOOTDIR)

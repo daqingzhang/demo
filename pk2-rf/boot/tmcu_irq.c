@@ -67,9 +67,5 @@ void core_halt(void)
  */
 void software_interrupt(int vector_addr)
 {
-	int id = vector_addr >> 2;
-	u32 mask = 1 << id;
-
-	irq_enable(HWP_IRQ,mask);
-	irq_set_pending(HWP_IRQ,mask);
+	// RISCV core do not support SWI !!!
 }

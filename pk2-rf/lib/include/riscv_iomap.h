@@ -4,7 +4,7 @@
 #define LREG lw
 #define SREG sw
 #define REGBYTES 4
-#define IRQ_STACK_FRAME_SIZE (32 * (REGBYTES))
+#define IRQ_STACK_FRAME_SIZE (33 * (REGBYTES))
 
 /* 16KB SRAM for Instruction Space */
 #define CONFIG_SRAM0_BASE 0x00000000

@@ -44,20 +44,18 @@ void irq_tester(int irqs)
 	case IRQ_CASE_NEST:
 		/*
 		 * Interrupt nesting test !
-		 *
 		 */
 		{
 			irqtag.irqs[irqtag.count++] = irqs;
 			switch(irqtag.count) {
 			case 1:
 				mask = 1 << irqtag.id;
-				// clear current pending state
-				irq_clr_pending(HWP_IRQ,irqs);
-				// enable global irq again in ISRs
-				core_irq_enable();
 				// enable interrupt and pend a new interrupt
 				irq_enable(HWP_IRQ,mask);
 				irq_set_pending(HWP_IRQ,mask);
+				// enable global irq again in ISRs
+				sdelay(1000);
+				core_irq_enable();
 				// wait until new interrupt is responed
 				while(irqtag.count == 1);
 				break;
@@ -117,7 +115,6 @@ void irq_tester(int irqs)
 			default:
 				break;
 			}
-
 		}
 		break;
 	}
@@ -177,10 +174,11 @@ int irq_nesting_test(void)
 	while(irqtag.flag == 0);
 	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
 	if(irqtag.nested == 0)
-		err |= 0x1;
+		err |= 0x01;
 	if(irqtag.count != 2)
-		err |= 0x10;
-
+		err |= 0x02;
+	if(err)
+		writel(err, 0x00012DD8);
 	return err;
 }
 
@@ -209,10 +207,10 @@ int irq_preemption_test(void)
 	irq_set_pending(hwp_irq,mask);
 	while(irqtag.flag == 0);
 	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
-	if(irqtag.preempt != 1)
-		err |= 0x1;
+	if(irqtag.preempt == 0)
+		err |= 0x01;
 	if(irqtag.count != 2)
-		err |= 0x10;
+		err |= 0x02;
 
 	/*
 	 * P0 = 1, P1 = 2, P1 < P0 ,no preempted
@@ -228,9 +226,11 @@ int irq_preemption_test(void)
 	while(irqtag.flag == 0);
 	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
 	if(irqtag.preempt != 0)
-		err |= 0x2;
+		err |= 0x04;
 	if(irqtag.count != 2)
-		err |= 0x20;
+		err |= 0x08;
 
+	if(err)
+		writel(err, 0x00012DDC);
 	return err;
 }

@@ -95,8 +95,8 @@ int main( int argc, char* argv[] )
 #endif
 
 #ifdef CONFIG_IRQ_TEST
-	if(irq_simple_test() != 0)
-		err |= 0x2000;
+//	if(irq_simple_test() != 0)
+//		err |= 0x2000;
 	if(irq_nesting_test() != 0)
 		err |= 0x4000;
 	if(irq_preemption_test() != 0)
@@ -104,16 +104,16 @@ int main( int argc, char* argv[] )
 #endif
 
 #ifdef CONFIG_MATH_TEST
-	if(add_test())
-		err |= 0x10000;
-	if(sub_test())
-		err |= 0x20000;
-	if(mul_test())
-		err |= 0x40000;
+//	if(add_test())
+//		err |= 0x10000;
+//	if(sub_test())
+//		err |= 0x20000;
+//	if(mul_test())
+//		err |= 0x40000;
 	if(div_test())
 		err |= 0x80000;
-	if(shift_left_test())
-		err |= 0x100000;
+//	if(shift_left_test())
+//		err |= 0x100000;
 	if(shift_right_test())
 		err |= 0x200000;
 #endif

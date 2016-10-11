@@ -1,6 +1,6 @@
 #include <config.h>
 
-static int add_num32(int a,int b)
+static int add_num32(unsigned int a,unsigned int b)
 {
 	return (a + b);
 }
@@ -48,7 +48,7 @@ int add_test(void)
 	return err;
 }
 
-static int sub_num32(int a,int b)
+static int sub_num32(unsigned int a,unsigned int b)
 {
 	return (a-b);
 }
@@ -93,7 +93,7 @@ int sub_test(void)
 	return err;
 }
 
-static int mul_num32(int a,int b)
+static int mul_num32(unsigned int a,unsigned int b)
 {
 	return (a * b);
 }
@@ -133,7 +133,7 @@ int mul_test(void)
 	return err;
 }
 
-static int div_num32(int a,int b)
+static int div_num32(unsigned int a,unsigned int b)
 {
 	return(a/b);
 }
@@ -172,10 +172,12 @@ int div_test(void)
 	if(0x00000001 != div_num32(0xffffffff,0xffffffff))
 		err |= 0x1000;
 
+	if(err)
+		writel(err, 0x00012DD4);
 	return err;
 }
 
-static int lsl_num32(int val, int bit)
+static int lsl_num32(unsigned int val, unsigned int bit)
 {
 	val = val << bit;
 	return val;
@@ -208,7 +210,7 @@ int shift_left_test(void)
 	return err;
 }
 
-static int lsr_num32(int val, int bit)
+static int lsr_num32(unsigned int val, unsigned int bit)
 {
 	val = val >> bit;
 	return val;
@@ -227,7 +229,7 @@ int shift_right_test(void)
 	if(0x00000000 != lsr_num32(0x00000001,4))
 		err |= 0x08;
 
-	if(0x40000000 != lsr_num32(0x80000000,1))
+	if(0x40000000 != lsr_num32(0x80000000,1))///////
 		err |= 0x10;
 	if(0x07fff000 != lsr_num32(0x7fff0000,4))
 		err |= 0x20;
@@ -237,6 +239,7 @@ int shift_right_test(void)
 		err |= 0x80;
 	if(0x00000000 != lsr_num32(0x00007fff,16))
 		err |= 0x100;
-
+	if(err)
+		writel(err, 0x00012DD0);
 	return err;
 }

@@ -1,7 +1,6 @@
 #include <util.h>
 #include <serial.h>
 
-#ifdef CONFIG_HAS_SERIAL
 #if 0
 void serial_init(void)
 {
@@ -69,8 +68,6 @@ void printstr(const char *str)
 {
 	serial_puts(str);
 }
-#endif
-
 #endif
 
 void rprintf(const char *fmt, ...)

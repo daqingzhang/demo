@@ -4,9 +4,20 @@
 #include <sram_rw.h>
 #include <multiply.h>
 
+#define CALLEXIT_ADDR	 0x00011FFC
+#define CALLEXIT_PASS	 0x900dc0de
+
+void call_exit(int err)
+{
+	if(!err)
+		err = CALLEXIT_PASS;
+	writel(err,CALLEXIT_ADDR);
+}
+
 #define STR_MSTATUS_ADDR 0x00011FF0
-unsigned int read_csr_mstatus(void);
-void write_csr_mstatus(unsigned int status);
+void core_ecall(void);
+unsigned int core_get_mstatus(void);
+void core_set_mstatus(unsigned int status);
 
 int irq_simple_test(void);
 int irq_preemption_test(void);
@@ -18,8 +29,6 @@ int mul_test(void);
 int div_test(void);
 int shift_right_test(void);
 int shift_left_test(void);
-
-void do_ecall_test(void);
 
 char gdst[32] = {0};
 char abc = 0xFE;
@@ -51,8 +60,8 @@ int main( int argc, char* argv[] )
 	/*
 	 * ecall inst test
 	 */
-	do_ecall_test();
-	status = read_csr_mstatus();
+	core_ecall();
+	status = core_get_mstatus();
 	*(unsigned int *)STR_MSTATUS_ADDR = status;
 
 	/*
@@ -95,8 +104,8 @@ int main( int argc, char* argv[] )
 #endif
 
 #ifdef CONFIG_IRQ_TEST
-//	if(irq_simple_test() != 0)
-//		err |= 0x2000;
+	if(irq_simple_test() != 0)
+		err |= 0x2000;
 	if(irq_nesting_test() != 0)
 		err |= 0x4000;
 	if(irq_preemption_test() != 0)
@@ -104,16 +113,16 @@ int main( int argc, char* argv[] )
 #endif
 
 #ifdef CONFIG_MATH_TEST
-//	if(add_test())
-//		err |= 0x10000;
-//	if(sub_test())
-//		err |= 0x20000;
-//	if(mul_test())
-//		err |= 0x40000;
+	if(add_test())
+		err |= 0x10000;
+	if(sub_test())
+		err |= 0x20000;
+	if(mul_test())
+		err |= 0x40000;
 	if(div_test())
 		err |= 0x80000;
-//	if(shift_left_test())
-//		err |= 0x100000;
+	if(shift_left_test())
+		err |= 0x100000;
 	if(shift_right_test())
 		err |= 0x200000;
 #endif
@@ -123,6 +132,5 @@ int main( int argc, char* argv[] )
 		err |= 0x80000000;
 #endif
 	call_exit(err);
-	while(1);
 	return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef __RISCV_IOMAP_H__
 #define __RISCV_IOMAP_H__
 
+/* #define CONFIG_SUPPORT_NESTED_IRQ */
 #define LREG lw
 #define SREG sw
 #define REGBYTES 4
@@ -24,6 +25,7 @@
 
 /* IRQ BASE ADDR */
 #define RDA_IRQ_BASE	0x00028000
+
 /* UART BASE ADDR */
 #define RDA_UART_BASE	0x00039000
 

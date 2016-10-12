@@ -58,14 +58,9 @@ void core_halt(void)
 }
 
 /*
- * software_interrupt - trigger a interrupts which
- * vector's address is specified by vector_addr.
- *
- * @description:  This is not a real swi instruction but
- * series operations. the RISCV core do not support real
- * software interrupt.
+ * software_interrupt - trigger a excetipn call
  */
 void software_interrupt(int vector_addr)
 {
-	// RISCV core do not support SWI !!!
+	core_ecall();
 }

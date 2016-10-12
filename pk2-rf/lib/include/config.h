@@ -3,13 +3,20 @@
 
 #include <riscv_iomap.h>
 
-#define RV32_ARRAY_SIZE(tab) (sizeof((tab)) / sizeof((tab)[0]))
-
+#define ARRAY_SIZE(tab) (sizeof((tab)) / sizeof((tab)[0]))
 #define readl(addr) (*(volatile unsigned int *)(addr))
 #define writel(val,addr) (*(volatile unsigned int *)(addr) = (val))
 
 #ifndef NULL
 #define NULL 0
+#endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
 #endif
 
 typedef volatile unsigned int __REG32_R__;
@@ -21,7 +28,5 @@ typedef unsigned int	u32;
 typedef signed char	s8;
 typedef signed short	s16;
 typedef signed int	s32;
-
-void call_exit(int err);
 
 #endif /* __CONFIG_H__ */

@@ -175,10 +175,12 @@ save_regs:
 	SREG x29, 28*REGBYTES(sp)
 	SREG x30, 29*REGBYTES(sp)
 	SREG x31, 30*REGBYTES(sp)
-	/* save mepc */
+
+#ifdef CONFIG_SUPPORT_NESTED_IRQ
 	csrr x31, mepc
 	SREG x31, 31*REGBYTES(sp)
 	LREG x31, 30*REGBYTES(sp)
+#endif
 	/* pc = ra, go back */
 	jalr x0,x1
 
@@ -225,16 +227,15 @@ restore_regs:
 	LREG x28, 27*REGBYTES(sp)
 	LREG x29, 28*REGBYTES(sp)
 	LREG x30, 29*REGBYTES(sp)
-	/* restore mepc,X30 */
+
+#ifdef CONFIG_SUPPORT_NESTED_IRQ
 	LREG x31, 31*REGBYTES(sp)
 	csrw mepc,x31
+#endif
 	LREG x31, 30*REGBYTES(sp)
 
 	addi sp, sp, IRQ_STACK_FRAME_SIZE
 	eret
-
-///////////////////////////////////////////////// Test //////////////////////////////////////////////
-
 /*
  * void core_irq_enable(void)
  */
@@ -250,32 +251,23 @@ core_irq_disable:
 	csrci mstatus,0x1
 	ret
 /*
- * void do_ecall_test(void);
+ * void core_ecall(void);
  */
- .globl do_ecall_test
-do_ecall_test:
+ .globl core_ecall
+core_ecall:
 	ecall
 	ret
 /*
- * unsigned read_csr_mstatus(void);
+ * unsigned int core_get_mstatus(void);
  */
-.globl read_csr_mstatus
-read_csr_mstatus:
+.globl core_get_mstatus
+core_get_mstatus:
 	csrr a0, mstatus
 	ret
 /*
- * void write_csr_mstatus(unsigned status);
+ * void core_set_mstatus(unsigned int status);
  */
-.globl write_csr_mstatus
-write_csr_mstatus:
+.globl core_set_mstatus
+core_set_mstatus:
 	csrw mstatus, a0
 	ret
-
-/*
- * int core_syscall(uintptr_t num, uintptr_t arg0, uintptr_t arg1, uintptr_t arg2)
- */
-.globl core_syscall
-core_syscall:
-	ecall
-	ret
-///////////////////////////////////////////////// Test //////////////////////////////////////////////

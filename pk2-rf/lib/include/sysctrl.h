@@ -1,5 +1,5 @@
-#ifndef __REG_SYSCTRL_H__
-#define __REG_SYSCTRL_H__
+#ifndef __SYSCTRL_H__
+#define __SYSCTRL_H__
 
 #include <reg_sysctrl.h>
 
@@ -8,6 +8,7 @@ enum SYSCTRL_RST_MDL
 	SYS_RST_DFE = 0,
 	SYS_RST_BUS,
 	SYS_RST_CGU,
+	SYS_RST_CPU,
 	SYS_RST_DFE_PWD,
 	SYS_RST_DFE_RISCV,
 	SYS_RST_JTAG,

@@ -2,8 +2,6 @@
 #include <serial.h>
 #include <sysctrl.h>
 
-#define UART_BAUDDIV(pclk, baud) ((pclk) / (baud))
-
 void serial_set_baud(int div)
 {
 	div = (div > 16) ? div : 16;
@@ -65,7 +63,7 @@ int serial_gets(unsigned char *s)
 	return cnt;
 }
 
-int putchar(char ch)
+int putchar(int ch)
 {
 	serial_putc(ch);
 	return ch;

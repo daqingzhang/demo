@@ -136,6 +136,9 @@ static uint64_t lfsr(uint64_t x)
   } while(0)
 #endif
 
+#define nop() asm volatile ("nop")
+
 #include <irq.h>
 #include <serial.h>
+
 #endif //__UTIL_H

@@ -1,8 +1,6 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <riscv_iomap.h>
-
 #define ARRAY_SIZE(tab) (sizeof((tab)) / sizeof((tab)[0]))
 #define readl(addr) (*(volatile unsigned int *)(addr))
 #define writel(val,addr) (*(volatile unsigned int *)(addr) = (val))
@@ -28,5 +26,7 @@ typedef unsigned int	u32;
 typedef signed char	s8;
 typedef signed short	s16;
 typedef signed int	s32;
+
+#include <riscv_iomap.h>
 
 #endif /* __CONFIG_H__ */

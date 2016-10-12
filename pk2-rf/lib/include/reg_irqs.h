@@ -9,6 +9,6 @@ typedef volatile struct {
 	__REG32_RW1 clrpending;
 }hwp_irq_t;
 
-#define HWP_IRQ	((hwp_irq_t *)(RDA_IRQ_BASE))
+#define HWP_IRQ		((hwp_irq_t *)(RDA_IRQ_BASE))
 
 #endif

@@ -1,75 +1,85 @@
 #include <util.h>
 #include <serial.h>
+#include <sysctrl.h>
 
-#if 0
+#define UART_BAUDDIV(pclk, baud) ((pclk) / (baud))
+
+void serial_set_baud(int div)
+{
+	div = (div > 16) ? div : 16;
+
+	HWP_UART->bauddiv = div;
+}
+
 void serial_init(void)
 {
-	
-}
+	u32 ctrl;
+	u32 sysclk = sysctrl_get_system_clock();
 
-void serial_enable_rtscts(void)
-{
+	serial_set_baud(sysclk / SERIAL_DEFAULT_BAUD);
 
-}
-
-int serial_getc(void)
-{
-	return 0;
+	ctrl = UART_CTRL_TX_EN | UART_CTRL_RX_EN;
+	HWP_UART->ctrl = ctrl;
 }
 
 int serial_tstc(void)
 {
-	return 0;
+	while(!(HWP_UART->state & UART_STATE_RX_FUL))
+		;
+	return 1;
+}
+
+char serial_getc(void)
+{
+	while(!(HWP_UART->state & UART_STATE_RX_FUL))
+		;
+	return HWP_UART->data;
 }
 
 void serial_putc(char c)
 {
-
+	while(HWP_UART->state & UART_STATE_TX_FUL)
+		;
+	HWP_UART->data = (u8)c;
 }
 
 void serial_puts(const char *s)
 {
-	while(*s)
-		serial_putc(*s++);
+	while(*s != '\0') {
+		if(*s == '\n')
+			serial_putc('\r');
+		serial_putc(*(s++));
+	}
 }
 
-int serial_gets(unsigned char *pstr)
+int serial_gets(unsigned char *s)
 {
-	return 0;
+	int cnt = 0;
+	char ch;
+
+	do {
+		ch = serial_getc();
+		s[cnt++] = ch;
+	}while(ch != '\n');
+
+	return cnt;
 }
 
-int putchar(int ch)
+int putchar(char ch)
 {
 	serial_putc(ch);
 	return ch;
 }
 
-void print_u8(uint8_t data)
+void print_u32(u32 data)
 {
+	u32 i = 8,tmp,cnt;
 
-}
-
-void print_u16(uint16_t data)
-{
-
-}
-
-void print_u32(uint32_t data)
-{
-
-}
-
-void printhex(uint32_t x)
-{
-	print_u32(x);
-}
-
-void printstr(const char *str)
-{
-	serial_puts(str);
-}
-#endif
-
-void rprintf(const char *fmt, ...)
-{
+	for(;i != 0;i--) {
+		cnt = (i - 1) << 2;
+		tmp = ((data >> cnt) & 0x0F) | 0x30;
+		if(tmp > 0x39)
+			tmp += 0x07;
+		serial_putc((u8)tmp);
+	}
 }

@@ -5,6 +5,7 @@
 /*
  * software reset1 modules
  */
+
 #define SOFT_RST1_DFE		(1 << 0)
 #define SOFT_RST1_BUS		(1 << 1)
 #define SOFT_RST1_CGU		(1 << 2)
@@ -25,6 +26,9 @@
 /*
  * software reset2 modules
  */
+
+#define SOFT_RST2_RFSPI 	(1 << 0)
+#define SOFT_RST2_RFAPB 	(1 << 1)
 
 void sysctrl_set_system_clock(int clk);
 int  sysctrl_get_system_clock(void);

@@ -11,6 +11,7 @@ C_OBJS = \
 	./lib/serial.o		\
 	./lib/irq.o		\
 	./lib/sysctrl.o		\
+	./lib/timer.o		\
 	./lib/syscall.o		\
 	./boot/init.o		\
 	./boot/delay.o		\

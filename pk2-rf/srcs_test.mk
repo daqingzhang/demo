@@ -10,6 +10,7 @@ C_OBJS = \
 	./lib/string.o	\
 	./lib/serial.o	\
 	./lib/irq.o	\
+	./lib/timer.o	\
 	./lib/sysctrl.o	\
 	./lib/syscall.o	\
 	./test/main.o

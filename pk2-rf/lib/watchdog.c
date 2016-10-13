@@ -5,7 +5,7 @@ static void wdog_lock(int locked)
 	if(!locked)
 		HWP_WDOG->lock = WDOG_LOCK_VALUE;
 	else
-		HWP_WDOG->lock = 0;
+		HWP_WDOG->lock = 1;
 }
 
 void wdog_init(u32 cnt)

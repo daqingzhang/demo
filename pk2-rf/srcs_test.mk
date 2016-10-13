@@ -11,6 +11,7 @@ C_OBJS = \
 	./lib/serial.o	\
 	./lib/irq.o	\
 	./lib/timer.o	\
+	./lib/watchdog.o \
 	./lib/sysctrl.o	\
 	./lib/syscall.o	\
 	./test/main.o

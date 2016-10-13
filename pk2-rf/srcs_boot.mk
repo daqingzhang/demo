@@ -12,6 +12,7 @@ C_OBJS = \
 	./lib/irq.o		\
 	./lib/sysctrl.o		\
 	./lib/timer.o		\
+	./lib/watchdog.o	\
 	./lib/syscall.o		\
 	./boot/init.o		\
 	./boot/delay.o		\

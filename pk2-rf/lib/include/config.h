@@ -18,6 +18,7 @@
 #endif
 
 typedef volatile unsigned int __REG32_R__;
+typedef volatile unsigned int __REG32_W__;
 typedef volatile unsigned int __REG32_RW_;
 typedef volatile unsigned int __REG32_RW1;
 typedef unsigned char	u8;
@@ -38,5 +39,10 @@ typedef signed int	s32;
 #define CONFIG_SYSCLK_13MHZ	13000000
 
 #define CONFIG_SYSCLK_VALUE	CONFIG_SYSCLK_26MHZ
+
+/*
+ * use watch dog interrupt function
+ */
+#define CONFIG_USE_WDOG_INTERRUPT
 
 #endif /* __CONFIG_H__ */

@@ -1,6 +1,6 @@
 #ifndef __INTERRUPTS_H__
 #define __INTERRUPTS_H__
-#include <reg_irqs.h>
+#include <regs/reg_irqs.h>
 
 #define IRQ_EN_MASK_ALL  0xffffffff
 #define IRQ_DIS_MASK_ALL 0xffffffff

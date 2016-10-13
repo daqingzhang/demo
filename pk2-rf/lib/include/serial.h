@@ -1,6 +1,6 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
-#include <reg_uart.h>
+#include <regs/reg_uart.h>
 
 #define SERIAL_DEFAULT_BAUD 	115200
 

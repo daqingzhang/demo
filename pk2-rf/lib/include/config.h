@@ -29,4 +29,14 @@ typedef signed int	s32;
 
 #include <riscv_iomap.h>
 
+/*
+ * system clock
+ */
+#define CONFIG_SYSCLK_156MHZ	156000000
+#define CONFIG_SYSCLK_78MHZ	78000000
+#define CONFIG_SYSCLK_26MHZ	26000000
+#define CONFIG_SYSCLK_13MHZ	13000000
+
+#define CONFIG_SYSCLK_VALUE	CONFIG_SYSCLK_26MHZ
+
 #endif /* __CONFIG_H__ */

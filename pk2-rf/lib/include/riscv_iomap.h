@@ -1,11 +1,15 @@
 #ifndef __RISCV_IOMAP_H__
 #define __RISCV_IOMAP_H__
 
-/* #define CONFIG_SUPPORT_NESTED_IRQ */
 #define LREG lw
 #define SREG sw
 #define REGBYTES 4
 #define IRQ_STACK_FRAME_SIZE (33 * (REGBYTES))
+
+/*
+ * support nested interrupts
+ */
+/* #define CONFIG_SUPPORT_NESTED_IRQ */
 
 /* 16KB SRAM for Instruction Space */
 #define CONFIG_SRAM0_BASE 0x00000000

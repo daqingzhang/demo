@@ -41,7 +41,7 @@ typedef signed int	s32;
 #define CONFIG_SYSCLK_VALUE	CONFIG_SYSCLK_26MHZ
 
 /*
- * use watch dog interrupt function
+ * use watch dog interrupt
  */
 #define CONFIG_USE_WDOG_INTERRUPT
 

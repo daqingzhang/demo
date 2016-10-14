@@ -30,6 +30,8 @@ int div_test(void);
 int shift_right_test(void);
 int shift_left_test(void);
 
+int timer_test(void);
+
 char gdst[32] = {0};
 char abc = 0xFE;
 
@@ -127,6 +129,10 @@ int main( int argc, char* argv[] )
 		err |= 0x200000;
 #endif
 
+#ifdef CONFIG_TIMER_TEST
+	if(timer_test())
+		err |= 0x400000;
+#endif
 #ifdef CONFIG_LSU_TEST
 	if(mem32_invalid_access() != 0)
 		err |= 0x80000000;

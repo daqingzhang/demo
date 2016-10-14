@@ -20,6 +20,6 @@ typedef volatile struct {
 #define TIMER_ENABLE		(1 << 0)
 
 /* itstatus */
-#define MASK_TIMER_IT_STATUS	(1 << 0)
+#define MASK_TIMER_ITSTATUS	(1 << 0)
 
 #endif

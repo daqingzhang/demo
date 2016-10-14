@@ -7,24 +7,29 @@
 #ifdef CONFIG_IRQ_TEST
 void irq_tester(int irqs);
 #endif
-
+#ifdef CONFIG_TIMER_TEST
+void timer_callback(int irqs);
+#endif
 #ifndef CONFIG_PROJ_TEST
 void dispatch_isr(int irqs);
 #endif
 
 void do_interrupts(void)
 {
-	unsigned int irqs = irq_get_status(HWP_IRQ,0xFFFFFFFF);
+	unsigned int irqs = irq_get_status(0xFFFFFFFF);
 
 #ifdef CONFIG_IRQ_TEST
 	irq_tester(irqs);//just for test
+#endif
+#ifdef CONFIG_TIMER_TEST
+	timer_callback(irqs);
 #endif
 	/*
 	 * We must clear IRQ status before process it.
 	 * And this is used to support nested IRQ
 	 * and preemption IRQ.
 	 */
-	irq_clr_pending(HWP_IRQ,irqs);
+	irq_clr_pending(irqs);
 
 	/*
 	 * During the exception service program executes, the

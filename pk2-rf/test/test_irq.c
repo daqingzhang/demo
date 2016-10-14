@@ -51,8 +51,8 @@ void irq_tester(int irqs)
 			case 1:
 				mask = 1 << irqtag.id;
 				// enable interrupt and pend a new interrupt
-				irq_enable(HWP_IRQ,mask);
-				irq_set_pending(HWP_IRQ,mask);
+				irq_enable(mask);
+				irq_set_pending(mask);
 				// enable global irq again in ISRs
 				sdelay(1000);
 				core_irq_enable();
@@ -93,8 +93,8 @@ void irq_tester(int irqs)
 			case 1:
 				// enable and pend a new interrupt
 				mask = 1 << irqtag.id;
-				irq_enable(HWP_IRQ,mask);
-				irq_set_pending(HWP_IRQ,mask);
+				irq_enable(mask);
+				irq_set_pending(mask);
 				//delay
 				while(tick--) {
 					sdelay(100);
@@ -123,7 +123,6 @@ void irq_tester(int irqs)
 int irq_simple_test(void)
 {
 	u32 mask = 0;
-	hwp_irq_t *hwp_irq = HWP_IRQ;
 
 	irq_case = IRQ_CASE_SIMPLE;
 
@@ -134,8 +133,8 @@ int irq_simple_test(void)
 		irqtag.flag = 0;
 		mask = 1 << irqtag.id;
 
-		irq_enable(hwp_irq,mask);
-		irq_set_pending(hwp_irq,mask);
+		irq_enable(mask);
+		irq_set_pending(mask);
 
 		while(irqtag.flag == 0) {
 			sdelay(8000);
@@ -144,7 +143,7 @@ int irq_simple_test(void)
 		if(irqtag.id == 32)
 			break;
 	}
-	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_DIS_MASK_ALL);
 
 	return irqtag.error;
 }
@@ -153,7 +152,6 @@ int irq_nesting_test(void)
 {
 	int err = 0;
 	u32 mask = 0,id = 0;
-	hwp_irq_t *hwp_irq = HWP_IRQ;
 
 	irq_case = IRQ_CASE_NEST;
 
@@ -169,10 +167,10 @@ int irq_nesting_test(void)
 	irqtag.id = 1;
 	id = 2;
 	mask = 1 << id;
-	irq_enable(hwp_irq,mask);
-	irq_set_pending(hwp_irq,mask);
+	irq_enable(mask);
+	irq_set_pending(mask);
 	while(irqtag.flag == 0);
-	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_DIS_MASK_ALL);
 	if(irqtag.nested == 0)
 		err |= 0x01;
 	if(irqtag.count != 2)
@@ -186,7 +184,6 @@ int irq_preemption_test(void)
 {
 	int err = 0;
 	u32 mask = 0,id = 0;
-	hwp_irq_t *hwp_irq = HWP_IRQ;
 
 	irq_case = IRQ_CASE_PREEMPT;
 
@@ -203,10 +200,10 @@ int irq_preemption_test(void)
 	irqtag.id = 1;
 	id = 2;
 	mask = 1 << id;
-	irq_enable(hwp_irq,mask);
-	irq_set_pending(hwp_irq,mask);
+	irq_enable(mask);
+	irq_set_pending(mask);
 	while(irqtag.flag == 0);
-	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_DIS_MASK_ALL);
 	if(irqtag.preempt == 0)
 		err |= 0x01;
 	if(irqtag.count != 2)
@@ -221,10 +218,10 @@ int irq_preemption_test(void)
 	irqtag.id = 2;
 	id = 1;
 	mask = 1 << id;
-	irq_enable(hwp_irq,mask);
-	irq_set_pending(hwp_irq,mask);
+	irq_enable(mask);
+	irq_set_pending(mask);
 	while(irqtag.flag == 0);
-	irq_disable(hwp_irq,IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_DIS_MASK_ALL);
 	if(irqtag.preempt != 0)
 		err |= 0x04;
 	if(irqtag.count != 2)

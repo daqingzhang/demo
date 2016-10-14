@@ -1,31 +1,31 @@
 #include <irq.h>
 
-void irq_enable(hwp_irq_t *irqs, u32 mask)
+void irq_enable(u32 mask)
 {
-	irqs->enable |= mask;
+	HWP_IRQ->enable |= mask;
 }
 
-void irq_disable(hwp_irq_t *irqs, u32 mask)
+void irq_disable(u32 mask)
 {
-	irqs->enable &= ~mask;
+	HWP_IRQ->enable &= ~mask;
 }
 
-u32 irq_get_enable_status(hwp_irq_t *irqs)
+u32 irq_get_enable_status(void)
 {
-	return irqs->enable;
+	return HWP_IRQ->enable;
 }
 
-void irq_set_pending(hwp_irq_t *irqs, u32 mask)
+void irq_set_pending(u32 mask)
 {
-	irqs->setpending = mask;
+	HWP_IRQ->setpending = mask;
 }
 
-void irq_clr_pending(hwp_irq_t *irqs, u32 mask)
+void irq_clr_pending(u32 mask)
 {
-	irqs->clrpending = mask;
+	HWP_IRQ->clrpending = mask;
 }
 
-u32 irq_get_status(hwp_irq_t *irqs, u32 mask)
+u32 irq_get_status(u32 mask)
 {
-	return (irqs->pending & mask);
+	return (HWP_IRQ->pending & mask);
 }

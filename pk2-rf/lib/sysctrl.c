@@ -7,7 +7,7 @@
  *	clk:	value will be set
  * @note:
  *	cfg_clk_sys:
- *		bit[11]	 1, clrsrc is 156MHz,0,clksrc is 26MHz
+ *		bit[11]	 1, clksrc is 26MHz,0,clksrc is 156MHz
  *		bit[10]	 1, update divider ration
  *		bit[8:5] divider numerator
  *		bit[3:0] divider denominator 
@@ -16,20 +16,20 @@ void sysctrl_set_system_clock(int clk)
 {
 	switch(clk) {
 	case CONFIG_SYSCLK_156MHZ:
-		HWP_SYSCTRL->cfg_clk_sys  = 0x0800;
+		HWP_SYSCTRL->cfg_clk_sys  = 0x0000;
 		HWP_SYSCTRL->cfg_clk_sys |= 0x0400;
 		break;
 	case CONFIG_SYSCLK_78MHZ:
-		HWP_SYSCTRL->cfg_clk_sys  = 0x0822;
+		HWP_SYSCTRL->cfg_clk_sys  = 0x0022;
 		HWP_SYSCTRL->cfg_clk_sys |= 0x0400;
 		break;
 	case CONFIG_SYSCLK_13MHZ:
-		HWP_SYSCTRL->cfg_clk_sys  = 0x0022;
+		HWP_SYSCTRL->cfg_clk_sys  = 0x0822;
 		HWP_SYSCTRL->cfg_clk_sys |= 0x0400;
 		break;
 	case CONFIG_SYSCLK_26MHZ:
 	default:
-		HWP_SYSCTRL->cfg_clk_sys  = 0x0000;
+		HWP_SYSCTRL->cfg_clk_sys  = 0x0800;
 		HWP_SYSCTRL->cfg_clk_sys |= 0x0400;
 		break;
 	}

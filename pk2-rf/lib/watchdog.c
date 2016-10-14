@@ -45,7 +45,7 @@ void wdog_it_enable(int enabled)
 	wdog_lock(1);
 }
 
-int wdog_it_get_status(void)
+int wdog_get_itstatus(void)
 {
 	u32 status;
 
@@ -55,16 +55,16 @@ int wdog_it_get_status(void)
 	return status;
 }
 
-void wdog_it_clr_status(void)
+void wdog_clr_itstatus(void)
 {
 	wdog_lock(0);
 	HWP_WDOG->intclr = WDOG_INTCLR_VALUE;
 	wdog_lock(1);
 }
 
-void wdog_it_handler(void)
+void wdog_callback(void)
 {
-	wdog_it_clr_status();
+	wdog_clr_itstatus();
 	// TODO: Do work while interrupt occuring ...
 }
 #endif

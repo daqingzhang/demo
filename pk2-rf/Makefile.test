@@ -16,7 +16,7 @@ XLEN	?= 32
 
 RISCV_PREFIX	:= riscv$(XLEN)-unknown-elf-
 RISCV_GCC	:= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O0 -ffast-math -fno-common -fno-builtin-printf
+RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -Os -ffast-math -fno-common -fno-builtin-printf
 RISCV_LINK	:= $(RISCV_GCC) -T linker_test.ld $(INCS)
 RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc
 RISCV_OBJDUMP	:= $(RISCV_PREFIX)objdump
@@ -33,11 +33,12 @@ TARGET_SYMBOLS	 :=$(TARGET).symbols
 #====================================================================
 TARGET_DEFS	:= -DPREALLOCATE=1 -DHOST_DEBUG=0
 TARGET_DEFS	+= -DCONFIG_PROJ_TEST
-TARGET_DEFS	+= -DCONFIG_SUPPORT_NESTED_IRQ
-TARGET_DEFS	+= -DCONFIG_IRQ_TEST
-TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
-TARGET_DEFS	+= -DCONFIG_MEM32_TEST
-TARGET_DEFS	+= -DCONFIG_MATH_TEST
+#TARGET_DEFS	+= -DCONFIG_SUPPORT_NESTED_IRQ
+#TARGET_DEFS	+= -DCONFIG_IRQ_TEST
+#TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
+#TARGET_DEFS	+= -DCONFIG_MEM32_TEST
+#TARGET_DEFS	+= -DCONFIG_MATH_TEST
+TARGET_DEFS	+= -DCONFIG_TIMER_TEST
 #TARGET_DEFS	+= -DCONFIG_LSU_TEST
 #====================================================================
 

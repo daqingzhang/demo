@@ -32,6 +32,10 @@ ifneq ($(findstring CONFIG_IRQ_TEST,$(TARGET_DEFS)),)
 C_OBJS += ./test/test_irq.o
 endif
 
+ifneq ($(findstring CONFIG_TIMER_TEST,$(TARGET_DEFS)),)
+C_OBJS += ./test/test_timer.o
+endif
+
 ifneq ($(findstring CONFIG_LSU_TEST,$(TARGET_DEFS)),)
 C_OBJS += ./test/test_lsu.o
 endif

@@ -16,7 +16,7 @@ XLEN	?= 32
 
 RISCV_PREFIX	:= riscv$(XLEN)-unknown-elf-
 RISCV_GCC	:= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common -fno-builtin-printf
+RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -Os -ffast-math -fno-common -fno-builtin-printf
 RISCV_LINK	:= $(RISCV_GCC) -T linker_boot.ld $(INCS)
 RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc
 RISCV_OBJDUMP	:= $(RISCV_PREFIX)objdump

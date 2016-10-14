@@ -50,3 +50,13 @@ void timer_dly_us(hwp_timer_t *hwp_timer, int us)
 	hwp_timer->itstatus = MASK_TIMER_ITSTATUS;
 	hwp_timer->ctrl &= ~(TIMER_ENABLE | TIMER_IT_ENABLE);
 }
+
+void udelay(unsigned int us)
+{
+	timer_dly_us(HWP_TIMER2,us);
+}
+
+void mdelay(unsigned int ms)
+{
+	timer_dly_us(HWP_TIMER2,ms * 1000);
+}

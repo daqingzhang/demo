@@ -64,6 +64,44 @@ void do_ecall(void)
 
 void board_init(int flag)
 {
-	// TODO: add code here
-	// Initialize hardware before jump into main()
+	/* disable global IRQ */
+	core_irq_enable(0);
+
+	/* configure system clock */
+	sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
+
+	/* don't bypass watchdog */
+	sysctrl_bypass_watchdog(0);
+
+	/* enable hardware error response */
+	sysctrl_hwerr_response(1);
+
+	/* reset hardware */
+	sysctrl_soft_rst1_en(SOFT_RST1_TIMER0
+				| SOFT_RST1_TIMER1
+				| SOFT_RST1_TIMER2);
+	nop();
+	nop();
+	nop();
+	nop();
+	sysctrl_soft_rst1_dis(SOFT_RST1_TIMER0
+				| SOFT_RST1_TIMER1
+				| SOFT_RST1_TIMER2);
+	nop();
+	nop();
+	nop();
+	nop();
+
+	/* initial pin-mux */
+
+	/* initial GPIOs,input */
+	gpio_set_direction(0xFFFFFFFF,1);
+
+	/* initial UART */
+	serial_init();
+
+	/* enable IRQs */
+	irq_clr_pending(0xFFFFFFFF);
+	core_irq_enable(1);
+	//irq_enable(0xFFFFFFFF);
 }

@@ -2,8 +2,6 @@
 #define __SERIAL_H__
 #include <regs/reg_uart.h>
 
-#define SERIAL_DEFAULT_BAUD 	115200
-
 void serial_init(void);
 int  serial_tstc(void);
 char serial_getc(void);

@@ -14,7 +14,7 @@ void serial_init(void)
 	u32 ctrl;
 	u32 sysclk = sysctrl_get_system_clock();
 
-	serial_set_baud(sysclk / SERIAL_DEFAULT_BAUD);
+	serial_set_baud(sysclk / CONFIG_SERIAL_BAUD);
 
 	ctrl = UART_CTRL_TX_EN | UART_CTRL_RX_EN;
 	HWP_UART->ctrl = ctrl;

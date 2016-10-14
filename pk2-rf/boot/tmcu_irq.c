@@ -25,7 +25,7 @@ void disable_interrupts(void)
  */
 int get_interrupt_mask(void)  
 {
-	return irq_get_enable_status(HWP_IRQ);
+	return irq_get_enable_status();
 }
 
 /*
@@ -34,7 +34,7 @@ int get_interrupt_mask(void)
  */
 void set_interrupt_mask(unsigned int mask)
 {
-	irq_disable(HWP_IRQ,mask);
+	irq_disable(mask);
 }
 
 /*
@@ -43,7 +43,7 @@ void set_interrupt_mask(unsigned int mask)
  */
 void set_interrupt_unmask(unsigned int mask)
 {
-	irq_enable(HWP_IRQ,mask);
+	irq_enable(mask);
 }
 
 /*

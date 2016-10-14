@@ -3,6 +3,7 @@
 #include <util.h>
 #include <serial.h>
 #include <irq.h>
+#include <sysctrl.h>
 
 #ifdef CONFIG_IRQ_TEST
 void irq_tester(int irqs);
@@ -51,6 +52,7 @@ void do_illegal_inst(void)
 void do_lsu(void)
 {
 	// TODO: reset CPU ...
+	sysctrl_soft_rst1_en(SOFT_RST1_RISCV);
 	while(1);
 }
 

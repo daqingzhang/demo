@@ -35,14 +35,14 @@ Vector Table
 	21	0x54		| APB register 0x3002a
 	22	0x58		| APB register 0x3002c
 	23	0x5C		| APB register 0x3002e
-	24	0x60		| reserved
-	25	0x64		| reserved
-	26	0x68		| reserved
-	27	0x6C		| reserved
-	28	0x70		| reserved
-	29	0x74		| reserved
-	30	0x78		| reserved
-	31	0x7C		| reserved
+	24	0x60		| Reserved
+	25	0x64		| Reserved
+	26	0x68		| Reserved
+	27	0x6C		| Reserved
+	28	0x70		| UART_Rx_Interrupt
+	29	0x74		| UART_Tx_Interrupt
+	30	0x78		| UART_Overrun
+	31	0x7C		| Watchdog_Interrupt
 	32	0x80		| Reset
 	33	0x84		| Illegal Instruction
 	34	0x88		| ECALL instruction Executed

@@ -33,7 +33,7 @@ int shift_left_test(void);
 int timer_test(void);
 
 char gdst[32] = {0};
-char abc = 0xFE;
+volatile char abc = 0xFE;
 
 int main( int argc, char* argv[] )
 {

@@ -1,5 +1,12 @@
 #include <irq.h>
 
+enum IRQ_CASE_ID {
+	IRQ_CASE_NULL,
+	IRQ_CASE_SIMPLE,
+	IRQ_CASE_NEST,
+	IRQ_CASE_PREEMPT,
+};
+
 struct rda_irq_tag {
 	int flag;
 	int id;
@@ -11,16 +18,8 @@ struct rda_irq_tag {
 	u32 irqs[3];
 };
 
-static struct rda_irq_tag irqtag;
-
-enum IRQ_CASE_ID {
-	IRQ_CASE_NULL,
-	IRQ_CASE_SIMPLE,
-	IRQ_CASE_NEST,
-	IRQ_CASE_PREEMPT,
-};
-
-static int irq_case = IRQ_CASE_NULL;
+volatile static struct rda_irq_tag irqtag;
+volatile static int irq_case = IRQ_CASE_NULL;
 
 static void sdelay(int cnt)
 {

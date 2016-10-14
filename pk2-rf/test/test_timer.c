@@ -2,18 +2,22 @@
 #include <sysctrl.h>
 #include <irq.h>
 
-static int timer_callback_done = 0;
+volatile static int timer_callback_done = 0;
 
 void timer_callback(int irqs)
 {
-	if(irqs & 0x10)
+	if(irqs & 0x10) {
 		timer_callback_done = 0x10;
-	else if(irqs & 0x20)
+		timer_clr_itstatus(HWP_TIMER0);
+	} else if(irqs & 0x20) {
 		timer_callback_done = 0x20;
-	else if(irqs & 0x40)
+		timer_clr_itstatus(HWP_TIMER1);
+	} else if(irqs & 0x40) {
 		timer_callback_done = 0x40;
-	else
+		timer_clr_itstatus(HWP_TIMER2);
+	} else {
 		timer_callback_done = 0x0;
+	}
 }
 
 static int timer_irq_test(hwp_timer_t *hwp_timer)
@@ -53,8 +57,7 @@ static int timer_irq_test(hwp_timer_t *hwp_timer)
 	//waiting until timer interrupts occur
 	while(!timer_callback_done);
 
-	//clear itstatus & disable IRQ
-	timer_clr_itstatus(hwp_timer);
+	//disable IRQ
 	core_irq_disable();
 	irq_disable(irqmask);
 	timer_enable(hwp_timer,0);
@@ -64,9 +67,9 @@ static int timer_irq_test(hwp_timer_t *hwp_timer)
 	return 0;
 }
 
-static int timer_delay_demo(hwp_timer_t *hwp_timer)
+static int timer_delay_demo(hwp_timer_t *hwp_timer,u32 cnt)
 {
-	timer_init(hwp_timer,260);//10us delay when apb clock = 26MHz
+	timer_init(hwp_timer,cnt);
 	timer_enable(hwp_timer,1);
 
 	while(!timer_get_itstatus(hwp_timer));
@@ -91,14 +94,22 @@ int timer_test(void)
 	// timer2 delay 10 us
 	timer_dly_us(HWP_TIMER2,10);
 
-	if(timer_delay_demo(HWP_TIMER0))
+	// timer0 delay 260 ticks
+	if(timer_delay_demo(HWP_TIMER0,260))
 		r |= 0x01;
-	if(timer_irq_test(HWP_TIMER0))
+	// timer1 delay 520 ticks
+	if(timer_delay_demo(HWP_TIMER1,520))
 		r |= 0x02;
-	if(timer_irq_test(HWP_TIMER1))
-		r |= 0x04;
-	if(timer_irq_test(HWP_TIMER2))
+	// timer2 delay 780 ticks
+	if(timer_delay_demo(HWP_TIMER2,780))
+		r |= 0x03;
+
+	if(timer_irq_test(HWP_TIMER0))
 		r |= 0x08;
+	if(timer_irq_test(HWP_TIMER1))
+		r |= 0x10;
+	if(timer_irq_test(HWP_TIMER2))
+		r |= 0x20;
 	if(r)
 		writel(r, 0x00012AA0);
 	return r;

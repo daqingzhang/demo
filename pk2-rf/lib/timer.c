@@ -8,10 +8,12 @@ void timer_init(hwp_timer_t *hwp_timer, u32 cnt)
 
 void timer_enable(hwp_timer_t *hwp_timer, int enabled)
 {
-	if(enabled)
+	if(enabled) {
+		hwp_timer->value = 0;
 		hwp_timer->ctrl |= (TIMER_ENABLE | TIMER_IT_ENABLE);
-	else
+	} else {
 		hwp_timer->ctrl &= ~(TIMER_ENABLE | TIMER_IT_ENABLE);
+	}
 }
 
 u32 timer_get_curval(hwp_timer_t *hwp_timer)
@@ -37,6 +39,7 @@ void timer_dly_us(hwp_timer_t *hwp_timer, int us)
 	cnt = (clk / 1000000) * us;
 
 	hwp_timer->ctrl &= ~(TIMER_ENABLE | TIMER_IT_ENABLE);
+	hwp_timer->value = 0;
 	hwp_timer->reload = cnt;
 	hwp_timer->itstatus = MASK_TIMER_ITSTATUS;
 	hwp_timer->ctrl = (TIMER_ENABLE | TIMER_IT_ENABLE);

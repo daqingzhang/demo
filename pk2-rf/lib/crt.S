@@ -1,4 +1,4 @@
-#include <riscv_iomap.h>
+#include <iomap.h>
 
   .text
   .globl _start

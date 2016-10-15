@@ -18,5 +18,6 @@
 
 void mdelay(unsigned int ms);
 void udelay(unsigned int us);
+void deadloops(void);
 
 #endif //__UTIL_H

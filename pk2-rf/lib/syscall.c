@@ -34,7 +34,7 @@ void do_interrupts(void)
 
 	/*
 	 * During the exception service program executes, the
-	 * interrupt is disabled by default. We can re-enabled
+	 * interrupt is disabled by default. We can re-enable
 	 * it to supoort interrupt nesting and preemption.
 	 */
 #ifdef CONFIG_SUPPORT_NESTED_IRQ

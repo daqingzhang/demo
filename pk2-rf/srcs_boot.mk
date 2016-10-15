@@ -7,17 +7,18 @@ A_OBJS = \
 	./lib/crt.o
 
 C_OBJS = \
-	./lib/string.o		\
-	./lib/serial.o		\
+	./lib/syscall.o		\
 	./lib/irq.o		\
+	./lib/serial.o		\
+	./lib/string.o		\
+	./lib/misc.o		\
 	./lib/sysctrl.o		\
 	./lib/timer.o		\
 	./lib/watchdog.o	\
-	./lib/syscall.o		\
-	./boot/init.o		\
+	./boot/main.o		\
 	./boot/delay.o		\
 	./boot/tmcu_irq.o	\
-	./boot/main.o		\
+	./boot/init.o		\
 	./boot/register.o	\
 	./boot/gsm_tx.o		\
 	./boot/calib_gsm.o	\

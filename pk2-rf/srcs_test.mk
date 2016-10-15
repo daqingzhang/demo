@@ -7,13 +7,14 @@ A_OBJS = \
 	./lib/crt.o
 
 C_OBJS = \
-	./lib/string.o	\
-	./lib/serial.o	\
+	./lib/syscall.o	\
 	./lib/irq.o	\
+	./lib/serial.o	\
+	./lib/string.o	\
+	./lib/misc.o	\
+	./lib/sysctrl.o	\
 	./lib/timer.o	\
 	./lib/watchdog.o \
-	./lib/sysctrl.o	\
-	./lib/syscall.o	\
 	./test/main.o
 
 ifneq ($(findstring CONFIG_MULTIPLY_TEST,$(TARGET_DEFS)),)

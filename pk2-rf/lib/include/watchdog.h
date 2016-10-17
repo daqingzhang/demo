@@ -9,7 +9,6 @@ void wdog_feed(u32 cnt);
 void wdog_it_enable(int enabled);
 int  wdog_get_itstatus(void);
 void wdog_clr_itstatus(void);
-void wdog_callback(void);
 #endif
 
 #endif

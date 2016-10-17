@@ -31,14 +31,12 @@ int shift_right_test(void);
 int shift_left_test(void);
 
 int timer_test(void);
-
-char gdst[32] = {0};
-volatile char abc = 0xFE;
+int serial_test(void);
+int wdog_test(void);
 
 int main( int argc, char* argv[] )
 {
 	int r = 0,err = 0;
-
 #ifdef CONFIG_MULTIPLY_TEST
 	unsigned int hex = 0x1234ABCD;
 	unsigned int status;
@@ -78,7 +76,6 @@ int main( int argc, char* argv[] )
 	if(multiply(10,800) != 8000)
 		err |= 0x20;
 #endif
-
 #ifdef CONFIG_MEM32_TEST
 	/*
 	 * Memory 32bit, 16bit, 8bit reading/writing test
@@ -104,7 +101,6 @@ int main( int argc, char* argv[] )
 	if(mem32_bit_0_rw_last512B() != 0)
 		err |= 0x1000;
 #endif
-
 #ifdef CONFIG_IRQ_TEST
 	if(irq_simple_test() != 0)
 		err |= 0x2000;
@@ -113,7 +109,6 @@ int main( int argc, char* argv[] )
 	if(irq_preemption_test() != 0)
 		err |= 0x8000;
 #endif
-
 #ifdef CONFIG_MATH_TEST
 	if(add_test())
 		err |= 0x10000;
@@ -128,10 +123,17 @@ int main( int argc, char* argv[] )
 	if(shift_right_test())
 		err |= 0x200000;
 #endif
-
 #ifdef CONFIG_TIMER_TEST
 	if(timer_test())
 		err |= 0x400000;
+#endif
+#ifdef CONFIG_SERIAL_TEST
+	if(serial_test())
+		err |= 0x800000;
+#endif
+#ifdef CONFIG_WDOG_TEST
+	if(wdog_test())
+		err |= 0x1000000;
 #endif
 #ifdef CONFIG_LSU_TEST
 	if(mem32_invalid_access() != 0)

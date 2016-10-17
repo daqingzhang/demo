@@ -61,10 +61,4 @@ void wdog_clr_itstatus(void)
 	HWP_WDOG->intclr = WDOG_INTCLR_VALUE;
 	wdog_lock(1);
 }
-
-void wdog_callback(void)
-{
-	wdog_clr_itstatus();
-	// TODO: Do work while interrupt occuring ...
-}
 #endif

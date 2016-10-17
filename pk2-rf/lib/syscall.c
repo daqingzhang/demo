@@ -12,6 +12,9 @@ void irq_tester(int irqs);
 #ifdef CONFIG_TIMER_TEST
 void timer_callback(int irqs);
 #endif
+#ifdef CONFIG_WDOG_TEST
+void wdog_callback(int irqs);
+#endif
 #ifndef CONFIG_PROJ_TEST
 void dispatch_isr(int irqs);
 #endif
@@ -20,11 +23,14 @@ void do_interrupts(void)
 {
 	unsigned int irqs = irq_get_status(0xFFFFFFFF);
 
-#ifdef CONFIG_IRQ_TEST
-	irq_tester(irqs);//just for test
-#endif
 #ifdef CONFIG_TIMER_TEST
 	timer_callback(irqs);
+#endif
+#ifdef CONFIG_WDOG_TEST
+	wdog_callback(irqs);
+#endif
+#ifdef CONFIG_IRQ_TEST
+	irq_tester(irqs);//just for test
 #endif
 	/*
 	 * We must clear IRQ status before process it.

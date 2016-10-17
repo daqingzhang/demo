@@ -40,3 +40,11 @@ endif
 ifneq ($(findstring CONFIG_LSU_TEST,$(TARGET_DEFS)),)
 C_OBJS += ./test/test_lsu.o
 endif
+
+ifneq ($(findstring CONFIG_SERIAL_TEST,$(TARGET_DEFS)),)
+C_OBJS += ./test/test_serial.o
+endif
+
+ifneq ($(findstring CONFIG_WDOG_TEST,$(TARGET_DEFS)),)
+C_OBJS += ./test/test_wdog.o
+endif

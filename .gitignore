@@ -3,6 +3,8 @@
 *.img
 *.swp
 *.map
+*.bin
+*.hex
 *.a
 *~
 *.depend.*

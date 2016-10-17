@@ -65,7 +65,7 @@ void do_ecall(void)
 void board_init(int flag)
 {
 	/* disable global IRQ */
-	core_irq_enable(0);
+	core_irq_enable();
 
 	/* configure system clock */
 	sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
@@ -102,6 +102,6 @@ void board_init(int flag)
 
 	/* enable IRQs */
 	irq_clr_pending(0xFFFFFFFF);
-	core_irq_enable(1);
+	core_irq_enable();
 	//irq_enable(0xFFFFFFFF);
 }

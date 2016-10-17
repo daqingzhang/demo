@@ -20,6 +20,7 @@ RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -Os -ffast-math -fno-common
 RISCV_LINK	:= $(RISCV_GCC) -T linker_boot.ld $(INCS)
 RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc
 RISCV_OBJDUMP	:= $(RISCV_PREFIX)objdump
+RISCV_OBJCOPY	:= $(RISCV_PREFIX)objcopy
 RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.data
 
 TARGET		 := boot
@@ -41,18 +42,17 @@ all: $(TARGET_RISCV_DUMP)
 
 $(TARGET_RISCV_DUMP): $(TARGET_RISCV)
 	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) $< > $@
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/crt.o > $(OUT_DIR)/crt.txt
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/syscall.o > $(OUT_DIR)/syscall.txt
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/string.o > $(OUT_DIR)/string.txt
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/serial.o > $(OUT_DIR)/serial.txt
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/irq.o > $(OUT_DIR)/irq.txt
-	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(BOOT_DIR)/main.o > $(OUT_DIR)/main.txt
+	$(RISCV_OBJCOPY) -O binary $(TARGET_RISCV) $(TARGET).bin
+	$(RISCV_OBJCOPY) -O ihex $(TARGET_RISCV) $(TARGET).hex
 	$(RISCV_OBJDUMP) -t $< > $(OUT_DIR)/$(TARGET_SYMBOLS)
 	$(RISCV_OBJDUMP) -h $< > $(OUT_DIR)/$(TARGET_LIST)
+#	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/crt.o > $(OUT_DIR)/crt.txt
 	mv $(LIB_DIR)/*.o $(OUT_DIR)/.
 	mv $(BOOT_DIR)/*.o $(OUT_DIR)/.
 	cp $(TARGET_RISCV) $(OUT_DIR)/.
 	cp $(TARGET_RISCV_DUMP) $(OUT_DIR)/.
+	cp $(TARGET).bin $(OUT_DIR)/.
+	cp $(TARGET).hex $(OUT_DIR)/.
 
 $(TARGET_RISCV): $(C_OBJS) $(A_OBJS)
 	$(RISCV_LINK) $^ -o $@ $(RISCV_LINK_OPTS)
@@ -68,11 +68,7 @@ JUNK += $(TARGET_RISCV) $(TARGET_RISCV_DUMP)
 
 clean:
 	rm -rf $(OBJS) $(JUNK)
-	rm -f  *.o
+	rm -f  *.o *.bin *.hex *.riscv *.riscv.dump
 	rm -f  $(BOOT_DIR)/*.o
-	rm -f  $(OUT_DIR)/*.o
-	rm -f  $(OUT_DIR)/*.txt
-	rm -f  $(OUT_DIR)/*.riscv
-	rm -f  $(OUT_DIR)/*.list
-	rm -f  $(OUT_DIR)/*.symbols
-	rm -f  $(OUT_DIR)/*.riscv.dump
+	rm -f  $(OUT_DIR)/*.o $(OUT_DIR)/*.txt $(OUT_DIR)/*.riscv $(OUT_DIR)/*.list \
+		$(OUT_DIR)/*.symbols $(OUT_DIR)/*.riscv.dump $(OUT_DIR)/*.bin $(OUT_DIR)/*.hex

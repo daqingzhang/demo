@@ -1,4 +1,4 @@
-#ABS_TOP_DIR	:= /home/daqingzhang/workspace/iot/pk2-rf
+#ABS_TOP_DIR	:= /home/daqingzhang/workspace/github/demo/pk2-rf
 ABS_TOP_DIR	:= /home/zhangdaqing/workspace/github/demo/pk2-rf
 PREFIX          := target
 INSTALLDIR	:= $(ABS_TOP_DIR)/$(PREFIX)
@@ -7,7 +7,7 @@ REL_OUTDIR	:= out
 REL_OBOOTDIR	:= $(REL_OUTDIR)/boot
 REL_OTESTDIR	:= $(REL_OUTDIR)/test
 
-all: clean boot test
+all: clean test
 
 boot:
 	mkdir -p $(REL_OUTDIR) $(REL_OBOOTDIR)

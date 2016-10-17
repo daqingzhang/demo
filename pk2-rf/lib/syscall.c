@@ -4,6 +4,7 @@
 #include <serial.h>
 #include <irq.h>
 #include <sysctrl.h>
+#include <gpio.h>
 
 #ifdef CONFIG_IRQ_TEST
 void irq_tester(int irqs);

@@ -17,6 +17,8 @@ test:
 	mkdir -p $(REL_OUTDIR) $(REL_OTESTDIR)
 	$(MAKE) -f Makefile.test TOP_DIR=$(ABS_TOP_DIR) XLEN=$(XLEN)
 	ls -l $(REL_OTESTDIR)
+	rm -f *.hex.spicode
+	python2.7 spicodegen.py test.hex
 clean:
 	$(MAKE) -f Makefile.boot TOP_DIR=$(ABS_TOP_DIR) clean
 	$(MAKE) -f Makefile.test TOP_DIR=$(ABS_TOP_DIR) clean

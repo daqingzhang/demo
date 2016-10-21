@@ -1,10 +1,11 @@
 #include <timer.h>
 #include <sysctrl.h>
 #include <irq.h>
+#include <serial.h>
 
 volatile static int timer_callback_done = 0;
 
-void timer_callback(int irqs)
+void timer_callback(unsigned int irqs)
 {
 	if(irqs & 0x10) {
 		timer_callback_done = 0x10;
@@ -110,7 +111,12 @@ int timer_test(void)
 		r |= 0x10;
 	if(timer_irq_test(HWP_TIMER2))
 		r |= 0x20;
-	if(r)
+	if(r) {
+		serial_puts("timer, error code ");
+		print_u32(r);
+		serial_puts("\n");
 		writel(r, 0x00012AA0);
+	}
+	serial_puts("timer, test success !\n");
 	return r;
 }

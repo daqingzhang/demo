@@ -2,7 +2,7 @@
 
 #include <util.h>
 #include <sram_rw.h>
-#include <multiply.h>
+#include <irq.h>
 
 #define CALLEXIT_ADDR	 0x00011FFC
 #define CALLEXIT_PASS	 0x900dc0de
@@ -14,10 +14,9 @@ void call_exit(int err)
 	writel(err,CALLEXIT_ADDR);
 }
 
-#define STR_MSTATUS_ADDR 0x00011FF0
-void core_ecall(void);
-unsigned int core_get_mstatus(void);
-void core_set_mstatus(unsigned int status);
+volatile int ecall_excp_done = 0;
+
+int multi_test(void);
 
 int irq_simple_test(void);
 int irq_preemption_test(void);
@@ -31,83 +30,90 @@ int shift_right_test(void);
 int shift_left_test(void);
 
 int timer_test(void);
+
 int serial_test(void);
+
 int wdog_test(void);
 
 int main( int argc, char* argv[] )
 {
 	int r = 0,err = 0;
+	u32 status;
 #ifdef CONFIG_MULTIPLY_TEST
-	unsigned int hex = 0x1234ABCD;
-	unsigned int status;
-	char dst[10] = {0};
-
-	r = mem32_simple_rw();
-	if(r != 0)
-		err |= 0x1;
-
-	r = data32_sum(100);
-	if(r != 5050)
-		err |= 0x2;
-
-	hex2asc(hex,dst);
-	r = asc2hex(dst);
-	if(r != hex)
-		err |= 0x4;
-
-	call_exit(err);
-
-	/*
-	 * ecall inst test
-	 */
+	if(multi_test())
+		err |= 0x01;
+#endif
+#ifdef CONFIG_ECALL_TEST
+	ecall_excp_done = 0;
 	core_ecall();
+	while(ecall_excp_done == 0);
 	status = core_get_mstatus();
-	*(unsigned int *)STR_MSTATUS_ADDR = status;
-
-	/*
-	 * Multiply test
-	 */
-	if(multiply(10,8) != 80)
-		err |= 0x8;
-
-	if(multiply(10,80) != 800)
-		err |= 0x10;
-
-	if(multiply(10,800) != 8000)
-		err |= 0x20;
+	serial_puts("ecall exception out, mstatus is: ");
+	print_u32(status);
+	serial_puts("\n");
+	serial_puts("ecall, test success !\n");
 #endif
 #ifdef CONFIG_MEM32_TEST
-	/*
-	 * Memory 32bit, 16bit, 8bit reading/writing test
-	 */
-	if(mem32_rw() != 0)
+	r = mem32_rw(MEM32_ADDR,MEM32_SIZE);
+	if(r) {
 		err |= 0x40;
+		serial_puts("mem32_rw,error code ");
+		print_u32(r);
+		serial_puts("\n");
+	} else {
+		serial_puts("mem32_rw, test success !\n");
+	}
 
-	if(mem16_rw() != 0)
+	r = mem16_rw(MEM32_ADDR,MEM32_SIZE);
+	if(r) {
 		err |= 0x80;
+		serial_puts("mem16_rw,error code ");
+		print_u32(r);
+		serial_puts("\n");
+	} else {
+		serial_puts("mem16_rw, test success !\n");
+	}
 
-	if(mem8_rw() != 0)
+	r = mem8_rw(MEM32_ADDR,MEM32_SIZE);
+	if(r) {
 		err |= 0x100;
+		serial_puts("mem8_rw,error code ");
+		print_u32(r);
+		serial_puts("\n");
+	} else {
+		serial_puts("mem8_rw, test success !\n");
+	}
 
-	if(mem32_bit_1_rw_first512B() != 0)
+	r = mem32_bit_1_rw(MEM32_ADDR,MEM32_SIZE);
+	if(r) {
 		err |= 0x200;
+		serial_puts("mem32_bit_1_rw,error code ");
+		print_u32(r);
+		serial_puts("\n");
+	} else {
+		serial_puts("mem32_bit_1_rw, test success !\n");
+	}
 
-	if(mem32_bit_0_rw_first512B() != 0)
+	r = mem32_bit_0_rw(MEM32_ADDR,MEM32_SIZE);
+	if(r) {
 		err |= 0x400;
-
-	if(mem32_bit_1_rw_last512B() != 0)
-		err |= 0x800;
-
-	if(mem32_bit_0_rw_last512B() != 0)
-		err |= 0x1000;
+		serial_puts("mem32_bit_0_rw,error code ");
+		print_u32(r);
+		serial_puts("\n");
+	} else {
+		serial_puts("mem32_bit_0_rw, test success !\n");
+	}
 #endif
 #ifdef CONFIG_IRQ_TEST
-	if(irq_simple_test() != 0)
+	if(irq_simple_test())
 		err |= 0x2000;
-	if(irq_nesting_test() != 0)
+#ifdef CONFIG_SUPPORT_NESTED_IRQ
+	if(irq_nesting_test())
 		err |= 0x4000;
-	if(irq_preemption_test() != 0)
+	if(irq_preemption_test())
 		err |= 0x8000;
+#endif
+
 #endif
 #ifdef CONFIG_MATH_TEST
 	if(add_test())
@@ -139,6 +145,13 @@ int main( int argc, char* argv[] )
 	if(mem32_invalid_access() != 0)
 		err |= 0x80000000;
 #endif
-	call_exit(err);
+	if(err) {
+		serial_puts("\n main, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		call_exit(err);
+		return -1;
+	}
+	serial_puts("\n main, test success !!!\n");
 	return 0;
 }

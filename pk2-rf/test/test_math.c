@@ -1,4 +1,5 @@
 #include <config.h>
+#include <serial.h>
 
 static int add_num32(unsigned int a,unsigned int b)
 {
@@ -45,7 +46,14 @@ int add_test(void)
 	if(add_num32(0x00000001,0x7FFFFFFF) != 0x80000000)
 		err |= 0x4000;
 
-	return err;
+	if(err) {
+		serial_puts("add_test, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("add_test, test success !\n");
+	return 0;
 }
 
 static int sub_num32(unsigned int a,unsigned int b)
@@ -90,7 +98,14 @@ int sub_test(void)
 	if(0x00000000 != sub_num32(0xffffffff,0xffffffff))
 		err |= 0x2000;
 
-	return err;
+	if(err) {
+		serial_puts("sub_test, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("sub_test, test success !\n");
+	return 0;
 }
 
 static int mul_num32(unsigned int a,unsigned int b)
@@ -130,7 +145,14 @@ int mul_test(void)
 	if(0x00000001 != mul_num32(0xffffffff,0xffffffff))
 		err |= 0x400;
 
-	return err;
+	if(err) {
+		serial_puts("mul_test, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("mul_test, test success !\n");
+	return 0;
 }
 
 static int div_num32(unsigned int a,unsigned int b)
@@ -172,9 +194,14 @@ int div_test(void)
 	if(0x00000001 != div_num32(0xffffffff,0xffffffff))
 		err |= 0x1000;
 
-	if(err)
-		writel(err, 0x00012DD4);
-	return err;
+	if(err) {
+		serial_puts("div_test, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("div_test, test success !\n");
+	return 0;
 }
 
 static int lsl_num32(unsigned int val, unsigned int bit)
@@ -207,6 +234,13 @@ int shift_left_test(void)
 	if(0x7fff0000 != lsl_num32(0x00007fff,16))
 		err |= 0x100;
 
+	if(err) {
+		serial_puts("shift_left_test, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("shift_left_test, test success !\n");
 	return err;
 }
 
@@ -239,7 +273,13 @@ int shift_right_test(void)
 		err |= 0x80;
 	if(0x00000000 != lsr_num32(0x00007fff,16))
 		err |= 0x100;
-	if(err)
-		writel(err, 0x00012DD0);
-	return err;
+
+	if(err) {
+		serial_puts("shift_right_test, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("shift_right_test, test success !\n");
+	return 0;
 }

@@ -1,13 +1,10 @@
 #include <config.h>
 #include <util.h>
+#include <sram_rw.h>
 
-#define DATA_SRAM_BASE (0x00010000)
-#define DATA_SRAM_SIZE ((16 - 4) * (1024))
+static unsigned char mem8_pattern[]=
+{0x11,0x5A,0xFF,0xEE,0xDE,0x80,0x77,0xF8,0xAB};
 
-#define DATA_SRAM_BASE2 (0x00013000)
-
-#define MEM32_ADDR (DATA_SRAM_BASE)
-#define MEM32_SIZE (10)
 
 static unsigned int mem32_pattern[]=
 {
@@ -33,9 +30,14 @@ static unsigned short mem16_pattern[]=
 	0xDEAD,
 };
 
-static unsigned char mem8_pattern[]=
-{0x11,0x5A,0xFF,0xEE,0xDE,0x80,0x77,0xF8};
+void init_pattern(void)
+{
+	mem8_pattern[0] = 0x11;
+	mem16_pattern[0] = 0x1234;
+	mem32_pattern[0] = 0x11223344;
+}
 
+#if 0
 /**
  * mem32_simple_rw - A simple test for reading/writing memory
  * return: zero for success.
@@ -63,19 +65,20 @@ int mem32_simple_rw(void)
 	}
 	return err;
 }
+#endif
 
 /**
  * mem32_rw - memory 32bit reading/writing test.
  * return: zero for success.
  */
-int mem32_rw(void)
+int mem32_rw(unsigned int addr, unsigned int size)
 {
 	unsigned int *dest,tmp[20];
-	int n = DATA_SRAM_SIZE >> 2,i,j;
+	int n = size >> 2,i,j;
 
 	/* write data to SRAM */
 	i = n;
-	dest = (unsigned int *)DATA_SRAM_BASE;
+	dest = (unsigned int *)addr;
 	while(i) {
 		dest[0] = mem32_pattern[0];
 		dest[1] = mem32_pattern[1];
@@ -91,7 +94,7 @@ int mem32_rw(void)
 	}
 	/* read data from SRAM */
 	i = n;
-	dest = (unsigned int *)DATA_SRAM_BASE;
+	dest = (unsigned int *)addr;
 	while(i) {
 		tmp[0] = dest[0];
 		tmp[1] = dest[1];
@@ -116,14 +119,14 @@ int mem32_rw(void)
  * mem32_rw - memory 16bit reading/writing test.
  * return:  zero for success.
  */
-int mem16_rw(void)
+int mem16_rw(unsigned int addr, unsigned int size)
 {
 	unsigned short *dest,tmp[20];
-	int n = DATA_SRAM_SIZE >> 1,i,j;
+	int n = size >> 1,i,j;
 
 	/* write data to SRAM */
 	i = n;
-	dest = (unsigned short *)DATA_SRAM_BASE;
+	dest = (unsigned short *)addr;
 	while(i) {
 		dest[0] = mem16_pattern[0];
 		dest[1] = mem16_pattern[1];
@@ -139,7 +142,7 @@ int mem16_rw(void)
 	}
 	/* read data from SRAM */
 	i = n;
-	dest = (unsigned short *)DATA_SRAM_BASE;
+	dest = (unsigned short *)addr;
 	while(i) {
 		tmp[0] = dest[0];
 		tmp[1] = dest[1];
@@ -164,14 +167,15 @@ int mem16_rw(void)
  * mem32_rw - memory 8bit reading/writing test.
  * return:  zero for success.
  */
-int mem8_rw(void)
+int mem8_rw(unsigned int addr, unsigned int size)
 {
-	unsigned char *dest,tmp[20];
-	int n = DATA_SRAM_SIZE,i,j;
+	volatile unsigned char *dest;
+	unsigned char tmp[20];
+	int n = size,i,j;
 
 	/* write data to SRAM */
 	i = n;
-	dest = (unsigned char *)DATA_SRAM_BASE;
+	dest = (volatile unsigned char *)addr;
 	while(i) {
 		dest[0] = mem8_pattern[0];
 		dest[1] = mem8_pattern[1];
@@ -187,7 +191,7 @@ int mem8_rw(void)
 	}
 	/* read data from SRAM */
 	i = n;
-	dest = (unsigned char *)DATA_SRAM_BASE;
+	dest = (volatile unsigned char *)addr;
 	while(i) {
 		tmp[0] = dest[0];
 		tmp[1] = dest[1];
@@ -199,8 +203,13 @@ int mem8_rw(void)
 		tmp[7] = dest[7];
 
 		for(j = 0; j < 8;j++) {
-			if(tmp[j] != mem8_pattern[j])
+			if(tmp[j] != mem8_pattern[j]) {
+				serial_puts("addr: ");print_u32((u32)dest);serial_puts("\n");
+				serial_puts("j   : ");print_u32((u32)j);serial_puts("\n");
+				serial_puts("temp: ");print_u32(tmp[j]);serial_puts("\n");
+				serial_puts("patt: ");print_u32(mem8_pattern[j]);serial_puts("\n");
 				return (int)(dest + j);
+			}
 		}
 		dest += 8;
 		i -= 8;
@@ -316,18 +325,17 @@ static int mem32_bit_0_check(void *base, void *mem, int pos, int size)
  * mem32_bit_1_rw - memory set bit 1 test
  * return:  zero for success.
  */
-int mem32_bit_1_rw(void)
+int mem32_bit_1_rw(unsigned int addr, unsigned int size)
 {
-	unsigned int *dst = (unsigned int *)DATA_SRAM_BASE;
-	unsigned int size = DATA_SRAM_SIZE;
+	unsigned int *dst = (unsigned int *)addr;
 	unsigned int n = size >> 2;
 	int i,r;
 
-	mem32_set((void *)DATA_SRAM_BASE,0,DATA_SRAM_SIZE);
+	mem32_set((void *)addr,0,size);
 	while(n) {
 		for(i = 0;i < 32;i++) {
 			mem32_bit_set(dst,i);
-			r = mem32_bit_1_check((unsigned int *)DATA_SRAM_BASE,dst,i,size);
+			r = mem32_bit_1_check((unsigned int *)addr,dst,i,size);
 			mem32_bit_clr(dst,i);
 			if(r)
 				return r;
@@ -342,18 +350,17 @@ int mem32_bit_1_rw(void)
  * mem32_bit_1_rw - memory set bit 0 test
  * return:  zero for success.
  */
-int mem32_bit_0_rw(void)
+int mem32_bit_0_rw(unsigned int addr, unsigned int size)
 {
-	unsigned int *dst = (unsigned int *)DATA_SRAM_BASE;
-	unsigned int size = DATA_SRAM_SIZE;
+	unsigned int *dst = (unsigned int *)addr;
 	unsigned int n = size >> 2;
 	int i,r;
 
-	mem32_set((void *)DATA_SRAM_BASE,0xFFFFFFFF,DATA_SRAM_SIZE);
+	mem32_set((void *)addr,0xFFFFFFFF,size);
 	while(n) {
 		for(i = 0;i < 32;i++) {
 			mem32_bit_clr(dst,i);
-			r = mem32_bit_0_check((unsigned int *)DATA_SRAM_BASE,dst,i,size);
+			r = mem32_bit_0_check((unsigned int *)addr,dst,i,size);
 			mem32_bit_set(dst,i);
 			if(r)
 				return r;

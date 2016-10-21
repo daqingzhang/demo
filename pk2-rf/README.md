@@ -51,9 +51,10 @@ Vector Table
 How to make
 ------------------------------------------------------------------------
 
-	(1) Firstly, You have to add compiler directory to your PATH.
-	For example, open .bashrc via VIM and modify PATH like this:
-		export PATH=~/bin:$PATH:~/gcc-riscv32-pulp/bin
+	(1) modify envsetup.sh:
+		add compiler's directory to PATH: export PATH=~/bin:$PATH:~/gcc-riscv32-pulp/bin
+		add some special library file's directory to LD_LIBRARY_PATH. The compiler will load these libraries when it's running.
+	add these varibles to current system environment: source envsetup.sh
 
 	(2) Please modify the Makefile's ABS_TOP_DIR varible to specify the absolutely
 	file path of current project. Just write it like this:

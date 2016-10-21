@@ -1,5 +1,6 @@
+#include <serial.h>
 
-int data32_sum(int max)
+static int data32_sum(int max)
 {
 	int n = 0;
 	for(;max != 0;max--)
@@ -7,7 +8,7 @@ int data32_sum(int max)
 	return n;
 }
 
-int hex2asc(unsigned int hex, char *asc)
+static int hex2asc(unsigned int hex, char *asc)
 {
 	unsigned int t,i;
 
@@ -23,7 +24,7 @@ int hex2asc(unsigned int hex, char *asc)
 	return 0;
 }
 
-unsigned int asc2hex(const char *asc)
+static unsigned int asc2hex(const char *asc)
 {
 	unsigned int t,hex = 0;
 	int i;
@@ -38,7 +39,7 @@ unsigned int asc2hex(const char *asc)
 	return hex;
 }
 
-int multiply( int x, int y )
+static int multiply( int x, int y )
 {
 	int i;
 	int result = 0;
@@ -52,4 +53,41 @@ int multiply( int x, int y )
 			break;
 	} 
 	return result;
+}
+
+int multi_test(void)
+{
+	int r = 0,err = 0;
+	unsigned int hex = 0x1234ABCD;
+	char dst[10] = {0};
+
+	if(r != 0)
+		err |= 0x1;
+
+	r = data32_sum(100);
+	if(r != 5050)
+		err |= 0x2;
+
+	hex2asc(hex,dst);
+	r = asc2hex(dst);
+	if(r != hex)
+		err |= 0x4;
+
+	if(multiply(10,8) != 80)
+		err |= 0x8;
+
+	if(multiply(10,80) != 800)
+		err |= 0x10;
+
+	if(multiply(10,800) != 8000)
+		err |= 0x20;
+
+	if(err) {
+		serial_puts("multi, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("multi, test success !\n");
+	return 0;
 }

@@ -71,7 +71,7 @@ static isr_handler_t *isr_handler_tab[] = {
 	gsm_rxon_isr,		//31
 };
 
-void dispatch_isr(int irqs)
+void dispatch_isr(unsigned int irqs)
 {
 	u32 mask,i;
 	isr_handler_t *handler = NULL;

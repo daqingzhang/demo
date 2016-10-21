@@ -185,8 +185,12 @@ save_regs:
 	jalr x0,x1
 
 	.align 2
-restore_regs_excp:
-	/* mepc = mepc + 4 */
+restore_regs_excp: /* MEPC = MEPC + 4 */
+#ifdef CONFIG_SUPPORT_NESTED_IRQ
+	LREG x1, 31*REGBYTES(sp)
+	addi x1, x1, 4
+	SREG x1, 31*REGBYTES(sp)
+#else
 	csrr x1, mepc
 	addi x1, x1, 4
 	csrw mepc, x1
@@ -194,7 +198,7 @@ restore_regs_excp:
 	nop
 	nop
 	nop
-	nop
+#endif
 restore_regs:
 	/* restore X1 - X29 */
 	LREG x1, 0x0*REGBYTES(sp)	/* ra = [sp + 0] */
@@ -231,6 +235,10 @@ restore_regs:
 #ifdef CONFIG_SUPPORT_NESTED_IRQ
 	LREG x31, 31*REGBYTES(sp)
 	csrw mepc,x31
+	nop
+	nop
+	nop
+	nop
 #endif
 	LREG x31, 30*REGBYTES(sp)
 

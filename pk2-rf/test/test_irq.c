@@ -1,4 +1,5 @@
 #include <irq.h>
+#include <serial.h>
 
 enum IRQ_CASE_ID {
 	IRQ_CASE_NULL,
@@ -143,8 +144,14 @@ int irq_simple_test(void)
 			break;
 	}
 	irq_disable(IRQ_DIS_MASK_ALL);
-
-	return irqtag.error;
+	if(irqtag.error) {
+		serial_puts("irq_simple, error code ");
+		print_u32(irqtag.error);
+		serial_puts("\n");
+		return irqtag.error;
+	}
+	serial_puts("irq_simple, test success !\n");
+	return 0;
 }
 
 int irq_nesting_test(void)
@@ -174,9 +181,14 @@ int irq_nesting_test(void)
 		err |= 0x01;
 	if(irqtag.count != 2)
 		err |= 0x02;
-	if(err)
-		writel(err, 0x00012DD8);
-	return err;
+	if(err) {
+		serial_puts("irq_nesting, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("irq_nesting, test success !\n");
+	return 0;
 }
 
 int irq_preemption_test(void)
@@ -226,7 +238,12 @@ int irq_preemption_test(void)
 	if(irqtag.count != 2)
 		err |= 0x08;
 
-	if(err)
-		writel(err, 0x00012DDC);
-	return err;
+	if(err) {
+		serial_puts("irq_preemption, error code ");
+		print_u32(err);
+		serial_puts("\n");
+		return err;
+	}
+	serial_puts("irq_preemption, test success !\n");
+	return 0;
 }

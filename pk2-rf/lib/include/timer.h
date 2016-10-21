@@ -6,8 +6,8 @@
 
 void timer_init(hwp_timer_t *hwp_timer, u32 cnt);
 void timer_enable(hwp_timer_t *hwp_timer, int enabled);
-void timer_clr_status(hwp_timer_t *hwp_timer);
-u32  timer_get_status(hwp_timer_t *hwp_timer);
+void timer_clr_itstatus(hwp_timer_t *hwp_timer);
+u32  timer_get_itstatus(hwp_timer_t *hwp_timer);
 u32  timer_get_curval(hwp_timer_t *hwp_timer);
 
 void timer_dly_us(hwp_timer_t *hwp_timer, int us);

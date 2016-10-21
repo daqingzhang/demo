@@ -15,3 +15,19 @@ void deadloops(void)
 		nop();
 	}
 }
+
+void dump_reg(void *hwp,int num)
+{
+	u32 addr = (u32)hwp,offs = 0;
+
+	serial_puts("\ndump_reg: \n");
+	while(num--) {
+		print_u32(addr + offs);
+		serial_puts(": ");
+		print_u32(*(unsigned int *)(addr + offs));
+		serial_puts("\n");
+		offs += 4;
+	}
+}
+
+

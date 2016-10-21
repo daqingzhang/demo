@@ -19,5 +19,6 @@
 void mdelay(unsigned int ms);
 void udelay(unsigned int us);
 void deadloops(void);
+void dump_reg(void *hwp,int num);
 
 #endif //__UTIL_H

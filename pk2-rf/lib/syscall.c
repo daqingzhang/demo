@@ -10,19 +10,25 @@
 void irq_tester(int irqs);
 #endif
 #ifdef CONFIG_TIMER_TEST
-void timer_callback(int irqs);
+void timer_callback(unsigned int irqs);
 #endif
 #ifdef CONFIG_WDOG_TEST
-void wdog_callback(int irqs);
+void wdog_callback(unsigned int irqs);
+#endif
+#ifdef CONFIG_SERIAL_TEST
+void serial_callback(unsigned int irqs);
 #endif
 #ifndef CONFIG_PROJ_TEST
-void dispatch_isr(int irqs);
+void dispatch_isr(unsigned int irqs);
 #endif
 
 void do_interrupts(void)
 {
 	unsigned int irqs = irq_get_status(0xFFFFFFFF);
 
+#ifdef CONFIG_SERIAL_TEST
+	serial_callback(irqs);
+#endif
 #ifdef CONFIG_TIMER_TEST
 	timer_callback(irqs);
 #endif
@@ -58,13 +64,27 @@ void do_illegal_inst(void)
 
 void do_lsu(void)
 {
+#ifdef CONFIG_LSU_TEST
+	serial_puts("lsu exception in\n");
+#endif
 	// TODO: reset CPU ...
 	sysctrl_soft_rst1_en(SOFT_RST1_RISCV);
 	while(1);
 }
 
+#ifdef CONFIG_ECALL_TEST
+extern volatile int ecall_excp_done;
+#endif
+
 void do_ecall(void)
 {
+#ifdef CONFIG_ECALL_TEST
+	u32 status = core_get_mstatus();
+	serial_puts("ecall exception in, mstatus is: ");
+	print_u32(status);
+	serial_puts("\n");
+	ecall_excp_done = 1;
+#endif
 	// TODO: add code here
 	// This exception can be used as swi
 }

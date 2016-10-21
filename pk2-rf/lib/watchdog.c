@@ -1,6 +1,6 @@
 #include <watchdog.h>
 
-static void wdog_lock(int locked)
+void wdog_lock(int locked)
 {
 	if(!locked)
 		HWP_WDOG->lock = WDOG_LOCK_VALUE;

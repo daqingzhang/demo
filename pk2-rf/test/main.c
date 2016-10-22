@@ -38,7 +38,11 @@ int wdog_test(void);
 int main( int argc, char* argv[] )
 {
 	int r = 0,err = 0;
-	u32 status;
+	u32 status = 0;
+
+	r = r;
+	err = err;
+	status = status;
 #ifdef CONFIG_MULTIPLY_TEST
 	if(multi_test())
 		err |= 0x01;

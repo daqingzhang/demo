@@ -283,7 +283,7 @@ static int mem32_bit_1_check(void *base, void *mem, int pos, int size)
 {
 	volatile unsigned int *addr = (volatile unsigned int *)base;
 	volatile unsigned int *dst  = (volatile unsigned int *)mem;
-	unsigned int mask = 1 << pos,i,tmp;
+	unsigned int i,tmp;
 
 	if(mem32_bit_get(mem,pos) != 1)
 		return -MEM32_DATA_ERROR;
@@ -304,7 +304,7 @@ static int mem32_bit_0_check(void *base, void *mem, int pos, int size)
 {
 	volatile unsigned int *addr = (volatile unsigned int *)base;
 	volatile unsigned int *dst  = (volatile unsigned int *)mem;
-	unsigned int mask = 1 << pos,i,tmp;
+	unsigned int i,tmp;
 
 	if(mem32_bit_get(mem,pos) != 0)
 		return -MEM32_DATA_ERROR;

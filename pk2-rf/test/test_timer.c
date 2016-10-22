@@ -23,7 +23,7 @@ void timer_callback(unsigned int irqs)
 
 static int timer_irq_test(hwp_timer_t *hwp_timer)
 {
-	u32 cnt,clk,status,us,irqmask = 0;
+	u32 cnt,clk,us,irqmask = 0;
 
 	us = 20;
 	clk = sysctrl_get_system_clock();

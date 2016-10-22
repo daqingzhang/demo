@@ -43,7 +43,8 @@ typedef signed int	s32;
 /*
  * serial default baudrate
  */
-#define CONFIG_SERIAL_BAUD 	921600
+//#define CONFIG_SERIAL_BAUD 	921600
+#define CONFIG_SERIAL_BAUD 	115200
 
 /*
  * use watch dog interrupt

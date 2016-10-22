@@ -57,6 +57,8 @@ for i in range(ram_base, ram_base+ram_len):
 
 f = open(dst_file_name, 'w')
 f.write('item:codes\n')
+f.write('call spi_pmu_write(&h7fff, &h0004);\n')
+f.write('call spi_pmu_write(&h0002, &h0001);\n')
 f.write('call spi_pmu_write(&h7fff, &h0000);\n')
 for i in range(rom_base, rom_base+rom_len, 2):
     f.write('call spi_pmu_write(&h'+str(hex(i)[2:]).zfill(4)+', &h'+str(hex_list[i+1])+str(hex_list[i])+');\n')
@@ -64,7 +66,7 @@ f.write('call spi_pmu_write(&h7fff, &h0002);\n')
 for i in range(ram_base, ram_base+ram_len, 2):
     f.write('call spi_pmu_write(&h'+str(hex(i)[-4:])+', &h'+str(hex_list[i+1])+str(hex_list[i])+');\n')
 
+f.write('call spi_pmu_write(&h7fff, &h0000);\n')
 f.close()
 print 'The hex to text is success'
-
 

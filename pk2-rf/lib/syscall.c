@@ -60,14 +60,14 @@ void do_interrupts(void)
 
 void do_illegal_inst(void)
 {
+	serial_puts("illegal inst exception\n");
 }
 
 void do_lsu(void)
 {
-#ifdef CONFIG_LSU_TEST
-	serial_puts("lsu exception in\n");
-#endif
-	// TODO: reset CPU ...
+	serial_puts("lsu exception\n");
+
+	// reset CPU ...
 	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_RISCV);
 	while(1);
 }

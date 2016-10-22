@@ -143,7 +143,7 @@ int irq_simple_test(void)
 		if(irqtag.id == 32)
 			break;
 	}
-	irq_disable(IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_MASK_DISABLE);
 	if(irqtag.error) {
 		serial_puts("irq_simple, error code ");
 		print_u32(irqtag.error);
@@ -176,7 +176,7 @@ int irq_nesting_test(void)
 	irq_enable(mask);
 	irq_set_pending(mask);
 	while(irqtag.flag == 0);
-	irq_disable(IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_MASK_DISABLE);
 	if(irqtag.nested == 0)
 		err |= 0x01;
 	if(irqtag.count != 2)
@@ -214,7 +214,7 @@ int irq_preemption_test(void)
 	irq_enable(mask);
 	irq_set_pending(mask);
 	while(irqtag.flag == 0);
-	irq_disable(IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_MASK_DISABLE);
 	if(irqtag.preempt == 0)
 		err |= 0x01;
 	if(irqtag.count != 2)
@@ -232,7 +232,7 @@ int irq_preemption_test(void)
 	irq_enable(mask);
 	irq_set_pending(mask);
 	while(irqtag.flag == 0);
-	irq_disable(IRQ_DIS_MASK_ALL);
+	irq_disable(IRQ_MASK_DISABLE);
 	if(irqtag.preempt != 0)
 		err |= 0x04;
 	if(irqtag.count != 2)

@@ -19,20 +19,20 @@ typedef volatile struct {
 #define HWP_WDOG	((hwp_wdog_t *)(RDA_WDOG_BASE))
 
 /* ctrl */
-#define WDOG_CTRL_RESEN		(1 << 1)
-#define WDOG_CTRL_INTEN		(1 << 0)
+#define WDOG_MASK_RESEN		(1 << 1)
+#define WDOG_MASK_ITEN		(1 << 0)
 
 /* intclr */
-#define WDOG_INTCLR_VALUE	(1 << 0)
+#define WDOG_MASK_INTCLR	(1 << 0)
 
 /* ris */
-#define WDOG_RIS_ITSTATUS	(1 << 0)
+#define WDOG_MASK_RIS_ITSTATUS	(1 << 0)
 
 /* mis */
-#define WDOG_MIS_ITSTATUS	(1 << 0)
+#define WDOG_MASK_MIS_ITSTATUS	(1 << 0)
 
 /* lock */
-#define WDOT_LOCK_MASK		(1 << 0)
-#define WDOG_LOCK_VALUE		(0x1ACCE551)
+#define WDOT_MASK_LOCK		(1 << 0)
+#define WDOG_MASK_UNLOCK	(0x1ACCE551)
 
 #endif

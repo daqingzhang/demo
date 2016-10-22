@@ -2,8 +2,6 @@
 #define __TIMER_H__
 #include <regs/reg_timer.h>
 
-#define TIMER_IT_STATUS	(1 << 0)
-
 void timer_init(hwp_timer_t *hwp_timer, u32 cnt);
 void timer_enable(hwp_timer_t *hwp_timer, int enabled);
 void timer_clr_itstatus(hwp_timer_t *hwp_timer);

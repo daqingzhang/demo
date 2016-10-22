@@ -14,12 +14,12 @@ typedef volatile struct {
 #define HWP_TIMER2	((hwp_timer_t *)(RDA_TIMER2_BASE))
 
 /* ctrl */
-#define TIMER_IT_ENABLE		(1 << 3)
-#define TIMER_EXTIN_AS_CLOCK	(1 << 2)
-#define TIMER_EXTIN_AS_ENABLE	(1 << 1)
-#define TIMER_ENABLE		(1 << 0)
+#define TIMER_MASK_ITEN		(1 << 3)
+#define TIMER_MASK_EXTIN_CLK	(1 << 2)
+#define TIMER_MASK_EXTIN_EN	(1 << 1)
+#define TIMER_MASK_EN		(1 << 0)
 
 /* itstatus */
-#define MASK_TIMER_ITSTATUS	(1 << 0)
+#define TIMER_MASK_ITSTATUS	(1 << 0)
 
 #endif

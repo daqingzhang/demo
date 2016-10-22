@@ -32,7 +32,6 @@ SECTIONS
 	/* place sdata & data in low RAM1 */
 	.sdata : {
 		__data_start__ = . ;
-		/*_gp = . ;*/
 		*(.srodata.cst16)
 		*(.srodata.cst8)
 		*(.srodata.cst4)

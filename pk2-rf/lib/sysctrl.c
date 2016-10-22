@@ -108,17 +108,17 @@ void sysctrl_set_debug(u32 value)
 void sysctrl_bypass_watchdog(int yes)
 {
 	if(yes)
-		HWP_SYSCTRL->cfg_rst2 |= SYSCTRL_CFG_RST2_BYPASS_WDOG_RST;
+		HWP_SYSCTRL->cfg_rst2 |= SYSCTRL_MASK_RST2_BYPASS_WDOG_RST;
 	else
-		HWP_SYSCTRL->cfg_rst2 &= ~SYSCTRL_CFG_RST2_BYPASS_WDOG_RST;
+		HWP_SYSCTRL->cfg_rst2 &= ~SYSCTRL_MASK_RST2_BYPASS_WDOG_RST;
 }
 
 void sysctrl_hwerr_response(int yes)
 {
 	if(yes)
-		HWP_SYSCTRL->debug |= SYSCTRL_DEBUG_HWERR_RESP_UNMASK;
+		HWP_SYSCTRL->debug |= SYSCTRL_MASK_DEBUG_HWERR_RESP;
 	else
-		HWP_SYSCTRL->debug &= ~SYSCTRL_DEBUG_HWERR_RESP_UNMASK;
+		HWP_SYSCTRL->debug &= ~SYSCTRL_MASK_DEBUG_HWERR_RESP;
 }
 
 /*

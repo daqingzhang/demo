@@ -68,7 +68,7 @@ void do_lsu(void)
 	serial_puts("lsu exception in\n");
 #endif
 	// TODO: reset CPU ...
-	sysctrl_soft_rst1_en(SOFT_RST1_RISCV);
+	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_RISCV);
 	while(1);
 }
 
@@ -104,16 +104,16 @@ void board_init(int flag)
 	sysctrl_hwerr_response(1);
 
 	/* reset hardware */
-	sysctrl_soft_rst1_en(SOFT_RST1_TIMER0
-				| SOFT_RST1_TIMER1
-				| SOFT_RST1_TIMER2);
+	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_TIMER0
+				| SYSCTRL_MASK_RST1_TIMER1
+				| SYSCTRL_MASK_RST1_TIMER2);
 	nop();
 	nop();
 	nop();
 	nop();
-	sysctrl_soft_rst1_dis(SOFT_RST1_TIMER0
-				| SOFT_RST1_TIMER1
-				| SOFT_RST1_TIMER2);
+	sysctrl_soft_rst1_dis(SYSCTRL_MASK_RST1_TIMER0
+				| SYSCTRL_MASK_RST1_TIMER1
+				| SYSCTRL_MASK_RST1_TIMER2);
 	nop();
 	nop();
 	nop();

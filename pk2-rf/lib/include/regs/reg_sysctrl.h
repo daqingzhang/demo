@@ -15,8 +15,8 @@ typedef volatile struct {
 #define HWP_SYSCTRL	((hwp_sysctrl_t *)(RDA_SYSCTL_BASE))
 
 /* cfg_rst2 */
-#define SYSCTRL_CFG_RST2_BYPASS_WDOG_RST		(1 << 15)
+#define SYSCTRL_MASK_RST2_BYPASS_WDOG_RST (1 << 15)
 
 /* debug */
-#define SYSCTRL_DEBUG_HWERR_RESP_UNMASK	(1 << 0)
+#define SYSCTRL_MASK_DEBUG_HWERR_RESP (1 << 0)
 #endif

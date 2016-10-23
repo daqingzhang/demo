@@ -16,27 +16,27 @@ void serial_init(void)
 
 	serial_set_baud(sysclk / CONFIG_SERIAL_BAUD);
 
-	ctrl = UART_CTRL_TX_EN | UART_CTRL_RX_EN;
+	ctrl = UART_MASK_TX_EN | UART_MASK_RX_EN;
 	HWP_UART->ctrl = ctrl;
 }
 
 int serial_tstc(void)
 {
-	while(!(HWP_UART->state & UART_STATE_RX_FUL))
+	while(!(HWP_UART->state & UART_MASK_RX_FUL))
 		;
 	return 1;
 }
 
 char serial_getc(void)
 {
-	while(!(HWP_UART->state & UART_STATE_RX_FUL))
+	while(!(HWP_UART->state & UART_MASK_RX_FUL))
 		;
 	return HWP_UART->data;
 }
 
 void serial_putc(char c)
 {
-	while(HWP_UART->state & UART_STATE_TX_FUL)
+	while(HWP_UART->state & UART_MASK_TX_FUL)
 		;
 	HWP_UART->data = (u8)c;
 }

@@ -25,24 +25,24 @@ void serial_callback(unsigned int irqs)
 		u32 intclr = HWP_UART->intclr;
 
 		serial_callback_done = 0x10;
-		if(intclr & UART_INTCLR_RX_OVR) { //rx overrun
+		if(intclr & UART_MASK_INTCLR_RX_OVR) { //rx overrun
 			serial_callback_done |= 0x01;
-			HWP_UART->intclr = UART_INTCLR_RX_OVR;
+			HWP_UART->intclr = UART_MASK_INTCLR_RX_OVR;
 			serial_puts("ser_cb,uart rx ovr in\n");
 		}
-		if(intclr & UART_INTCLR_TX_OVR) {
+		if(intclr & UART_MASK_INTCLR_TX_OVR) {
 			serial_callback_done |= 0x02;
-			HWP_UART->intclr = UART_INTCLR_TX_OVR;
+			HWP_UART->intclr = UART_MASK_INTCLR_TX_OVR;
 		}
 	}
 	if(irqs & UART_IRQ_MASK_TX) {
 		u32 intclr = HWP_UART->intclr;
 
 		serial_callback_done = 0x20;
-		if(intclr & UART_INTCLR_TX)
+		if(intclr & UART_MASK_INTCLR_TX)
 			serial_callback_done |= 0x04;
 
-		HWP_UART->intclr = UART_INTCLR_TX;
+		HWP_UART->intclr = UART_MASK_INTCLR_TX;
 		// send data via interrupts
 		if(gptxchan != NULL) {
 			if((gptxchan->len != 0) & (gptxchan->pbuf != NULL)) {
@@ -57,10 +57,10 @@ void serial_callback(unsigned int irqs)
 		u32 intclr = HWP_UART->intclr;
 
 		serial_callback_done = 0x40;
-		if(intclr & UART_INTCLR_RX)
+		if(intclr & UART_MASK_INTCLR_RX)
 			serial_callback_done |= 0x08;
 
-		HWP_UART->intclr = UART_INTCLR_RX;
+		HWP_UART->intclr = UART_MASK_INTCLR_RX;
 		//serial_puts("ser_cb,uart rx in\n");
 		// receive data via interrupts
 		if(gprxchan != NULL) {
@@ -119,32 +119,32 @@ int serial_irq_rxovr(void)
 
 	// send message
 	serial_puts("serial_irq_rxovr, input 2 bytes\n");
-	while(HWP_UART->state & UART_STATE_TX_FUL)
+	while(HWP_UART->state & UART_MASK_TX_FUL)
 		;
 	mdelay(10);
 
 	// if rx fifo is not full, read rxfifo
-	while(HWP_UART->state & UART_STATE_RX_FUL)
+	while(HWP_UART->state & UART_MASK_RX_FUL)
 		t = HWP_UART->data;
 
 	// clear rx ovr state
 	serial_callback_done = 0;
-	HWP_UART->intclr = UART_INTCLR_RX_OVR;
+	HWP_UART->intclr = UART_MASK_INTCLR_RX_OVR;
 	irq_clr_pending(UART_IRQ_MASK_OVR);
 
 	// enable global irq
 	irq_enable(UART_IRQ_MASK_OVR);
-	HWP_UART->ctrl |= UART_CTRL_RX_OVR_INTEN;
+	HWP_UART->ctrl |= UART_MASK_RX_OVR_INTEN;
 
 	while(serial_callback_done == 0);
 
 	mdelay(10);
 	// disable irq
-	HWP_UART->ctrl &= ~UART_CTRL_RX_OVR_INTEN;
+	HWP_UART->ctrl &= ~UART_MASK_RX_OVR_INTEN;
 	irq_disable(UART_IRQ_MASK_OVR);
 
 	// get data
-	while(HWP_UART->state & UART_STATE_RX_FUL) {
+	while(HWP_UART->state & UART_MASK_RX_FUL) {
 		t = HWP_UART->data;
 		serial_puts("serial_irq_rxovr, get 1 byte: ");
 		print_u32(t);
@@ -166,25 +166,25 @@ int serial_irq_rx(void)
 	u8 t;
 
 	serial_puts("serial_irq_rx, intput 1 byte\n");
-	while(HWP_UART->state & UART_STATE_TX_FUL)
+	while(HWP_UART->state & UART_MASK_TX_FUL)
 		;
 
 	// if rx fifo is not full, read rxfifo
-	while(HWP_UART->state & UART_STATE_RX_FUL)
+	while(HWP_UART->state & UART_MASK_RX_FUL)
 		t = HWP_UART->data;
 
 	// clear rx irq state
 	serial_callback_done = 0;
-	HWP_UART->intclr = UART_INTCLR_RX;
+	HWP_UART->intclr = UART_MASK_INTCLR_RX;
 	irq_clr_pending(UART_IRQ_MASK_RX);
 
 	// enable global irq
 	irq_enable(UART_IRQ_MASK_RX);
-	HWP_UART->ctrl |= UART_CTRL_RX_INTEN;
+	HWP_UART->ctrl |= UART_MASK_RX_INTEN;
 
 	while(serial_callback_done == 0) {
 #if 0
-		if(HWP_UART->state & UART_STATE_RX_FUL) {
+		if(HWP_UART->state & UART_MASK_RX_FUL) {
 			dump_reg((void *)HWP_UART,5);
 			serial_puts("serial_irq_rx, break waiting\n");
 			break;
@@ -194,11 +194,11 @@ int serial_irq_rx(void)
 	mdelay(10);
 
 	// disable irq
-	HWP_UART->ctrl &= ~UART_CTRL_RX_INTEN;
+	HWP_UART->ctrl &= ~UART_MASK_RX_INTEN;
 	irq_disable(UART_IRQ_MASK_RX);
 
 	// get data
-	while(HWP_UART->state & UART_STATE_RX_FUL) {
+	while(HWP_UART->state & UART_MASK_RX_FUL) {
 		t = HWP_UART->data;
 		serial_puts("serial_irq_rx, get 1 byte: ");
 		print_u32(t);
@@ -220,17 +220,17 @@ int serial_irq_txovr(void)
 	serial_puts("serial_irq_txovr, send 3 bytes ...\n");
 
 	// if txfifo is full, waitting ...
-	while(HWP_UART->state & UART_STATE_TX_FUL)
+	while(HWP_UART->state & UART_MASK_TX_FUL)
 		;
 	mdelay(10);
 
 	// clear tx ovr state
-	HWP_UART->intclr = UART_INTCLR_TX_OVR;
+	HWP_UART->intclr = UART_MASK_INTCLR_TX_OVR;
 	irq_clr_pending(UART_IRQ_MASK_OVR);
 
 	// enable global irq
 	irq_enable(UART_IRQ_MASK_OVR);
-	HWP_UART->ctrl |= UART_CTRL_TX_OVR_INTEN;
+	HWP_UART->ctrl |= UART_MASK_TX_OVR_INTEN;
 
 	serial_callback_done = 0;
 
@@ -245,7 +245,7 @@ int serial_irq_txovr(void)
 	mdelay(10);
 
 	// disable global irq
-	HWP_UART->ctrl &= ~UART_CTRL_TX_OVR_INTEN;
+	HWP_UART->ctrl &= ~UART_MASK_TX_OVR_INTEN;
 	irq_disable(UART_IRQ_MASK_OVR);
 
 	if(invalid_callback(serial_callback_done, 0x12)) {
@@ -263,17 +263,17 @@ int serial_irq_tx(void)
 	serial_puts("serial_irq_tx, send 1 bytes ...\n");
 
 	// if txfifo is full, waitting ...
-	while(HWP_UART->state & UART_STATE_TX_FUL)
+	while(HWP_UART->state & UART_MASK_TX_FUL)
 		;
 	mdelay(10);
 
 	// clear tx state
-	HWP_UART->intclr = UART_INTCLR_TX;
+	HWP_UART->intclr = UART_MASK_INTCLR_TX;
 	irq_clr_pending(UART_IRQ_MASK_TX);
 
 	// enable global irq
 	irq_enable(UART_IRQ_MASK_TX);
-	HWP_UART->ctrl |= UART_CTRL_TX_INTEN;
+	HWP_UART->ctrl |= UART_MASK_TX_INTEN;
 
 	serial_callback_done = 0;
 	HWP_UART->data = 0x42;
@@ -285,7 +285,7 @@ int serial_irq_tx(void)
 	mdelay(10);
 
 	// disable global irq
-	HWP_UART->ctrl &= ~UART_CTRL_TX_INTEN;
+	HWP_UART->ctrl &= ~UART_MASK_TX_INTEN;
 	irq_disable(UART_IRQ_MASK_TX);
 
 	if(invalid_callback(serial_callback_done, 0x24)) {
@@ -341,7 +341,7 @@ int serial_irq_rxtx(void)
 
 	serial_puts("serial_irq_rxtx, input 5 bytes ...\n");
 
-	while(HWP_UART->state & UART_STATE_TX_FUL)
+	while(HWP_UART->state & UART_MASK_TX_FUL)
 		;
 	mdelay(10);
 
@@ -352,11 +352,11 @@ int serial_irq_rxtx(void)
 	init_channel(&txchan, 1, &rxbuf[1],len,tx_callback);
 	register_channel(&txchan,&rxchan);
 
-	HWP_UART->intclr = UART_INTCLR_TX | UART_INTCLR_RX;
+	HWP_UART->intclr = UART_MASK_INTCLR_TX | UART_MASK_INTCLR_RX;
 	irq_clr_pending(UART_IRQ_MASK_RX | UART_IRQ_MASK_TX);
 
 	irq_enable(UART_IRQ_MASK_RX | UART_IRQ_MASK_TX);
-	HWP_UART->ctrl |= UART_CTRL_TX_INTEN | UART_CTRL_RX_INTEN;
+	HWP_UART->ctrl |= UART_MASK_TX_INTEN | UART_MASK_RX_INTEN;
 
 	while(rx_callback_done == 0);
 
@@ -364,7 +364,7 @@ int serial_irq_rxtx(void)
 	while(tx_callback_done == 0);
 
 	mdelay(10);
-	HWP_UART->ctrl &= ~(UART_CTRL_TX_INTEN | UART_CTRL_RX_INTEN);
+	HWP_UART->ctrl &= ~(UART_MASK_TX_INTEN | UART_MASK_RX_INTEN);
 	irq_disable(UART_IRQ_MASK_RX | UART_IRQ_MASK_TX);
 
 	serial_puts("\nserial_irq_rxtx, test success !\n");
@@ -382,17 +382,17 @@ int serial_irq_send(void)
 	register_channel(&txchan,0);
 	tx_callback_done = 0;
 
-	HWP_UART->intclr = UART_INTCLR_TX;
+	HWP_UART->intclr = UART_MASK_INTCLR_TX;
 	irq_clr_pending(UART_IRQ_MASK_TX);
 
 	irq_enable(UART_IRQ_MASK_TX);
-	HWP_UART->ctrl |= UART_CTRL_TX_INTEN;
+	HWP_UART->ctrl |= UART_MASK_TX_INTEN;
 
 	HWP_UART->data = 0x38;
 	while(tx_callback_done == 0);
 
 	mdelay(10);
-	HWP_UART->ctrl &= ~UART_CTRL_TX_INTEN;
+	HWP_UART->ctrl &= ~UART_MASK_TX_INTEN;
 	irq_enable(UART_IRQ_MASK_TX);
 
 	register_channel(0,0);
@@ -411,16 +411,16 @@ int serial_irq_receive(void)
 	register_channel(0,&rxchan);
 	rx_callback_done = 0;
 
-	HWP_UART->intclr = UART_INTCLR_RX;
+	HWP_UART->intclr = UART_MASK_INTCLR_RX;
 	irq_clr_pending(UART_IRQ_MASK_RX);
 
 	irq_enable(UART_IRQ_MASK_RX);
-	HWP_UART->ctrl |= UART_CTRL_RX_INTEN;
+	HWP_UART->ctrl |= UART_MASK_RX_INTEN;
 
 	while(!rx_callback_done);
 	mdelay(10);
 
-	HWP_UART->ctrl &= ~UART_CTRL_RX_INTEN;
+	HWP_UART->ctrl &= ~UART_MASK_RX_INTEN;
 	irq_disable(UART_IRQ_MASK_RX);
 
 	for(i = 0;i < len;i++) {

@@ -13,31 +13,31 @@ typedef volatile struct {
 #define HWP_UART	((hwp_uart_t *)(RDA_UART_BASE))
 
 /* data */
-#define UART_DATA_MASK	(0x000000FF)
+#define UART_MASK_RXTXBUF (0x000000FF)
 
 /* state */
-#define UART_STATE_RX_OVR (1 << 3)
-#define UART_STATE_TX_OVR (1 << 2)
-#define UART_STATE_RX_FUL (1 << 1)
-#define UART_STATE_TX_FUL (1 << 0)
-#define UART_STATE_MASK	  (0x0000000F)
+#define UART_MASK_RX_OVR (1 << 3)
+#define UART_MASK_TX_OVR (1 << 2)
+#define UART_MASK_RX_FUL (1 << 1)
+#define UART_MASK_TX_FUL (1 << 0)
+#define UART_MASK_STATE	 (0x0000000F)
 
 /* ctrl */
-#define UART_CTRL_TX_HS_MODE_EN	(1 << 6)
-#define UART_CTRL_RX_OVR_INTEN	(1 << 5)
-#define UART_CTRL_TX_OVR_INTEN	(1 << 4)
-#define UART_CTRL_RX_INTEN	(1 << 3)
-#define UART_CTRL_TX_INTEN	(1 << 2)
-#define UART_CTRL_RX_EN		(1 << 1)
-#define UART_CTRL_TX_EN		(1 << 0)
-#define UART_CTRL_MASK		(0x0000007F)
+#define UART_MASK_TX_HS_MODE_EN	(1 << 6)
+#define UART_MASK_RX_OVR_INTEN	(1 << 5)
+#define UART_MASK_TX_OVR_INTEN	(1 << 4)
+#define UART_MASK_RX_INTEN	(1 << 3)
+#define UART_MASK_TX_INTEN	(1 << 2)
+#define UART_MASK_RX_EN		(1 << 1)
+#define UART_MASK_TX_EN		(1 << 0)
+#define UART_MASK_CTRL		(0x0000007F)
 
 /* intclr */
-#define UART_INTCLR_RX_OVR	(1 << 3)
-#define UART_INTCLR_TX_OVR	(1 << 2)
-#define UART_INTCLR_RX		(1 << 1)
-#define UART_INTCLR_TX		(1 << 0)
-#define UART_INTCLR_MASK	(0x0000000F)
+#define UART_MASK_INTCLR_RX_OVR	(1 << 3)
+#define UART_MASK_INTCLR_TX_OVR	(1 << 2)
+#define UART_MASK_INTCLR_RX		(1 << 1)
+#define UART_MASK_INTCLR_TX		(1 << 0)
+#define UART_MASK_INTCLR	(0x0000000F)
 
 /* bauddiv */
 #define UART_BAUDDIV_MASK	(0x000FFFFF)

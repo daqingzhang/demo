@@ -4,9 +4,11 @@ ENTRY(_start)
 
 MEMORY
 {
-	ram0 (rx): o = 0x00000000,l = 0x8000 /* 32KB RAM for instruction */
-	ram1 (rw): o = 0x00010000,l = 0x4000 /* 16KB RAM for data */
+	ram0 (rx) : o = 0x00000000, l = 0x8000 /* 32KB RAM for inst */
+	ram1 (rw) : o = 0x00010000, l = 0x4000 /* 16KB RAM for data */
 }
+
+/* __stack_minsize__ = 0x100; */
 
 SECTIONS
 {
@@ -55,10 +57,20 @@ SECTIONS
 		. = ALIGN(4);
 	} > ram1
 
-	.bss : {
+	.bss (NOLOAD) : {
 		*(.bss)
 		. = ALIGN(4);
 		__bss_end__ = . ;
-	} > ram1
+	} > ram1 /* AT> ram0 */
+/*
+	._stack (NOLOAD) : {
+		. = ALIGN(4);
+		__stack_start__ = . ;
+		. = . + __stack_minsize__ ;
+		. = ALIGN(4);
+		__stack_end__ = . ;
+	} > ram1 */
 	_end = . ;
+	ASSERT(__ram0_end__ < ORIGIN(ram0) + LENGTH(ram0), "No enough space to store code in RAM0 !");
+	ASSERT(_end < ORIGIN(ram1) + LENGTH(ram1), "No enough space to store data in RAM1 !");
 }

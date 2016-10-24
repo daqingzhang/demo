@@ -32,7 +32,7 @@ typedef volatile struct {
 #define WDOG_MASK_MIS_ITSTATUS	(1 << 0)
 
 /* lock */
-#define WDOT_MASK_LOCK		(1 << 0)
+#define WDOG_MASK_LOCK		(1 << 0)
 #define WDOG_MASK_UNLOCK	(0x1ACCE551)
 
 #endif

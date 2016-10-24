@@ -9,11 +9,9 @@ ENTRY(_start)
 
 MEMORY
 {
-	ram0 (rx) : o = 0x00000000, l = 0x8000 /* 32KB RAM for inst */
-	ram1 (rw) : o = 0x00010000, l = 0x4000 /* 16KB RAM for data */
+	ram0 (rx) : o = 0x00000000, l = 0x8000 /* 32KB RAM for text + rodata */
+	ram1 (rw) : o = 0x00010000, l = 0x4000 /* 16KB RAM for sdata + data + sbss + bss + stack  */
 }
-
-/* __stack_minsize__ = 0x100; */
 
 SECTIONS
 {
@@ -46,16 +44,16 @@ SECTIONS
 		*(.srodata*)
 		*(.sdata .sdata.* .gnu.linkonce.s.*)
 		. = ALIGN(4);
-	} > ram1
+	} > ram1 /*AT>ram0*/
 
 	.data : {
 		*(.data)
 		__data_end__ = . ;
 		. = ALIGN(4);
-	} > ram1
+	} > ram1 /*AT>ram0*/
 
 	/* place the sbss & bss data in high RAM1 */
-	.sbss : {
+	.sbss (NOLOAD) : {
 		__bss_start__ = . ;
 		*(.sbss .sbss.* .gnu.linkonce.sb.*)
 		*(.scommon)
@@ -66,16 +64,10 @@ SECTIONS
 		*(.bss)
 		. = ALIGN(4);
 		__bss_end__ = . ;
-	} > ram1 /* AT> ram0 */
-/*
-	._stack (NOLOAD) : {
-		. = ALIGN(4);
-		__stack_start__ = . ;
-		. = . + __stack_minsize__ ;
-		. = ALIGN(4);
-		__stack_end__ = . ;
-	} > ram1 */
+	} > ram1
+
 	_end = . ;
-	ASSERT(__ram0_end__ < ORIGIN(ram0) + LENGTH(ram0), "No enough space to store code in RAM0 !");
-	ASSERT(_end < ORIGIN(ram1) + LENGTH(ram1), "No enough space to store data in RAM1 !");
 }
+
+ASSERT((__ram0_end__ < (ORIGIN(ram0) + LENGTH(ram0))), "ERROR: no enough space to store code in RAM0 !");
+ASSERT((_end < (ORIGIN(ram1) + LENGTH(ram1))), "ERROR: no enough space to store data in RAM1 !");

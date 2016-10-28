@@ -48,3 +48,7 @@ endif
 ifneq ($(findstring CONFIG_WDOG_TEST,$(TARGET_DEFS)),)
 C_OBJS += ./test/test_wdog.o
 endif
+
+ifneq ($(findstring CONFIG_REGS_TEST,$(TARGET_DEFS)),)
+C_OBJS += ./test/test_regs.o
+endif

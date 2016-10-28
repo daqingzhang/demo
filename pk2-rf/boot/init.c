@@ -5,6 +5,7 @@
 */
 
 #include <config.h>
+#include <util.h>
 
 //#define ISR_MARK_ADDR 0x00013000
 
@@ -34,55 +35,103 @@ void wcdma_tx_off_isr(void)	;//  writel(0x03,ISR_MARK_ADDR); }	//03
 void wcdma_rx_calib_isr(void)	;//  writel(0x02,ISR_MARK_ADDR); }	//02
 void wcdma_tx_calib_isr(void)	;//  writel(0x01,ISR_MARK_ADDR); }	//01
 
-typedef void (isr_handler_t)(void);
-
-static isr_handler_t *isr_handler_tab[] = {
-	NULL,			//00
-	wcdma_tx_calib_isr,	//01
-	wcdma_rx_calib_isr,	//02
-	wcdma_tx_off_isr,	//03
-	wcdma_tx_on_isr,	//04
-	wcdma_rf_off_isr,	//05
-	wcdma_rf_on_isr,	//06
-	wcdma_rf_initial_isr,	//07
-	wcdma_spll_hw_isr,	//08
-	wcdma_irat_hw_isr,	//09
-	NULL,			//10
-	wcdma_therm_hw_isr,	//11
-	wcdma_tx_pwr_hw_isr,	//12
-	wcdma_tx_freq_hw_isr,	//13
-	wcdma_rx_gain_hw_isr,	//14
-	wcdma_rx_freq_hw_isr,	//15
-	NULL,			//16
-	gsm_therm_update_isr,	//17
-	gsm_therm_off_isr,	//18
-	gsm_therm_on_isr,	//19
-	irat_dc_calib_isr,	//20
-	gsm_dc_calib_isr,	//21
-	gsm_initial_d_isr,	//22
-	gsm_initial_isr,	//23
-	NULL,			//24
-	NULL,			//25
-	NULL,			//26
-	NULL,			//27
-	gsm_txoff_isr,		//28
-	gsm_txon_isr,		//29
-	gsm_rxoff_isr,		//30
-	gsm_rxon_isr,		//31
-};
-
-void dispatch_isr(unsigned int irqs)
+void dispatch_isr(unsigned int status)
 {
-	u32 mask,i;
-	isr_handler_t *handler = NULL;
-
-	for(i = 0;i < 32;i++) {
-		mask = 1 << i;
-		if(mask & irqs) {
-			handler = isr_handler_tab[i];
-			break;
-		}
+	if(status & IRQ_MASK_REG00_WR) {
+		wcdma_tx_calib_isr();	//01
 	}
-	if(handler != NULL)
-		handler();
+	if(status & IRQ_MASK_REG02_WR) {
+		wcdma_rx_calib_isr();	//02
+	}
+	if(status & IRQ_MASK_REG04_WR) {
+		wcdma_tx_off_isr();	//03
+	}
+	if(status & IRQ_MASK_REG06_WR) {
+		wcdma_tx_on_isr();	//04
+	}
+	if(status & IRQ_MASK_TIMER0_UDF) {
+		nop();
+	}
+	if(status & IRQ_MASK_TIMER1_UDF) {
+		nop();
+	}
+	if(status & IRQ_MASK_TIMER2_UDF) {
+		nop();
+	}
+	if(status & IRQ_MASK_AON) {
+		nop();
+	}
+	if(status & IRQ_MASK_REG10_WR) {
+		wcdma_rf_off_isr();	//05
+	}
+	if(status & IRQ_MASK_REG12_WR) {
+		wcdma_rf_on_isr();	//06
+	}
+	if(status & IRQ_MASK_REG14_WR) {
+		wcdma_rf_initial_isr();	//07
+	}
+	if(status & IRQ_MASK_REG16_WR) {
+		wcdma_spll_hw_isr();	//08
+	}
+	if(status & IRQ_MASK_REG18_WR) {
+		wcdma_irat_hw_isr();	//09
+	}
+	if(status & IRQ_MASK_REG1A_WR) {
+		wcdma_tx_pwr_hw_isr();	//12
+	}
+	if(status & IRQ_MASK_REG1C_WR) {
+		wcdma_tx_freq_hw_isr();	//13
+	}
+	if(status & IRQ_MASK_REG1E_WR) {
+		wcdma_therm_hw_isr();	//11
+	}
+	if(status & IRQ_MASK_REG20_WR) {
+		wcdma_rx_gain_hw_isr();	//14
+	}
+	if(status & IRQ_MASK_REG22_WR) {
+		wcdma_rx_freq_hw_isr();	//15
+	}
+	if(status & IRQ_MASK_REG24_WR) {
+		gsm_therm_update_isr();	//17
+	}
+	if(status & IRQ_MASK_REG26_WR) {
+		gsm_therm_off_isr();	//18
+	}
+	if(status & IRQ_MASK_REG28_WR) {
+		gsm_therm_on_isr();	//19
+	}
+	if(status & IRQ_MASK_REG2A_WR) {
+		irat_dc_calib_isr();	//20
+	}
+	if(status & IRQ_MASK_REG2C_WR) {
+		gsm_dc_calib_isr();	//21
+	}
+	if(status & IRQ_MASK_REG2E_WR) {
+		gsm_initial_d_isr();	//22
+	}
+	if(status & IRQ_MASK_RSV1) {
+		gsm_initial_isr();	//23
+	}
+	if(status & IRQ_MASK_RSV2) {
+		gsm_txoff_isr();	//28
+	}
+	if(status & IRQ_MASK_RSV3) {
+		gsm_txon_isr();		//29
+	}
+	if(status & IRQ_MASK_RSV4) {
+		gsm_rxoff_isr();	//30
+		gsm_rxon_isr();		//31
+	}
+	if(status & IRQ_MASK_UART_RX_DONE) {
+		nop();
+	}
+	if(status & IRQ_MASK_UART_TX_DONE) {
+		nop();
+	}
+	if(status & IRQ_MASK_UART_OVR) {
+		nop();
+	}
+	if(status & IRQ_MASK_WDOG_UDF) {
+		nop();
+	}
 }

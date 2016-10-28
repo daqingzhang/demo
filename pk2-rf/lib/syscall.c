@@ -6,75 +6,43 @@
 #include <sysctrl.h>
 #include <gpio.h>
 
+/************************************ Just for Test *********************************/
+#ifdef CONFIG_PROJ_TEST
+
 #ifdef CONFIG_IRQ_TEST
-void irq_tester(int irqs);
+void irq_tester(int status);
 #endif
 #ifdef CONFIG_TIMER_TEST
-void timer_callback(unsigned int irqs);
+void timer_callback(unsigned int status);
 #endif
 #ifdef CONFIG_WDOG_TEST
-void wdog_callback(unsigned int irqs);
+void wdog_callback(unsigned int status);
 #endif
 #ifdef CONFIG_SERIAL_TEST
-void serial_callback(unsigned int irqs);
+void serial_callback(unsigned int status);
 #endif
-#ifndef CONFIG_PROJ_TEST
-void dispatch_isr(unsigned int irqs);
+#ifdef CONFIG_ECALL_TEST
+extern volatile int ecall_excp_done;
 #endif
 
 void do_interrupts(void)
 {
-	unsigned int irqs = irq_get_status(0xFFFFFFFF);
+	unsigned int status = irq_get_status(0xffffffff);
 
 #ifdef CONFIG_SERIAL_TEST
-	serial_callback(irqs);
+	serial_callback(status);
 #endif
 #ifdef CONFIG_TIMER_TEST
-	timer_callback(irqs);
+	timer_callback(status);
 #endif
 #ifdef CONFIG_WDOG_TEST
-	wdog_callback(irqs);
+	wdog_callback(status);
 #endif
 #ifdef CONFIG_IRQ_TEST
-	irq_tester(irqs);//just for test
+	irq_tester(status);//just for test
 #endif
-	/*
-	 * We must clear IRQ status before process it.
-	 * And this is used to support nested IRQ
-	 * and preemption IRQ.
-	 */
-	irq_clr_pending(irqs);
-
-	/*
-	 * During the exception service program executes, the
-	 * interrupt is disabled by default. We can re-enable
-	 * it to supoort interrupt nesting and preemption.
-	 */
-#ifdef CONFIG_SUPPORT_NESTED_IRQ
-	core_irq_enable();
-#endif
-#ifndef CONFIG_PROJ_TEST
-	dispatch_isr(irqs);
-#endif
+	irq_clr_pending(status);
 }
-
-void do_illegal_inst(void)
-{
-	serial_puts("illegal inst exception\n");
-}
-
-void do_lsu(void)
-{
-	serial_puts("lsu exception\n");
-
-	// reset CPU ...
-	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_RISCV);
-	while(1);
-}
-
-#ifdef CONFIG_ECALL_TEST
-extern volatile int ecall_excp_done;
-#endif
 
 void do_ecall(void)
 {
@@ -85,9 +53,58 @@ void do_ecall(void)
 	serial_puts("\n");
 	ecall_excp_done = 1;
 #endif
-	// TODO: add code here
-	// This exception can be used as swi
 }
+/************************************ Not for Test *********************************/
+#else
+void do_ecall(void)
+{
+	serial_puts("do_ecall\n");
+	//TODO: add code here
+}
+
+void dispatch_isr(unsigned int status);
+void do_interrupts(void)
+{
+	unsigned int status = irq_get_status(0xffffffff);
+
+	/*
+	 * Clear IRQ status before process ISR and ISR can be nested
+	 * or preempted if global IRQ enabled again.
+	 */
+	irq_clr_pending(status);
+
+	/*
+	 * During exception executes, global IRQ is disabled as default
+	 * option. It should be enabled again for supporting ISR nesting
+	 * or preemption.
+	 */
+#ifdef CONFIG_SUPPORT_NESTED_IRQ
+	core_irq_enable();
+#endif
+	dispatch_isr(status);
+}
+#endif
+
+/************************************ General *********************************/
+void do_illegal_inst(void)
+{
+	serial_puts("do_illegal_inst\n");
+}
+
+void do_lsu(void)
+{
+	serial_puts("do_lsu\n");
+
+	// reset CPU ...
+	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_RISCV);
+	while(1);
+}
+
+/*
+ * board_init - to init system hardware such as pin-mux, uart, system clock and IRQs.
+ * It is executed before main().
+ * @param:	flag - a simple parammeter for future use.
+ */
 
 void board_init(int flag)
 {

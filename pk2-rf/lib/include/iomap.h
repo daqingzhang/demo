@@ -13,7 +13,7 @@
 
 /* 16KB SRAM for Instruction Space */
 #define CONFIG_SRAM0_BASE 0x00000000
-#define CONFIG_SRAM0_SIZE (16 * 1024)
+#define CONFIG_SRAM0_SIZE (32 * 1024)
 #define CONFIG_SRAM0_END  (CONFIG_SRAM0_BASE + CONFIG_SRAM0_SIZE)
 
 /* 16KB SRAM for Data Space */

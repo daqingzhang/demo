@@ -33,12 +33,11 @@ void test_do_loop(void) property(loop_levels_2)
 }
 #endif
 
-#if 1
 //#define TMCU_INT_MASK 0xF0FE0000
 #define TMCU_INT_MASK 0xF0FEFFFF//0xFCFFFFFF//0xf0fff0fe
 
-unsigned short clock_source = 0;//26M or 156M
-long long time_trace = 0;
+volatile unsigned short clock_source = 0;//26M or 156M
+volatile long long time_trace = 0;
 
 int main(void)
 {
@@ -86,9 +85,3 @@ int main(void)
 	}
 	return 0;
 }
-#else
-int main(void)
-{
-	return 0;
-}
-#endif

@@ -74,7 +74,6 @@ $(TARGET_RISCV): $(C_OBJS) $(A_OBJS)
 %.o: %.c
 	$(RISCV_GCC) $(RISCV_GCC_OPTS) $(TARGET_DEFS) \
 	             -c $(INCS) $< -o $@
-
 %.o: %.S
 	$(RISCV_GCC) $(RISCV_GCC_OPTS) $(TARGET_DEFS) -D__ASSEMBLY__=1 \
 	             -c $(INCS) $< -o $@
@@ -84,6 +83,6 @@ JUNK	:= $(TARGET_RISCV) $(TARGET_BIN) $(TARGET_HEX) $(TARGET_MAP) \
 
 clean:
 	rm -rf $(JUNK)
-	rm -f $(BOOT_DIR)/*.o
+	rm -f $(TEST_DIR)/*.o
 	rm -f $(OUT_DIR)/*.riscv $(OUT_DIR)/*.o
 	rm -f $(OUT_DIR)/*.bin $(OUT_DIR)/*.hex

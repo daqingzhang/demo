@@ -60,6 +60,16 @@ int mem32_simple_rw(void)
 }
 #endif
 
+void print_meminfo(const char *s, u32 addr, u32 size)
+{
+	serial_puts(s);
+	serial_puts(", addr = ");
+	print_u32(addr);
+	serial_puts(", size = ");
+	print_u32(size);
+	serial_puts("\n");
+}
+
 /**
  * mem32_rw - memory 32bit reading/writing test.
  * return: zero for success.
@@ -69,6 +79,7 @@ int mem32_rw(unsigned int addr, unsigned int size)
 	unsigned int *dest,tmp[20];
 	int n = size >> 2,i,j;
 
+	print_meminfo("mem32_rw", addr, size);
 	/* write data to SRAM */
 	i = n;
 	dest = (unsigned int *)addr;
@@ -116,6 +127,8 @@ int mem16_rw(unsigned int addr, unsigned int size)
 {
 	unsigned short *dest,tmp[20];
 	int n = size >> 1,i,j;
+
+	print_meminfo("mem16_rw", addr, size);
 
 	/* write data to SRAM */
 	i = n;
@@ -165,6 +178,8 @@ int mem8_rw(unsigned int addr, unsigned int size)
 	volatile unsigned char *dest;
 	unsigned char tmp[20];
 	int n = size,i,j;
+
+	print_meminfo("mem8_rw", addr, size);
 
 	/* write data to SRAM */
 	i = n;
@@ -324,6 +339,8 @@ int mem32_bit_1_rw(unsigned int addr, unsigned int size)
 	unsigned int n = size >> 2;
 	int i,r;
 
+	print_meminfo("mem32_bit_1_rw", addr, size);
+
 	mem32_set((void *)addr,0,size);
 	while(n) {
 		for(i = 0;i < 32;i++) {
@@ -348,6 +365,8 @@ int mem32_bit_0_rw(unsigned int addr, unsigned int size)
 	unsigned int *dst = (unsigned int *)addr;
 	unsigned int n = size >> 2;
 	int i,r;
+
+	print_meminfo("mem32_bit_0_rw", addr, size);
 
 	mem32_set((void *)addr,0xFFFFFFFF,size);
 	while(n) {

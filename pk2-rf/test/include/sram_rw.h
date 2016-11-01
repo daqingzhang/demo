@@ -1,7 +1,7 @@
 #ifndef __SRAM_RW_H__
 #define __SRAM_RW_H__
 
-#define DATA_SRAM_BASE (0x00010000)
+#define DATA_SRAM_BASE (CONFIG_SRAM1_BASE + 0x1000)
 #define DATA_SRAM_SIZE ((16 - 4) * (1024))
 #define DATA_SRAM_BASE2 (0x00013000)
 

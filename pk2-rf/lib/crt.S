@@ -279,3 +279,19 @@ core_get_mstatus:
 core_set_mstatus:
 	csrw mstatus, a0
 	ret
+
+/*******************************************************/
+.globl core_get_mcpuid
+core_get_mcpuid:
+	csrr a0, mcpuid
+	ret
+
+.globl core_get_mpid
+core_get_mpid:
+	csrr a0, mimpid
+	ret
+
+.globl core_get_mhartid
+core_get_mhartid:
+	csrr a0, mhartid
+	ret

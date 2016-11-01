@@ -28,4 +28,4 @@ clean:
 	$(MAKE) -f Makefile.boot TOP_DIR=$(ABS_TOP_DIR) clean
 	$(MAKE) -f Makefile.test TOP_DIR=$(ABS_TOP_DIR) clean
 
-.PHONY: test boot lib clean fpga
+.PHONY: test boot lib clean gencodes

@@ -108,9 +108,9 @@ void sysctrl_set_debug(u32 value)
 void sysctrl_bypass_watchdog(int yes)
 {
 	if(yes)
-		HWP_SYSCTRL->cfg_rst2 |= SYSCTRL_MASK_RST2_BYPASS_WDOG_RST;
+		HWP_SYSCTRL->cfg_rst2 |= SYSCTRL_MASK_RST2_BYPASS_WDOG_RST;//bypass watch dog
 	else
-		HWP_SYSCTRL->cfg_rst2 &= ~SYSCTRL_MASK_RST2_BYPASS_WDOG_RST;
+		HWP_SYSCTRL->cfg_rst2 &= ~SYSCTRL_MASK_RST2_BYPASS_WDOG_RST;//do not bypass watchdog
 }
 
 void sysctrl_hwerr_response(int yes)

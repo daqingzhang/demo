@@ -4,9 +4,9 @@ import sys
 import re
 
 rom_base = 0x0
-rom_len = 0x4000
-ram_base = 0x10000
-ram_len = 0x4000
+rom_len  = 0x8000
+ram_base = 0x8000
+ram_len  = 0x4000
 
 src_file_name = sys.argv[1]
 dst_file_name = src_file_name + '.spicode'
@@ -56,15 +56,32 @@ for i in range(ram_base, ram_base+ram_len):
         hex_list[i] = '00'
 
 f = open(dst_file_name, 'w')
-f.write('item:codes\n')
+
+f.write('item:start\n')
+f.write('call spi_pmu_write(&h7fff, &h0006);\n')
+f.write('call spi_pmu_write(&h5008, &hffff);\n')
+f.write('call spi_pmu_write(&h7fff, &h0000);\n')
+
+f.write('item:lock\n')
 f.write('call spi_pmu_write(&h7fff, &h0004);\n')
 f.write('call spi_pmu_write(&h0002, &h0001);\n')
 f.write('call spi_pmu_write(&h7fff, &h0000);\n')
+
+
+f.write('item:unlock\n')
+f.write('call spi_pmu_write(&h7fff, &h0004);\n')
+f.write('call spi_pmu_write(&h0002, &h0000);\n')
+f.write('call spi_pmu_write(&h7fff, &h0000);\n')
+
+f.write('item:codes\n')
+#f.write('call spi_pmu_write(&h7fff, &h0004);\n')
+#f.write('call spi_pmu_write(&h0002, &h0001);\n')
+f.write('call spi_pmu_write(&h7fff, &h0000);\n')
 for i in range(rom_base, rom_base+rom_len, 2):
     f.write('call spi_pmu_write(&h'+str(hex(i)[2:]).zfill(4)+', &h'+str(hex_list[i+1])+str(hex_list[i])+');\n')
-f.write('call spi_pmu_write(&h7fff, &h0002);\n')
+f.write('call spi_pmu_write(&h7fff, &h0001);\n')
 for i in range(ram_base, ram_base+ram_len, 2):
-    f.write('call spi_pmu_write(&h'+str(hex(i)[-4:])+', &h'+str(hex_list[i+1])+str(hex_list[i])+');\n')
+    f.write('call spi_pmu_write(&h'+str(hex(i-ram_base)[2:]).zfill(4)+', &h'+str(hex_list[i+1])+str(hex_list[i])+');\n')
 
 f.write('call spi_pmu_write(&h7fff, &h0000);\n')
 f.close()

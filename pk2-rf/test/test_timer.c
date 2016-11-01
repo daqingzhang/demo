@@ -63,8 +63,6 @@ static int timer_irq_test(hwp_timer_t *hwp_timer)
 	irq_disable(irqmask);
 	timer_enable(hwp_timer,0);
 
-	timer_callback_done |= readl(0x00012AA4);
-	writel(timer_callback_done, 0x00012AA4);
 	return 0;
 }
 
@@ -85,38 +83,55 @@ int timer_test(void)
 {
 	int r = 0;
 
+	serial_puts("timer_test, test start\n");
 	// set system clock
-	sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
+	//sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
 
 	// timer0 delay 50 us
 	timer_dly_us(HWP_TIMER0,50);
+	serial_puts("timer 0 delay 50 us test done !\n");
+
 	// timer1 delay 30 us
 	timer_dly_us(HWP_TIMER1,30);
+	serial_puts("timer 1 delay 30 us test done !\n");
+
 	// timer2 delay 10 us
 	timer_dly_us(HWP_TIMER2,10);
+	serial_puts("timer 2 delay 10 us test done !\n");
 
 	// timer0 delay 260 ticks
 	if(timer_delay_demo(HWP_TIMER0,260))
 		r |= 0x01;
+	serial_puts("timer 0 delay 260 ticks test done !\n");
+
 	// timer1 delay 520 ticks
 	if(timer_delay_demo(HWP_TIMER1,520))
 		r |= 0x02;
+	serial_puts("timer 1 delay 520 ticks test done !\n");
+
 	// timer2 delay 780 ticks
 	if(timer_delay_demo(HWP_TIMER2,780))
 		r |= 0x03;
+	serial_puts("timer 2 delay 780 ticks test done !\n");
 
 	if(timer_irq_test(HWP_TIMER0))
 		r |= 0x08;
+	serial_puts("timer 0 irq test done !\n");
+
 	if(timer_irq_test(HWP_TIMER1))
 		r |= 0x10;
+	serial_puts("timer 1 irq test done !\n");
+
 	if(timer_irq_test(HWP_TIMER2))
 		r |= 0x20;
+	serial_puts("timer 2 irq test done !\n");
+
 	if(r) {
 		serial_puts("timer, error code ");
 		print_u32(r);
-		serial_puts("\n");
+		serial_puts(" ###\n");
 		writel(r, 0x00012AA0);
 	}
-	serial_puts("timer, test success !\n");
+	serial_puts("timer_test, test success !\n");
 	return r;
 }

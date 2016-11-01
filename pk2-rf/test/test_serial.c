@@ -476,9 +476,12 @@ int serial_test(void)
 
 	mdelay(50);
 	serial_init();
+	mdelay(50);
+
 	register_channel(NULL,NULL);
 
 	r += serial_loopback(); // loopback pooling
+#if 0
 	r += serial_irq_txovr();// tx overrun interrupts test
 	r += serial_irq_rxovr();// rx overrun interrupts test
 	r += serial_irq_tx(); 	// send data via interrupts
@@ -486,5 +489,6 @@ int serial_test(void)
 	r += serial_irq_send();	// send string via interrupts
 	r += serial_irq_receive(); // receive string via interrupts
 	r += serial_irq_rxtx(); // received & send data via interrupts
+#endif
 	return r;
 }

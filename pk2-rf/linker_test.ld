@@ -10,7 +10,7 @@ ENTRY(_start)
 MEMORY
 {
 	ram0 (rx) : o = 0x00000000, l = 0x8000 /* 32KB RAM for text + rodata */
-	ram1 (rw) : o = 0x00010000, l = 0x4000 /* 16KB RAM for sdata + data + sbss + bss + stack  */
+	ram1 (rw) : o = 0x00008000, l = 0x4000 /* 16KB RAM for sdata + data + sbss + bss + stack  */
 }
 
 SECTIONS

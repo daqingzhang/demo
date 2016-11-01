@@ -6,7 +6,6 @@
 #include <sysctrl.h>
 #include <gpio.h>
 
-/************************************ Just for Test *********************************/
 #ifdef CONFIG_PROJ_TEST
 
 #ifdef CONFIG_IRQ_TEST
@@ -54,7 +53,6 @@ void do_ecall(void)
 	ecall_excp_done = 1;
 #endif
 }
-/************************************ Not for Test *********************************/
 #else
 void do_ecall(void)
 {
@@ -84,8 +82,6 @@ void do_interrupts(void)
 	dispatch_isr(status);
 }
 #endif
-
-/************************************ General *********************************/
 void do_illegal_inst(void)
 {
 	serial_puts("do_illegal_inst\n");
@@ -100,16 +96,10 @@ void do_lsu(void)
 	while(1);
 }
 
-/*
- * board_init - to init system hardware such as pin-mux, uart, system clock and IRQs.
- * It is executed before main().
- * @param:	flag - a simple parammeter for future use.
- */
-
 void board_init(int flag)
 {
 	/* disable global IRQ */
-	core_irq_enable();
+	core_irq_disable();
 
 	/* configure system clock */
 	sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
@@ -120,7 +110,7 @@ void board_init(int flag)
 	/* enable hardware error response */
 	sysctrl_hwerr_response(1);
 
-	/* reset hardware */
+	/* reset hardware enable */
 	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_TIMER0
 				| SYSCTRL_MASK_RST1_TIMER1
 				| SYSCTRL_MASK_RST1_TIMER2);
@@ -128,6 +118,7 @@ void board_init(int flag)
 	nop();
 	nop();
 	nop();
+	/* reset hardware disable */
 	sysctrl_soft_rst1_dis(SYSCTRL_MASK_RST1_TIMER0
 				| SYSCTRL_MASK_RST1_TIMER1
 				| SYSCTRL_MASK_RST1_TIMER2);

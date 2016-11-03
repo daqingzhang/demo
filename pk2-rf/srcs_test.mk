@@ -50,5 +50,9 @@ C_OBJS += ./test/test_wdog.o
 endif
 
 ifneq ($(findstring CONFIG_REGS_TEST,$(TARGET_DEFS)),)
-C_OBJS += ./test/test_regs.o
+C_OBJS += ./test/test_regs.o \
+	  ./test/regs_src/regs_general.o \
+	  ./test/regs_src/rtc_reg_test.o \
+	  ./test/regs_src/dfe_reg_test.o \
+	  ./test/regs_src/cfg_reg_test.o
 endif

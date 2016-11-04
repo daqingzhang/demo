@@ -21,6 +21,7 @@ struct rda_irq_tag {
 
 volatile static struct rda_irq_tag irqtag;
 volatile static int irq_case = IRQ_CASE_NULL;
+extern volatile int g_irq_test;
 
 static void sdelay(int cnt)
 {
@@ -124,6 +125,7 @@ int irq_simple_test(void)
 {
 	u32 mask = 0;
 
+	g_irq_test = 1;
 	irq_case = IRQ_CASE_SIMPLE;
 
 	irqtag.id = 0;
@@ -150,6 +152,7 @@ int irq_simple_test(void)
 		serial_puts("\n");
 		return irqtag.error;
 	}
+	g_irq_test = 0;
 	serial_puts("irq_simple, test success !\n");
 	return 0;
 }
@@ -159,6 +162,7 @@ int irq_nesting_test(void)
 	int err = 0;
 	u32 mask = 0,id = 0;
 
+	g_irq_test = 1;
 	irq_case = IRQ_CASE_NEST;
 
 	irqtag.irqs[0] = 0;
@@ -187,6 +191,7 @@ int irq_nesting_test(void)
 		serial_puts("\n");
 		return err;
 	}
+	g_irq_test = 0;
 	serial_puts("irq_nesting, test success !\n");
 	return 0;
 }
@@ -196,6 +201,7 @@ int irq_preemption_test(void)
 	int err = 0;
 	u32 mask = 0,id = 0;
 
+	g_irq_test = 1;
 	irq_case = IRQ_CASE_PREEMPT;
 
 	irqtag.irqs[0] = 0;
@@ -244,6 +250,7 @@ int irq_preemption_test(void)
 		serial_puts("\n");
 		return err;
 	}
+	g_irq_test = 0;
 	serial_puts("irq_preemption, test success !\n");
 	return 0;
 }

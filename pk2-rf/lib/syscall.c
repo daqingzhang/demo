@@ -7,7 +7,7 @@
 #include <gpio.h>
 
 #ifdef CONFIG_PROJ_TEST
-
+volatile int g_irq_test = 0;
 #ifdef CONFIG_IRQ_TEST
 void irq_tester(int status);
 #endif
@@ -28,18 +28,22 @@ void do_interrupts(void)
 {
 	unsigned int status = irq_get_status(0xffffffff);
 
+	if(!g_irq_test) {
 #ifdef CONFIG_SERIAL_TEST
-	serial_callback(status);
+		serial_callback(status);
 #endif
 #ifdef CONFIG_TIMER_TEST
-	timer_callback(status);
+		timer_callback(status);
 #endif
 #ifdef CONFIG_WDOG_TEST
-	wdog_callback(status);
+		wdog_callback(status);
 #endif
+	} else {
 #ifdef CONFIG_IRQ_TEST
-	irq_tester(status);//just for test
+		irq_tester(status);//just for test
 #endif
+	}
+
 	irq_clr_pending(status);
 }
 

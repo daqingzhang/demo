@@ -358,33 +358,39 @@ static REG_DEF_S cfg_regs[] =
 /* G_DEF_S cfg_reg_reg_sys_ctrl_reg_23e			*/ INIT_REG_DEF_S( ADDR_BASE +  0x3107c,  0xffff, 0xffff, 1, 0xffff, 0x1),
 };
 
-int cfg_reg_reg_hw_reset_test(void)
+int cfg_reg_hw_reset_test(void)
 {
-	int i;
+	int i,err = 0;
 	REG_DEF_S *ptr_regs = cfg_regs;
 
 	for(i=0; i < ARRAY_SIZE(cfg_regs); i++) {
 		if(reg16_hw_reset_test(ptr_regs) != 0) {
-			PRINTF("ERROR: hw reset test addr = ", ptr_regs->address);
-			return -1;
+			PRINTF("cfg_reg_hw_reset_test, error addr = ", ptr_regs->address);
+			//return -1;
+			err++;
 		}
 		ptr_regs++;
-	}   
+	}
+	if(!err)
+		serial_puts("cfg_reg_hw_reset_test, test success !\n");
 	return 0;
 }
 
-int cfg_reg_reg_rw_test(void)
+int cfg_reg_rw_test(void)
 {
-	int i;
+	int i,err = 0;
 	REG_DEF_S *ptr_regs = cfg_regs;
 
 	for(i=0; i < ARRAY_SIZE(cfg_regs); i++) {
 		if(reg16_rw_test(ptr_regs) != 0) {
-			PRINTF("ERROR: rw test addr = ", ptr_regs->address);
-			return -1;
+			PRINTF("cfg_reg_rw_test, error addr = ", ptr_regs->address);
+			//return -1;
+			err++;
 		}
 		ptr_regs++;
 	}
+	if(!err)
+		serial_puts("cfg_reg_rw_test, test success !\n");
 	return 0;
 }
 
@@ -392,8 +398,8 @@ int cfg_reg_test(void)
 {
 	int r;
 
-	r = cfg_reg_reg_hw_reset_test();
-	r += cfg_reg_reg_rw_test();
+	r = cfg_reg_hw_reset_test();
+	r += cfg_reg_rw_test();
 
 	return r;
 }

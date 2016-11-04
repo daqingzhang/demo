@@ -158,31 +158,37 @@ REG_DEF_S dfe_regs[] =
 
 int dfe_reg_hw_reset_test(void)
 {
-	int i;
+	int i,err = 0;
 	REG_DEF_S *ptr_regs = dfe_regs;
 
 	for(i = 0; i < ARRAY_SIZE(dfe_regs); i++) {
 		if(reg16_hw_reset_test(ptr_regs) != 0) {
-			PRINTF("ERROR: hw reset test addr = ", ptr_regs->address);
-			return -1;
+			PRINTF("dfe_reg_hw_reset_test, error addr = ", ptr_regs->address);
+			//return -1;
+			err++;
 		}
 		ptr_regs++;
 	}
+	if(!err)
+		serial_puts("dfe_reg_hw_reset_test, test success !\n");
 	return 0;
 }
 
 int dfe_reg_rw_test(void)
 {
-	int i;
+	int i,err = 0;
 	REG_DEF_S *ptr_regs = dfe_regs;
 
 	for(i = 0; i < ARRAY_SIZE(dfe_regs); i++) {
 		if(reg16_rw_test(ptr_regs) != 0) {
-			PRINTF("ERROR: rw test addr = ", ptr_regs->address);
-			return -1;
+			PRINTF("dfe_reg_rw_test, error addr = ", ptr_regs->address);
+			//return -1;
+			err++;
 		}
 		ptr_regs++;
 	}
+	if(!err)
+		serial_puts("dfe_reg_rw_test, test success !\n");
 	return 0;
 }
 

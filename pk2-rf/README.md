@@ -4,8 +4,8 @@ Information for PK2-RF Processor
 Memory Layout
 ------------------------------------------------------------------------
 
-	-Inst SRAM	0x00000000 -> 0x00003FFF	16KB
-	-Data SRAM	0x00010000 -> 0x00013FFF	16KB
+	-Inst SRAM	0x00000000 -> 0x00007FFF	32KB
+	-Data SRAM	0x00008000 -> 0x0000BFFF	16KB
 
 Vector Table
 ------------------------------------------------------------------------

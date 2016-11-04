@@ -83,6 +83,7 @@ int main( int argc, char* argv[] )
 	if(multi_test())
 		err |= 0x01;
 #endif
+
 #ifdef CONFIG_ECALL_TEST
 	ecall_excp_done = 0;
 	core_ecall();
@@ -92,6 +93,44 @@ int main( int argc, char* argv[] )
 	print_u32(status);
 	serial_puts("\n");
 	serial_puts("ecall, test success !\n");
+#endif
+
+#ifdef CONFIG_IRQ_TEST
+	if(irq_simple_test())
+		err |= 0x40;
+#ifdef CONFIG_SUPPORT_NESTED_IRQ
+	if(irq_nesting_test())
+		err |= 0x80;
+	if(irq_preemption_test())
+		err |= 0x100;
+#endif /* CONFIG_SUPPORT_NESTED_IRQ */
+#endif /* CONFIG_IRQ_TEST */
+
+#ifdef CONFIG_MATH_TEST
+	if(add_test())
+		err |= 0x200;
+	if(sub_test())
+		err |= 0x400;
+	if(mul_test())
+		err |= 0x800;
+	if(div_test())
+		err |= 0x1000;
+	if(shift_left_test())
+		err |= 0x2000;
+	if(shift_right_test())
+		err |= 0x4000;
+#endif
+#ifdef CONFIG_TIMER_TEST
+	if(timer_test())
+		err |= 0x8000;
+#endif
+#ifdef CONFIG_SERIAL_TEST
+	if(serial_test())
+		err |= 0x10000;
+#endif
+#ifdef CONFIG_REGS_TEST
+	if(dump_all_regs())
+		err |= 0x40000;
 #endif
 #ifdef CONFIG_MEM32_TEST
 	r = mem32_rw(MEM32_ADDR,MEM32_SIZE);
@@ -137,46 +176,9 @@ int main( int argc, char* argv[] )
 	print_result("mem32_bit_0_rw",r);
 
 #endif
-#ifdef CONFIG_IRQ_TEST
-	if(irq_simple_test())
-		err |= 0x40;
-#ifdef CONFIG_SUPPORT_NESTED_IRQ
-	if(irq_nesting_test())
-		err |= 0x80;
-	if(irq_preemption_test())
-		err |= 0x100;
-#endif
-
-#endif
-#ifdef CONFIG_MATH_TEST
-	if(add_test())
-		err |= 0x200;
-	if(sub_test())
-		err |= 0x400;
-	if(mul_test())
-		err |= 0x800;
-	if(div_test())
-		err |= 0x1000;
-	if(shift_left_test())
-		err |= 0x2000;
-	if(shift_right_test())
-		err |= 0x4000;
-#endif
-#ifdef CONFIG_TIMER_TEST
-	if(timer_test())
-		err |= 0x8000;
-#endif
-#ifdef CONFIG_SERIAL_TEST
-	if(serial_test())
-		err |= 0x10000;
-#endif
 #ifdef CONFIG_WDOG_TEST
 	if(wdog_test())
 		err |= 0x20000;
-#endif
-#ifdef CONFIG_REGS_TEST
-	if(dump_all_regs())
-		err |= 0x40000;
 #endif
 #ifdef CONFIG_LSU_TEST
 	if(mem32_invalid_access() != 0)
@@ -197,16 +199,17 @@ int main( int argc, char* argv[] )
 	return 0;
 }
 
-#define CPU_DEBUGA_BASE (RDA_DBUG_BASE + 0X0000)
-#define CPU_DEBUGB_BASE	(RDA_DBUG_BASE + 0X2000)
-#define CPU_CSR_BASE	(RDA_DBUG_BASE + 0X4000)
+#define CPU_DEBUGA_BASE (RDA_DBUG_BASE + 0x0000)
+#define CPU_DEBUGB_BASE	(RDA_DBUG_BASE + 0x2000)
+#define CPU_CSR_BASE	(RDA_DBUG_BASE + 0x4000)
 #define CPU_GPR_BASE	(RDA_DBUG_BASE + 0x0400)
 #define CPU_FPR_BASE	(RDA_DBUG_BASE + 0x0500)
 
 void do_read_register(void)
 {
 	u32 reg,addr;
-	u32 i,offs = 0;
+	u32 i;
+//	u32 offs = 0;
 
 	serial_puts("do_read_register\n");
 #if 1

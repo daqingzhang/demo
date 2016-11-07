@@ -1,4 +1,4 @@
-ABS_TOP_DIR	:= /home/daqingzhang/workspace/github/demo/pk2-rf
+ABS_TOP_DIR	:= $(shell pwd)
 INSTALLDIR	:= $(ABS_TOP_DIR)/$(PREFIX)
 PREFIX          := target
 XLEN		:= 32
@@ -28,4 +28,4 @@ clean:
 	$(MAKE) -f Makefile.boot TOP_DIR=$(ABS_TOP_DIR) clean
 	$(MAKE) -f Makefile.test TOP_DIR=$(ABS_TOP_DIR) clean
 
-.PHONY: test boot lib clean gencodes
+.PHONY: test boot clean fpga

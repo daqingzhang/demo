@@ -51,16 +51,12 @@ Vector Table
 How to make
 ------------------------------------------------------------------------
 
-	(1) modify envsetup.sh:
-		add compiler's directory to PATH: export PATH=~/bin:$PATH:~/gcc-riscv32-pulp/bin
-		add some special library file's directory to LD_LIBRARY_PATH. The compiler will load these libraries when it's running.
-	add these varibles to current system environment: source envsetup.sh
+	(1) source envsetup.sh
 
-	(2) Please modify the Makefile's ABS_TOP_DIR varible to specify the absolutely
-	file path of current project. Just write it like this:
-		ABS_TOP_DIR	:= /home/zhangdaqing/workspace/iot/riscv/rda-riscv
-
-	(3) Run Makefile
-		> make
+	(2) run make command.
+		a) build test project: make test
+		b) build boot project: make boot
+		c) build fpga project: make fpga
+		d) build default project: make
 
 	Good Luck!

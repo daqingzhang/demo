@@ -11,7 +11,7 @@ GEN_EXE		:= python2.7
 GEN_IN		:= test.hex
 GEN_OUT		:= $(GEN_IN).spicode
 
-all: clean fpga
+all: clean test
 
 fpga: test
 	rm -f $(GEN_OUT)

@@ -1,9 +1,11 @@
 RISCV_CUR_DIR=$(pwd)
-RISCV_GCCBIN=$RISCV_CUR_DIR/tools/gcc-riscv32-pulp/bin
-RISCV_GCCLIB=$RISCV_CUR_DIR/tools/gcclib/usr/lib
+RISCV_GCCLIB_DIR=$RISCV_CUR_DIR/tools/gcclib/usr/lib
+RISCV_GCC_DIR=$RISCV_CUR_DIR/tools/gcc-riscv32-pulp/bin
+RISCV_GDB_DIR=$RISCV_CUR_DIR/tools/gdb-riscv32-pulp/bin
+RISCV_OPENOCD_DIR=$RISCV_CUR_DIR/tools/openocd-pulp/bin
 
-export LD_LIBRARY_PATH=$RISCV_GCCLIB
-export PATH=$PATH:$RISCV_GCCBIN
+export LD_LIBRARY_PATH=$RISCV_GCCLIB_DIR
+export PATH=$PATH:$RISCV_GCC_DIR:$RISCV_GDB_DIR:$RISCV_OPENOCD_DIR
 
 riscvenv()
 {

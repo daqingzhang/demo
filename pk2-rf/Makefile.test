@@ -31,9 +31,9 @@ RISCV_GCC	:= $(RISCV_PREFIX)gcc
 RISCV_OBJDUMP	:= $(RISCV_PREFIX)objdump
 RISCV_OBJCOPY	:= $(RISCV_PREFIX)objcopy
 RISCV_LINK	:= $(RISCV_GCC) -T linker_test.ld $(INCS)
-RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -Wall -fno-common -fno-builtin-printf -m32 -march=IMXpulpv2 -msave-restore -mrvc
+RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -Wall -fno-common -fno-builtin-printf -m32 -march=IMXpulpv2 -msave-restore -mrvc -g
 #RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -Os -ffast-math -Wall -fno-common -fno-builtin-printf
-RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc -Wl,-Map=$(TARGET_MAP)
+RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc -Wl,-Map=$(TARGET_MAP) -g
 RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.sdata --section=.data
 
 #====================================================================
@@ -42,13 +42,13 @@ RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --s
 TARGET_DEFS	:= -DPREALLOCATE=1 -DHOST_DEBUG=0
 TARGET_DEFS	+= -DCONFIG_PROJ_TEST
 TARGET_DEFS	+= -DCONFIG_SUPPORT_NESTED_IRQ
-TARGET_DEFS	+= -DCONFIG_IRQ_TEST
-TARGET_DEFS	+= -DCONFIG_ECALL_TEST
-TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
+#TARGET_DEFS	+= -DCONFIG_IRQ_TEST
+#TARGET_DEFS	+= -DCONFIG_ECALL_TEST
+#TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
 #TARGET_DEFS	+= -DCONFIG_MEM32_TEST
 TARGET_DEFS	+= -DCONFIG_MATH_TEST
-TARGET_DEFS	+= -DCONFIG_TIMER_TEST
-TARGET_DEFS	+= -DCONFIG_SERIAL_TEST
+#TARGET_DEFS	+= -DCONFIG_TIMER_TEST
+#TARGET_DEFS	+= -DCONFIG_SERIAL_TEST
 TARGET_DEFS	+= -DCONFIG_REGS_TEST
 #TARGET_DEFS	+= -DCONFIG_WDOG_TEST
 #TARGET_DEFS	+= -DCONFIG_LSU_TEST

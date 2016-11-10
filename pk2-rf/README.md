@@ -48,7 +48,7 @@ Vector Table
 	34	0x88		| ECALL instruction Executed
 	35	0x8C		| LSU Error
 
-How to make
+How to build projects
 ------------------------------------------------------------------------
 
 	(1) source envsetup.sh
@@ -58,5 +58,43 @@ How to make
 		b) build boot project: make boot
 		c) build fpga project: make fpga
 		d) build default project: make
+
+How to debug rda pulp via openOCD and BusBlaster
+------------------------------------------------------------------------
+
+	(1) openocd-riscv32 -f scrpts/dp_busblaster.cfg -f scripts/rda_pulp.cfg  -d 2 -l abc.txt
+
+	(3) telnet localhost 4444, a low level debug to, not needed for most case
+		rda mww 0x35008 0xffff - release cpu from reset state
+		rda mdw 0x20000 - we can read cpu dbg_ctrl register
+		rda mww 0x20000 0x10000 - halt the cpu
+
+	(4) riscv32-gdb xxx.riscv - gdb source level debugger
+		 - target remote localhost:3333
+		 - load #load to program to ram
+		 - set pc=0x80 # set pc to reset_handler
+		 - c #run the target...
+
+How to build openOCD tools for rda pulp
+------------------------------------------------------------------------
+	(1) Get source code from here:
+		http://build3.rdamicro.com:8808/gangchen/openocd
+	(2) Read openOCD's README file for building it.
+
+How to build GDB tools for rda pulp
+------------------------------------------------------------------------
+	(1) Get source code from here:
+		http://build3.rdamicro.com:8808/gangchen/binutils-gdb/tree/riscv-next
+
+	(2) build:
+		- checkout to riscv-next branch
+		- cd /binutils-gdb/
+		- ./configure --prefix=~/usr/opt/riscv --target=riscv32-unknown-elf --disable-werror --disable-sim
+		- make
+		- make install
+	The --prefix is used to specify the install directory of software. It can be changed as you will.
+
+How to build GCC tools for rda pulp
+------------------------------------------------------------------------
 
 	Good Luck!

@@ -1,9 +1,57 @@
 // See LICENSE for license details.
 #include <util.h>
-#include <irq.h>
+#include <sysctrl.h>
+#include <gpio.h>
 
 #define CALLEXIT_ADDR	 0x0000B000
 #define CALLEXIT_PASS	 0x900dc0de
+
+void board_init(int flag)
+{
+	/* disable global IRQ */
+	core_irq_disable();
+
+	/* configure system clock */
+	sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
+
+	/* don't bypass watchdog */
+	sysctrl_bypass_watchdog(0);
+
+	/* enable hardware error response */
+	sysctrl_hwerr_response(1);
+
+	/* reset hardware enable */
+	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_TIMER0
+				| SYSCTRL_MASK_RST1_WDOG
+				| SYSCTRL_MASK_RST1_TIMER1
+				| SYSCTRL_MASK_RST1_TIMER2);
+	nop();
+	nop();
+	nop();
+	nop();
+	/* reset hardware disable */
+	sysctrl_soft_rst1_dis(SYSCTRL_MASK_RST1_TIMER0
+				| SYSCTRL_MASK_RST1_WDOG
+				| SYSCTRL_MASK_RST1_TIMER1
+				| SYSCTRL_MASK_RST1_TIMER2);
+	nop();
+	nop();
+	nop();
+	nop();
+
+	/* initial pin-mux */
+
+	/* initial GPIOs,input */
+	gpio_set_direction(0xFFFFFFFF,1);
+
+	/* initial UART */
+	serial_init();
+
+	/* enable IRQs */
+	irq_clr_pending(0xFFFFFFFF);
+	core_irq_enable();
+	//irq_enable(0xFFFFFFFF);
+}
 
 static void call_exit(int err)
 {
@@ -63,22 +111,47 @@ void print_result(const char *s, u32 err)
 	}
 }
 
-void do_read_register(void);
+void print_dat32(const char *str, u32 dat)
+{
+	serial_puts(str);
+	print_u32(dat);
+	serial_puts("\n");
+}
 
-u32 core_get_mcpuid(void);
-u32 core_get_mpid(void);
-u32 core_get_mhartid(void);
+void do_read_register(void);
 
 int main( int argc, char* argv[] )
 {
 	int r = 0,err = 0;
 	u32 status = 0;
+	u32 id = 0;
 
 	r = r;
 	err = err;
 	status = status;
 
 	serial_puts("main, test start\n");
+
+	id = core_get_mcpuid();
+	print_dat32("mcpuid: ",id);
+	if((id & 0xc0000000) == 0)
+		serial_puts("RV32I,");
+	else
+		serial_puts("none RV32I,");
+	if(id & 0x00000100) // bit8
+		serial_puts("I,");
+	if(id & 0x00001000) // bit12
+		serial_puts("M,");
+	if(id & 0x00800000) // bit23
+		serial_puts("X");
+	serial_puts("\n");
+
+	id = core_get_mpid();
+	print_dat32("mpid: ",id);
+
+	id = core_get_mhartid();
+	print_dat32("mhartid: ",id);
+
 #ifdef CONFIG_MULTIPLY_TEST
 	if(multi_test())
 		err |= 0x01;
@@ -188,13 +261,13 @@ int main( int argc, char* argv[] )
 	do_read_register();
 #endif
 	if(err) {
-		serial_puts("\n main, error code ");
+		serial_puts("\nmain, error code ");
 		print_u32(err);
 		serial_puts(" ###\n");
 		call_exit(err);
 		return -1;
 	}
-	serial_puts("\n main, test success !!!\n");
+	serial_puts("\nmain, test success !!!\n");
 	call_exit(err);
 	return 0;
 }

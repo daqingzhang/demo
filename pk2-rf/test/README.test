@@ -1,0 +1,66 @@
+Test Case List for RDA RISCV CPU
+==========================================================================
+
+1. Interrupt & Exception
+-------------------------------------------------------------------------
+	(1) Interrupt pending/clear test;
+	(2) Interrupt preempt test;
+	(3) Interrupt nested test;
+	(4) LSU exception test;
+	(5) Illegal instruction exception test;
+	(6) Reset exception test;
+	(7) ECALL exception test;
+
+2. Memory(48KB SRAM)
+-------------------------------------------------------------------------
+	(1) 32 bits read/write test;
+	(2) 16 bits read/write test;
+	(3) 8 bits read/write test;
+	(4) bit scan test;
+
+3. WatchDog
+-------------------------------------------------------------------------
+	(1) Interrupt test;
+	(2) Reset CPU test;
+
+4. TIMER(TIMER0,TIMER1,TIMER2)
+-------------------------------------------------------------------------
+	(1) delay n us/ms/s test;
+	(2) interrupt test;
+
+
+5. UART
+-------------------------------------------------------------------------
+	(1) Tx Polling test;
+	(2) Rx Polling test;
+	(3) Tx Interrupt test;
+	(4) Rx Interrupt test;
+	(5) Tx/Rx Overflow Interrup test;
+
+
+5. Mathmatics
+-------------------------------------------------------------------------
+	(1) Add test;
+	(2) Sub test;
+	(3) Mul test;
+	(4) Div test;
+	(5) Shift left test;
+	(6) Shift right test;
+	(7) Data sum test;
+	(8) ASC/HEX convertion test;
+
+6. System Ctrl
+-------------------------------------------------------------------------
+	(1) System Clock config test;
+	(2) Perpherial(TIMER,WDOG) reset test;
+	(3) CPU reset test;
+	(4) Watch dog bypass test;
+
+7. DFE,CFG,RTC Register
+-------------------------------------------------------------------------
+	(1) register read/write test;
+
+8. JTAG
+-------------------------------------------------------------------------
+	(1) openOCD memory read/write test;
+	(2) GDB debugging;

@@ -3,50 +3,42 @@
   .text
   .globl _start
 _start:
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
-	jal x0, interrupt_handler
+	jal x0, interrupt_handler0
+	jal x0, interrupt_handler1
+	jal x0, interrupt_handler2
+	jal x0, interrupt_handler3
+	jal x0, interrupt_handler4
+	jal x0, interrupt_handler5
+	jal x0, interrupt_handler6
+	jal x0, interrupt_handler7
+	jal x0, interrupt_handler8
+	jal x0, interrupt_handler9
+	jal x0, interrupt_handler10
+	jal x0, interrupt_handler11
+	jal x0, interrupt_handler12
+	jal x0, interrupt_handler13
+	jal x0, interrupt_handler14
+	jal x0, interrupt_handler15
+	jal x0, interrupt_handler16
+	jal x0, interrupt_handler17
+	jal x0, interrupt_handler18
+	jal x0, interrupt_handler19
+	jal x0, interrupt_handler20
+	jal x0, interrupt_handler21
+	jal x0, interrupt_handler22
+	jal x0, interrupt_handler23
+	jal x0, interrupt_handler24
+	jal x0, interrupt_handler25
+	jal x0, interrupt_handler26
+	jal x0, interrupt_handler27
+	jal x0, interrupt_handler28
+	jal x0, interrupt_handler29
+	jal x0, interrupt_handler30
+	jal x0, interrupt_handler31
 	jal x0, reset_handler
 	jal x0, illegal_inst_handler
 	jal x0, ecall_handler
 	jal x0, lsu_handler
-
-	.align 2
-interrupt_handler:
-	addi sp, sp, -IRQ_STACK_FRAME_SIZE
-	SREG x1, 0x0*REGBYTES(sp)
-	jal x1, save_regs
-	la x1, restore_regs
-	jal x0, do_interrupts
 
 	.align 2
 reset_handler:
@@ -115,32 +107,74 @@ clrbss_e:
 	jal x1, main
 
 # jump to dead loop after exit main
-9:	nop
-	j 9b
+loop_9:	nop
+	j loop_9
 
+	.macro def_isr_function function_name
+	.weak	\function_name
+	.set	\function_name, loop_9
+	.endm
+
+	.macro def_interrupt_handler handler_name, isr_name
 	.align 2
-illegal_inst_handler:
+\handler_name:
+	addi sp, sp, -IRQ_STACK_FRAME_SIZE
+	SREG x1, 0x0*REGBYTES(sp)
+	jal x1, save_regs
+	la x1, restore_regs
+	jal x0, \isr_name
+	.endm
+
+	.macro def_exception_handler handler_name, exception_name
+	.align 2
+\handler_name:
 	addi sp, sp, -IRQ_STACK_FRAME_SIZE
 	SREG x1, 0x0*REGBYTES(sp)
 	jal x1, save_regs
 	la x1, restore_regs_excp
-	jal x0, do_illegal_inst
+	jal x0, \exception_name
+	.endm
 
-	.align 2
-lsu_handler:
-	addi sp, sp, -IRQ_STACK_FRAME_SIZE
-	SREG x1, 0x0*REGBYTES(sp)
-	jal x1, save_regs
-	la x1, restore_regs_excp
-	jal x0, do_lsu
+	def_isr_function do_interrupts
+	def_isr_function do_illegal_inst
+	def_isr_function do_lsu
+	def_isr_function do_ecall
 
-	.align 2
-ecall_handler:
-	addi sp, sp, -IRQ_STACK_FRAME_SIZE	//sp = sp - 128
-	SREG x1, 0x0*REGBYTES(sp)		//[sp + 0] = ra
-	jal x1, save_regs			//ra = pc + 4, pc = save_regs
-	la x1, restore_regs_excp		//ra = restore_regs
-	jal x0, do_ecall			//pc = do_ecall
+	def_interrupt_handler	interrupt_handler0,	do_interrupts
+	def_interrupt_handler	interrupt_handler1,	do_interrupts
+	def_interrupt_handler	interrupt_handler2,	do_interrupts
+	def_interrupt_handler	interrupt_handler3,	do_interrupts
+	def_interrupt_handler	interrupt_handler4,	do_interrupts
+	def_interrupt_handler	interrupt_handler5,	do_interrupts
+	def_interrupt_handler	interrupt_handler6,	do_interrupts
+	def_interrupt_handler	interrupt_handler7,	do_interrupts
+	def_interrupt_handler	interrupt_handler8,	do_interrupts
+	def_interrupt_handler	interrupt_handler9,	do_interrupts
+	def_interrupt_handler	interrupt_handler10,	do_interrupts
+	def_interrupt_handler	interrupt_handler11,	do_interrupts
+	def_interrupt_handler	interrupt_handler12,	do_interrupts
+	def_interrupt_handler	interrupt_handler13,	do_interrupts
+	def_interrupt_handler	interrupt_handler14,	do_interrupts
+	def_interrupt_handler	interrupt_handler15,	do_interrupts
+	def_interrupt_handler	interrupt_handler16,	do_interrupts
+	def_interrupt_handler	interrupt_handler17,	do_interrupts
+	def_interrupt_handler	interrupt_handler18,	do_interrupts
+	def_interrupt_handler	interrupt_handler19,	do_interrupts
+	def_interrupt_handler	interrupt_handler20,	do_interrupts
+	def_interrupt_handler	interrupt_handler21,	do_interrupts
+	def_interrupt_handler	interrupt_handler22,	do_interrupts
+	def_interrupt_handler	interrupt_handler23,	do_interrupts
+	def_interrupt_handler	interrupt_handler24,	do_interrupts
+	def_interrupt_handler	interrupt_handler25,	do_interrupts
+	def_interrupt_handler	interrupt_handler26,	do_interrupts
+	def_interrupt_handler	interrupt_handler27,	do_interrupts
+	def_interrupt_handler	interrupt_handler28,	do_interrupts
+	def_interrupt_handler	interrupt_handler29,	do_interrupts
+	def_interrupt_handler	interrupt_handler30,	do_interrupts
+	def_interrupt_handler	interrupt_handler31,	do_interrupts
+	def_exception_handler	illegal_inst_handler,	do_illegal_inst
+	def_exception_handler	lsu_handler,		do_lsu
+	def_exception_handler	ecall_handler,		do_ecall
 
 	.align 2
 save_regs:

@@ -1,7 +1,7 @@
 #include <config.h>
 #include <serial.h>
 
-static int add_num32(unsigned int a,unsigned int b)
+static unsigned int add_num32(unsigned int a,unsigned int b)
 {
 	return (a + b);
 }
@@ -56,7 +56,7 @@ int add_test(void)
 	return 0;
 }
 
-static int sub_num32(unsigned int a,unsigned int b)
+static unsigned int sub_num32(unsigned int a,unsigned int b)
 {
 	return (a-b);
 }
@@ -108,7 +108,7 @@ int sub_test(void)
 	return 0;
 }
 
-static int mul_num32(unsigned int a,unsigned int b)
+static unsigned int mul_num32(unsigned int a,unsigned int b)
 {
 	return (a * b);
 }
@@ -155,7 +155,7 @@ int mul_test(void)
 	return 0;
 }
 
-static int div_num32(unsigned int a,unsigned int b)
+static unsigned int div_num32(unsigned int a,unsigned int b)
 {
 	return(a/b);
 }
@@ -173,7 +173,7 @@ int div_test(void)
 
 	if(0x00000000 != div_num32(0x00000000,0xFFFF8000))
 		err |= 0x08;
-	if(0xffffffff != div_num32(0x80000000,0x00000000))// ???
+	if(0xffffffff != div_num32(0x80000000,0x00000000))// This is a very bad feature !
 		err |= 0x10;
 	if(0x00000000 != div_num32(0x80000000,0xFFFF8000))
 		err |= 0x20;
@@ -204,7 +204,7 @@ int div_test(void)
 	return 0;
 }
 
-static int lsl_num32(unsigned int val, unsigned int bit)
+static unsigned int lsl_num32(unsigned int val, unsigned int bit)
 {
 	val = val << bit;
 	return val;
@@ -244,7 +244,7 @@ int shift_left_test(void)
 	return err;
 }
 
-static int lsr_num32(unsigned int val, unsigned int bit)
+static unsigned int lsr_num32(unsigned int val, unsigned int bit)
 {
 	val = val >> bit;
 	return val;

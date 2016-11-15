@@ -21,9 +21,9 @@ void wdog_enable(int enabled)
 {
 	wdog_lock(0);
 	if(enabled)
-		HWP_WDOG->ctrl |= WDOG_MASK_RESEN;
+		HWP_WDOG->ctrl |= (WDOG_MASK_RESEN | WDOG_MASK_ITEN);
 	else
-		HWP_WDOG->ctrl &= ~WDOG_MASK_RESEN;
+		HWP_WDOG->ctrl &= ~(WDOG_MASK_RESEN | WDOG_MASK_ITEN);;
 	wdog_lock(1);
 }
 

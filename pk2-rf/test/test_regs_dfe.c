@@ -194,7 +194,7 @@ int dfe_reg_rw_test(void)
 
 int dfe_reg_test(void)
 {
-	int r; 
+	int r;
 
 	r = dfe_reg_hw_reset_test();
 	r += dfe_reg_rw_test();

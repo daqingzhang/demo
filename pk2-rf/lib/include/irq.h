@@ -45,10 +45,4 @@ void irq_clr_pending(u32 mask);
 u32  irq_get_status(u32 mask);
 u32  irq_get_enable_status(void);
 
-void core_irq_enable(void);
-void core_irq_disable(void);
-void core_ecall(void);
-void core_set_mstatus(unsigned int status);
-u32  core_get_mstatus(void);
-
 #endif

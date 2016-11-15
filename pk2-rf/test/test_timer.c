@@ -8,21 +8,27 @@ extern volatile int g_irq_test;
 
 void timer_callback(unsigned int irqs)
 {
+	hwp_timer_t *timer = NULL;
 	//serial_puts("timer_callback, >>> ");
 	//print_u32(irqs);
 	//serial_puts("\n");
 
 	if(irqs & 0x10) {
 		timer_callback_done = 0x10;
-		timer_clr_itstatus(HWP_TIMER0);
+		timer = HWP_TIMER0;
 	} else if(irqs & 0x20) {
 		timer_callback_done = 0x20;
-		timer_clr_itstatus(HWP_TIMER1);
+		timer = HWP_TIMER1;
 	} else if(irqs & 0x40) {
 		timer_callback_done = 0x40;
-		timer_clr_itstatus(HWP_TIMER2);
+		timer = HWP_TIMER2;
 	} else {
 		timer_callback_done = 0x0;
+	}
+	if((timer_callback_done) && (timer != NULL)) {
+		timer_clr_itstatus(timer);
+		while(timer_get_itstatus(timer) != 0);
+		timer_enable(timer,0);
 	}
 }
 
@@ -127,11 +133,11 @@ int timer_test(void)
 	serial_puts("TIM0 dly 3 s ...\n");
 	timer_dly_sec(HWP_TIMER0,3);
 	serial_puts("done !\n");
-
+#if 0
 	serial_puts("TIM0 dly 5 s ...\n");
 	timer_dly_sec(HWP_TIMER0,5);
 	serial_puts("done !\n");
-
+#endif
 	serial_puts("TIM1 dly 1 s ...\n");
 	timer_dly_sec(HWP_TIMER1,1);
 	serial_puts("done !\n");
@@ -139,11 +145,11 @@ int timer_test(void)
 	serial_puts("TIM1 dly 3 s ...\n");
 	timer_dly_sec(HWP_TIMER1,3);
 	serial_puts("done !\n");
-
+#if 0
 	serial_puts("TIM1 dly 5 s ...\n");
 	timer_dly_sec(HWP_TIMER1,5);
 	serial_puts("done !\n");
-
+#endif
 	serial_puts("TIM2 dly 1 s ...\n");
 	timer_dly_sec(HWP_TIMER2,1);
 	serial_puts("done !\n");
@@ -151,11 +157,11 @@ int timer_test(void)
 	serial_puts("TIM2 dly 3 s ...\n");
 	timer_dly_sec(HWP_TIMER2,3);
 	serial_puts("done !\n");
-
+#if 0
 	serial_puts("TIM2 dly 5 s ...\n");
 	timer_dly_sec(HWP_TIMER2,5);
 	serial_puts("done !\n");
-
+#endif
 	if(timer_irq_test(HWP_TIMER0))
 		r |= 0x08;
 	serial_puts("TIM0 irq test done !\n");

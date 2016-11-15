@@ -4,7 +4,8 @@
 #
 
 A_OBJS = \
-	./lib/crt.o
+	./lib/crt.o \
+	./lib/core_op.o
 
 C_OBJS = \
 	./lib/syscall.o	\
@@ -51,8 +52,8 @@ endif
 
 ifneq ($(findstring CONFIG_REGS_TEST,$(TARGET_DEFS)),)
 C_OBJS += ./test/test_regs.o \
-	  ./test/regs_src/regs_general.o \
-	  ./test/regs_src/rtc_reg_test.o \
-	  ./test/regs_src/dfe_reg_test.o \
-	  ./test/regs_src/cfg_reg_test.o
+	  ./test/test_regs_general.o \
+	  ./test/test_regs_rtc.o \
+	  ./test/test_regs_dfe.o \
+	  ./test/test_regs_cfg.o
 endif

@@ -50,10 +50,11 @@ Vector Table
 
 How to build projects
 ------------------------------------------------------------------------
+	(1) git clone ssh://git.rdamicro.com:29418/mpw/pk2-tools.git
 
-	(1) source envsetup.sh
+	(2) source envsetup.sh
 
-	(2) run make command.
+	(3) run make command.
 		a) build test project: make test
 		b) build boot project: make boot
 		c) build fpga project: make fpga
@@ -62,14 +63,16 @@ How to build projects
 How to debug rda pulp via openOCD and BusBlaster
 ------------------------------------------------------------------------
 
-	(1) openocd-riscv32 -f scrpts/dp_busblaster.cfg -f scripts/rda_pulp.cfg  -d 2 -l abc.txt
+	(1) openocd-riscv32 -f scrpts/dp_busblaster.cfg -f scripts/rda_pulp.cfg
+	or:
+		openocd-riscv32 -f scrpts/dp_busblaster.cfg -f scripts/rda_pulp.cfg  -d 2 -l abc.txt
 
-	(3) telnet localhost 4444, a low level debug to, not needed for most case
+	(2) telnet localhost 4444, a low level debug to, not needed for most case
 		rda mww 0x35008 0xffff - release cpu from reset state
 		rda mdw 0x20000 - we can read cpu dbg_ctrl register
 		rda mww 0x20000 0x10000 - halt the cpu
 
-	(4) riscv32-gdb xxx.riscv - gdb source level debugger
+	(3) riscv32-gdb xxx.riscv - gdb source level debugger
 		 - target remote localhost:3333
 		 - load #load to program to ram
 		 - set pc=0x80 # set pc to reset_handler
@@ -77,24 +80,27 @@ How to debug rda pulp via openOCD and BusBlaster
 
 How to build openOCD tools for rda pulp
 ------------------------------------------------------------------------
-	(1) Get source code from here:
+	(1) Get openOCD source code from here:
 		http://build3.rdamicro.com:8808/gangchen/openocd
 	(2) Read openOCD's README file for building it.
 
 How to build GDB tools for rda pulp
 ------------------------------------------------------------------------
-	(1) Get source code from here:
+	(1) Get GDB source code from here:
 		http://build3.rdamicro.com:8808/gangchen/binutils-gdb/tree/riscv-next
 
 	(2) build:
 		- checkout to riscv-next branch
 		- cd /binutils-gdb/
-		- ./configure --prefix=~/usr/opt/riscv --target=riscv32-unknown-elf --disable-werror --disable-sim
+		- ./configure --prefix=~/usr/opt/riscv --target=riscv32 --disable-werror --disable-sim
 		- make
 		- make install
 	The --prefix is used to specify the install directory of software. It can be changed as you will.
 
 How to build GCC tools for rda pulp
 ------------------------------------------------------------------------
+	(1) git clone ssh://git.rdamicro.com:29418/mpw/pk2-tools.git
+
+
 
 	Good Luck!

@@ -29,10 +29,14 @@ RISCV_GCC	:= $(RISCV_PREFIX)gcc
 RISCV_OBJDUMP	:= $(RISCV_PREFIX)objdump
 RISCV_OBJCOPY	:= $(RISCV_PREFIX)objcopy
 RISCV_LINK	:= $(RISCV_GCC) -T linker_boot.ld $(INCS)
-RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -Wall -fno-common -fno-builtin-printf -m32 -march=IMXpulpv2 -msave-restore -mrvc
-#RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -Os -ffast-math -fno-common -fno-builtin-printf
-RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc -Wl,-Map=$(TARGET_MAP)
-RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.sdata --section=.data
+
+RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -Wall -fno-common -fno-builtin-printf -g
+RISCV_GCC_OPTS	+= -m32 -march=IMXpulpv2 -msave-restore -mrvc
+
+RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc -Wl,-Map=$(TARGET_MAP) -g
+
+RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup
+RISCV_OBJDUMP_OPTS += --section=.sdata --section=.data
 
 #====================================================================
 # MACRO DEFINITIONS

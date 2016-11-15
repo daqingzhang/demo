@@ -4,7 +4,8 @@
 #
 
 A_OBJS = \
-	./lib/crt.o
+	./lib/crt_boot.o \
+	./lib/core_op.o
 
 C_OBJS = \
 	./lib/syscall.o		\

@@ -17,7 +17,7 @@ SECTIONS
 {
 	/* place text in RAM0 */
 	.text : {
-		lib/crt.o	(.text)
+		lib/crt_boot.o	(.text)
 		lib/syscall.o	(.text)
 		lib/*		(.text) /* object files for library */
 		boot/*		(.text) /* object files for test */

@@ -7,13 +7,11 @@
 TEST_DIR:= $(TOP_DIR)/test
 LIB_DIR := $(TOP_DIR)/lib
 OUT_DIR := $(TOP_DIR)/out/test
-TEST_REG_DIR := $(TOP_DIR)/test/regs_src
 
 INCS	:= -I$(LIB_DIR)
 INCS	+= -I$(LIB_DIR)/include
 INCS	+= -I$(TEST_DIR)
 INCS	+= -I$(TEST_DIR)/include
-INCS	+= -I$(TEST_REG_DIR)/include
 XLEN	?= 32
 
 TARGET		 := test
@@ -31,25 +29,33 @@ RISCV_GCC	:= $(RISCV_PREFIX)gcc
 RISCV_OBJDUMP	:= $(RISCV_PREFIX)objdump
 RISCV_OBJCOPY	:= $(RISCV_PREFIX)objcopy
 RISCV_LINK	:= $(RISCV_GCC) -T linker_test.ld $(INCS)
-RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -Wall -fno-common -fno-builtin-printf -m32 -march=IMXpulpv2 -msave-restore -mrvc -g
-#RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -Os -ffast-math -Wall -fno-common -fno-builtin-printf
+
+RISCV_GCC_OPTS	:= -mcmodel=medany -static -std=gnu99 -O0 -ffast-math -Wall -fno-common -fno-builtin-printf
+RISCV_GCC_OPTS	+= -m32 -march=IMXpulpv2 -msave-restore -mrvc -g
+
 RISCV_LINK_OPTS := -nostdlib -nostartfiles -ffast-math -lgcc -Wl,-Map=$(TARGET_MAP) -g
-RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.sdata --section=.data
+
+RISCV_OBJDUMP_OPTS := --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup
+RISCV_OBJDUMP_OPTS += --section=.sdata --section=.data
 
 #====================================================================
 # MACRO DEFINITIONS
+#
+# In Test project, we must define CONFIG_PROJ_TEST
+# CONFIG_SUPPORT_NESTED_IRQ should be defined when test interrupts
 #====================================================================
 TARGET_DEFS	:= -DPREALLOCATE=1 -DHOST_DEBUG=0
 TARGET_DEFS	+= -DCONFIG_PROJ_TEST
 TARGET_DEFS	+= -DCONFIG_SUPPORT_NESTED_IRQ
-#TARGET_DEFS	+= -DCONFIG_IRQ_TEST
-#TARGET_DEFS	+= -DCONFIG_ECALL_TEST
-#TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
-#TARGET_DEFS	+= -DCONFIG_MEM32_TEST
+
+TARGET_DEFS	+= -DCONFIG_IRQ_TEST
+TARGET_DEFS	+= -DCONFIG_ECALL_TEST
+TARGET_DEFS	+= -DCONFIG_MULTIPLY_TEST
 TARGET_DEFS	+= -DCONFIG_MATH_TEST
-#TARGET_DEFS	+= -DCONFIG_TIMER_TEST
-#TARGET_DEFS	+= -DCONFIG_SERIAL_TEST
+TARGET_DEFS	+= -DCONFIG_TIMER_TEST
+TARGET_DEFS	+= -DCONFIG_SERIAL_TEST
 TARGET_DEFS	+= -DCONFIG_REGS_TEST
+#TARGET_DEFS	+= -DCONFIG_MEM32_TEST
 #TARGET_DEFS	+= -DCONFIG_WDOG_TEST
 #TARGET_DEFS	+= -DCONFIG_LSU_TEST
 #====================================================================
@@ -71,7 +77,6 @@ $(TARGET_RISCV_DUMP): $(TARGET_RISCV)
 #	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_OPTS) -r $(LIB_DIR)/crt.o > $(OUT_DIR)/crt.txt
 	mv $(LIB_DIR)/*.o $(OUT_DIR)/.
 	mv $(TEST_DIR)/*.o $(OUT_DIR)/.
-	mv $(TEST_REG_DIR)/*.o $(OUT_DIR)/.
 	cp $(TARGET_RISCV) $(OUT_DIR)/.
 	cp $(TARGET_BIN) $(OUT_DIR)/.
 	cp $(TARGET_HEX) $(OUT_DIR)/.
@@ -99,7 +104,6 @@ JUNK	:= $(TARGET_RISCV) $(TARGET_BIN) $(TARGET_HEX) $(TARGET_MAP) \
 clean:
 	rm -rf $(JUNK)
 	rm -f $(TEST_DIR)/*.o
-	rm -f $(TEST_REG_DIR)/*.o
 	rm -f *.hex.spicode
 	rm -f $(OUT_DIR)/*.riscv $(OUT_DIR)/*.o
 	rm -f $(OUT_DIR)/*.bin $(OUT_DIR)/*.hex

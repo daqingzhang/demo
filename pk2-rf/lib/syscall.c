@@ -1,12 +1,16 @@
 // See LICENSE for license details.
 #include <string.h>
 #include <util.h>
-#include <serial.h>
-#include <irq.h>
 #include <sysctrl.h>
 #include <gpio.h>
 
+/**
+ ************************************************************************
+ * 			For TEST project !				*
+ ************************************************************************
+ */
 #ifdef CONFIG_PROJ_TEST
+
 volatile int g_irq_test = 0;
 #ifdef CONFIG_IRQ_TEST
 void irq_tester(int status);
@@ -49,22 +53,70 @@ void do_interrupts(void)
 
 void do_ecall(void)
 {
-#ifdef CONFIG_ECALL_TEST
 	u32 status = core_get_mstatus();
 	serial_puts("ecall exception in, mstatus is: ");
 	print_u32(status);
 	serial_puts("\n");
+#ifdef CONFIG_ECALL_TEST
 	ecall_excp_done = 1;
 #endif
 }
+
+void do_illegal_inst(void)
+{
+	serial_puts("do_illegal_inst\n");
+}
+
+void do_lsu(void)
+{
+	serial_puts("do_lsu\n");
+
+	// reset CPU ...
+	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_RISCV);
+	while(1);
+}
+
+/**
+ ************************************************************************
+ * 			For BOOT project !				*
+ ************************************************************************
+ */
 #else
+
+/*
+ * do_illegal_inst - The illegal instruction exception
+ * @desc: CPU will trap this exception when it execute a invalid instruction.
+ */
+void do_illegal_inst(void)
+{
+	serial_puts("do_illegal_inst\n");
+	// TODO: add code here
+}
+
+/*
+ * do_lsu - The load/store exception
+ * @desc: CPU will trap this exception when it access a invalid memory address.
+ */
+void do_lsu(void)
+{
+	serial_puts("do_lsu\n");
+	// TODO: add code here
+}
+
+/*
+ * do_ecall - The ECALL exception
+ * @desc: CPU will trap this exception when it execute ECALL instruction.
+ */
 void do_ecall(void)
 {
 	serial_puts("do_ecall\n");
 	//TODO: add code here
 }
 
-void dispatch_isr(unsigned int status);
+extern void dispatch_isr(unsigned int state);
+/*
+ * do_interrupts - The interrupt service request function.
+ */
 void do_interrupts(void)
 {
 	unsigned int status = irq_get_status(0xffffffff);
@@ -83,64 +135,7 @@ void do_interrupts(void)
 #ifdef CONFIG_SUPPORT_NESTED_IRQ
 	core_irq_enable();
 #endif
+	// TODO: add code here
 	dispatch_isr(status);
 }
 #endif
-void do_illegal_inst(void)
-{
-	serial_puts("do_illegal_inst\n");
-}
-
-void do_lsu(void)
-{
-	serial_puts("do_lsu\n");
-
-	// reset CPU ...
-	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_RISCV);
-	while(1);
-}
-
-void board_init(int flag)
-{
-	/* disable global IRQ */
-	core_irq_disable();
-
-	/* configure system clock */
-	sysctrl_set_system_clock(CONFIG_SYSCLK_VALUE);
-
-	/* don't bypass watchdog */
-	sysctrl_bypass_watchdog(0);
-
-	/* enable hardware error response */
-	sysctrl_hwerr_response(1);
-
-	/* reset hardware enable */
-	sysctrl_soft_rst1_en(SYSCTRL_MASK_RST1_TIMER0
-				| SYSCTRL_MASK_RST1_TIMER1
-				| SYSCTRL_MASK_RST1_TIMER2);
-	nop();
-	nop();
-	nop();
-	nop();
-	/* reset hardware disable */
-	sysctrl_soft_rst1_dis(SYSCTRL_MASK_RST1_TIMER0
-				| SYSCTRL_MASK_RST1_TIMER1
-				| SYSCTRL_MASK_RST1_TIMER2);
-	nop();
-	nop();
-	nop();
-	nop();
-
-	/* initial pin-mux */
-
-	/* initial GPIOs,input */
-	gpio_set_direction(0xFFFFFFFF,1);
-
-	/* initial UART */
-	serial_init();
-
-	/* enable IRQs */
-	irq_clr_pending(0xFFFFFFFF);
-	core_irq_enable();
-	//irq_enable(0xFFFFFFFF);
-}

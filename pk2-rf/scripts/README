@@ -1,0 +1,16 @@
+how to debug rda pulp
+
+1. build openocd
+2. ../src/openocd -f dp_busblaster.cfg -f rda_pulp.cfg  -d 2
+
+3. telnet localhost 4444, a low level debug to, not needed for most case
+rda mww 0x35008 0xffff - release cpu from reset state
+rda mdw 0x20000 - we can read cpu dbg_ctrl register
+rda mww 0x20000 0x10000 - halt the cpu
+
+4. riscv32-unknow-elf-gdb xxx.out - gdb source level debugger
+  - target remote localhost:3333
+  - load #load to program to ram
+  - set pc=0x80 # set pc to reset_handler
+  - c #run the target...
+

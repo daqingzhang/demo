@@ -13,6 +13,7 @@
 #include <irq.h>
 #include <serial.h>
 #include <timer.h>
+#include <core_op.h>
 
 #define nop() asm volatile ("nop")
 

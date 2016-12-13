@@ -22,3 +22,4 @@ out
 *.list
 *.symbols
 *.hex.spicode
+pk2-tools

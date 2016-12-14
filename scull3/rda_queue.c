@@ -1,0 +1,337 @@
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/cdev.h>
+#include <linux/slab.h>
+#include <linux/errno.h>
+#include <linux/string.h>
+#include <linux/printk.h>
+#include <asm/uaccess.h>
+#include <linux/of.h>
+#include <linux/of_device.h>
+#include <linux/of_platform.h>
+
+#define RDAQUEUE_MAX_SIZE (1024 * 8)
+
+struct rda_queue {
+	void *pdata;
+	u32 i_idx;
+	u32 o_idx;
+	u32 size;
+};
+
+struct rda_queue_dev {
+	int major;
+	int minor;
+	dev_t dev_num;
+	const char *name;
+	struct rda_queue *q;
+	struct rda_queue_ops *qops;
+	struct cdev cdev;
+	//struct device dev;
+};
+
+struct rda_queue_tag {
+	const char *name;
+	struct rda_queue_dev *dev;
+};
+
+static struct rda_queue_tag rda_qtag[] = {
+	{"rdaqueue0",NULL},
+	{"rdaqueue1",NULL},
+	{"rdaqueue2",NULL},
+	{"rdaqueue3",NULL},
+};
+
+static unsigned int total_rda_qdevs = 0;
+
+struct rda_queue_ops {
+	int (*init)(struct rda_queue *q,u32 size);
+	int (*enqueue)(struct rda_queue *q, void *p,int size);
+	int (*dequeue)(struct rda_queue *q, void *p,int size);
+	int (*destroy)(struct rda_queue *q);
+	void (*clear)(struct rda_queue *q);
+	void (*show)(struct rda_queue *q);
+};
+
+static int queue_init(struct rda_queue *q,u32 size)
+{
+	u8 *buf;
+
+	q->pdata = NULL;
+	q->size  = 0;
+	q->i_idx = 0;
+	q->o_idx = 0;
+	if(!size)
+		return 0;
+
+	buf = kzalloc(sizeof(unsigned char), GFP_KERNEL);
+	if(!buf)
+		return -ENOMEM;
+	q->pdata = buf;
+	q->size = size;
+	pr_info("%s, q->size = %d bytes\n",__func__,size);
+	return 0;
+}
+
+static int queue_enqueue(struct rda_queue *q, void *p, int size)
+{
+	int r;
+
+	pr_info("%s, size = %d, q->size = %d, q->i_idx = %d, q->o_idx = %d\n",
+		__func__,size, q->size,q->i_idx,q->o_idx);
+
+	if(size > (q->size - q->i_idx))
+		size = q->size - q->i_idx;
+		//return -EINVAL;
+
+	r = copy_from_user(q->pdata + q->i_idx, p, size);
+	q->i_idx += size;
+
+	pr_info("%s, %d bytes enqueued\n",__func__,size);
+	return r;
+}
+
+static int queue_dequeue(struct rda_queue *q,void *p, int size)
+{
+	int r;
+
+	pr_info("%s, size = %d, q->size = %d, q->i_idx = %d, q->o_idx = %d\n",
+		__func__,size, q->size,q->i_idx,q->o_idx);
+
+	if(size > q->i_idx)
+		size = q->i_idx;
+		//return -EINVAL;
+	if(size > q->size)
+		size = q->size;
+		//return -EINVAL;
+
+	r = copy_to_user(p, q->pdata + q->o_idx, size);
+
+	q->o_idx += size;
+	if(q->o_idx >= q->i_idx)
+		q->i_idx = 0;
+		q->o_idx = 0;
+	pr_info("%s, %d bytes dequeued\n",__func__,size);
+	return r;
+}
+
+static int queue_destroy(struct rda_queue *q)
+{
+	if(!q->size)
+		return 0;
+	if(q->pdata)
+		kfree(q->pdata);
+	return 0;
+}
+
+static void queue_clear(struct rda_queue *q)
+{
+	q->i_idx = 0;
+	q->o_idx = 0;
+}
+
+static void queue_show(struct rda_queue *q)
+{
+	pr_info("%s, size = %d, i_idx = %d, o_idx = %d\n",
+		__func__,q->size,q->i_idx,q->o_idx);
+}
+
+static struct rda_queue_ops rda_qops = {
+	.init	 = queue_init,
+	.enqueue = queue_enqueue,
+	.dequeue = queue_dequeue,
+	.destroy = queue_destroy,
+	.clear   = queue_clear,
+	.show    = queue_show,
+};
+
+static int qdev_open(struct inode *node, struct file *fp)
+{
+	struct cdev *cdev = node->i_cdev;
+	struct rda_queue_dev *qdev = container_of(cdev,struct rda_queue_dev,cdev);
+
+	fp->private_data = qdev;
+	pr_info("%s, done\n",__func__);
+	return 0;
+}
+
+static ssize_t qdev_read(struct file *fp, char __user *buf, size_t count,loff_t *fpos)
+{
+	struct rda_queue_dev *qdev = fp->private_data;
+	struct rda_queue *q = qdev->q;
+	int ret;
+
+	pr_info("%s, count = %d, fpos = %d\n",__func__,count,*fpos);
+
+	if(count > q->size)
+		count = q->size;
+
+	ret = copy_to_user(buf,q->pdata,count);
+	if(ret) {
+		pr_err("%s, copy data failed, %d\n",__func__,ret);
+		return -EFAULT;
+	}
+
+	*fpos = count;
+	return count;
+}
+
+static ssize_t qdev_write(struct file *fp, const char __user *pdata, size_t count, loff_t *fpos)
+{
+	struct rda_queue_dev *qdev = fp->private_data;
+	struct rda_queue *q = qdev->q;
+	int ret = 0;
+
+	pr_info("%s, count = %d, fpos = %d\n",__func__,count,*fpos);
+
+	if(count > q->size)
+		count = q->size;
+
+	ret = copy_from_user(q->pdata, pdata, count);
+	if(ret) {
+		pr_err("%s, copy data error, %d\n",__func__,ret);
+		return -EFAULT;
+	}
+	*fpos = count;
+	return count;
+}
+
+#if 0
+static ssize_t qdev_read(struct file *fp, char __user *buf, size_t len,loff_t *pos)
+{
+	struct rda_queue_dev *qdev = fp->private_data;
+	int ret = -EFAULT;
+
+	if(qdev->qops->dequeue)
+		ret = qdev->qops->dequeue(qdev->q,buf,len);
+	if(!ret)
+		*pos += len;
+	pr_info("%s, read %d bytes, %d\n",__func__,len,ret);
+	return ret;
+}
+
+static ssize_t qdev_write(struct file *fp, const char __user *pdat, size_t len, loff_t *pos)
+{
+	struct rda_queue_dev *qdev = fp->private_data;
+	int ret = -EFAULT;
+
+	if(qdev->qops->enqueue)
+		ret = qdev->qops->enqueue(qdev->q,(void *)pdat,len);
+	if(!ret)
+		*pos += len;
+	pr_info("%s, write %d bytes, %d\n",__func__,len,ret);
+	return ret;
+}
+#endif
+static int qdev_release(struct inode *node, struct file *fp)
+{
+	pr_info("%s, done\n",__func__);
+	return 0;
+}
+
+static struct file_operations rda_qdevops = {
+	.owner	= THIS_MODULE,
+	.open 	= qdev_open,
+	.read 	= qdev_read,
+	.write	= qdev_write,
+	.release= qdev_release,
+	.llseek = noop_llseek,
+};
+
+static int __init rda_qdev_init(void)
+{
+	int ret = -ENODEV;
+	int major,n,i;
+	dev_t dev_num;
+	struct device_node *np;
+	struct rda_queue_dev *qdev;
+	struct rda_queue *pq;
+
+	np = of_find_compatible_node(NULL,NULL,"rda,rda-queue");
+	if(!np) {
+		pr_err("%s, np is null\n",__func__);
+		goto out_err_0;
+	}
+	n = ARRAY_SIZE(rda_qtag);
+	ret = alloc_chrdev_region(&dev_num,0,n,"rdaqueue");
+	if(ret < 0) {
+		pr_err("%s, alloc dev_num failed, %d\n",__func__,ret);
+		goto out_err_0;
+	}
+	major = MAJOR(dev_num);
+
+	for(i = 0;i < n;i++) {
+		pq = kzalloc(sizeof(struct rda_queue),GFP_KERNEL);
+		if(!pq) {
+			pr_err("%s, kzalloc queue failed\n",__func__);
+			goto out_err_1;
+		}
+		ret = queue_init(pq,RDAQUEUE_MAX_SIZE);
+		if(ret) {
+			pr_err("%s, queue init failed ,%d\n",__func__,ret);
+			goto out_err_2;
+		}
+		qdev = kzalloc(sizeof(struct rda_queue_dev),GFP_KERNEL);
+		if(!qdev) {
+			pr_err("%s, kzalloc failed\n",__func__);
+			goto out_err_3;
+		}
+
+		qdev->name	= rda_qtag[i].name;
+		qdev->dev_num	= MKDEV(major,i + total_rda_qdevs);
+		qdev->q		= pq;
+		qdev->qops	= &rda_qops;
+
+		cdev_init(&qdev->cdev,&rda_qdevops);
+		ret = cdev_add(&qdev->cdev,qdev->dev_num,1);
+		if(ret) {
+			pr_err("%s, cdev add failed, %d\n",__func__,ret);
+			goto out_err_4;
+		}
+		rda_qtag[i].dev = qdev;
+		pr_info("%s, device number: %x\n",qdev->name,qdev->dev_num);
+	}
+	total_rda_qdevs += n;
+
+	pr_info("%s, initialized %d queue devices done !\n",__func__,total_rda_qdevs);
+
+	return 0;
+out_err_4:
+	kfree(qdev);
+out_err_3:
+	queue_destroy(pq);
+out_err_2:
+	kfree(pq);
+out_err_1:
+	unregister_chrdev_region(dev_num,n);
+out_err_0:
+	return ret;
+}
+module_init(rda_qdev_init);
+//postcore_initcall(rda_qdev_init);
+
+static void __exit rda_qdev_exit(void)
+{
+	int i,n = 0;
+	struct rda_queue_dev *qdev;
+
+	for(i = 0;i < ARRAY_SIZE(rda_qtag);i++) {
+		qdev = rda_qtag[i].dev;
+		if(!qdev)
+			continue;
+		unregister_chrdev_region(qdev->dev_num,1);
+		cdev_del(&qdev->cdev);
+		queue_destroy(qdev->q);
+		kfree(qdev->q);
+		kfree(qdev);
+		n++;
+	}
+	total_rda_qdevs -= n;
+}
+
+module_exit(rda_qdev_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("RDA queue device driver");
+MODULE_AUTHOR("abc <abc@rdamicro.com>");

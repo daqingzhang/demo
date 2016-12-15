@@ -10,8 +10,12 @@
 #include <linux/of.h>
 #include <linux/of_device.h>
 #include <linux/of_platform.h>
+#include <linux/seq_file.h>
+#include <linux/proc_fs.h>
+#include <linux/spinlock.h>
 
 #define RDAQUEUE_MAX_SIZE (1024 * 8)
+#define RDAQUEUE_DEVS	4
 
 struct rda_queue {
 	void *pdata;
@@ -21,26 +25,26 @@ struct rda_queue {
 };
 
 struct rda_queue_dev {
-	int major;
-	int minor;
 	dev_t dev_num;
 	const char *name;
 	struct rda_queue *q;
 	struct rda_queue_ops *qops;
 	struct cdev cdev;
+	spinlock_t lock;
 	//struct device dev;
 };
 
 struct rda_queue_tag {
 	const char *name;
+	const char *proc_name;
 	struct rda_queue_dev *dev;
 };
 
 static struct rda_queue_tag rda_qtag[] = {
-	{"rdaqueue0",NULL},
-	{"rdaqueue1",NULL},
-	{"rdaqueue2",NULL},
-	{"rdaqueue3",NULL},
+	{.name = "rdaqueue0",.proc_name = "driver/rdaqueue0",.dev = NULL},
+	{.name = "rdaqueue1",.proc_name = "driver/rdaqueue1",.dev = NULL},
+	{.name = "rdaqueue2",.proc_name = "driver/rdaqueue2",.dev = NULL},
+	{.name = "rdaqueue3",.proc_name = "driver/rdaqueue3",.dev = NULL},
 };
 
 static unsigned int total_rda_qdevs = 0;
@@ -146,6 +150,60 @@ static struct rda_queue_ops rda_qops = {
 	.show    = queue_show,
 };
 
+/*
+ *********************************************************************
+ * seq file drivers
+ *********************************************************************
+ */
+static int rda_seq_show(struct seq_file *m, void *v)
+{
+	struct rda_queue_dev *qdev = m->private;
+	int major,minor;
+
+	seq_printf(m, "%s\n",__func__);
+
+	if(qdev) {
+		major = MAJOR(qdev->dev_num);
+		minor = MINOR(qdev->dev_num);
+		seq_printf(m,"%s, major = %d, minor = %d\n",
+				qdev->name,major,minor);
+		seq_printf(m,"data: i_idx = %d, o_idx = %d, size = %d\n",
+				qdev->q->i_idx,qdev->q->o_idx,qdev->q->size);
+	}
+	return 0;
+}
+
+static int proc_qdev_open(struct inode *node, struct file *fp)
+{
+	struct rda_queue_dev *dev = PDE_DATA(node);//get the proc directory entry's data
+	return single_open(fp,rda_seq_show,dev);
+}
+
+static struct file_operations qdev_proc_ops = {
+	.owner	= THIS_MODULE,
+	.open	= proc_qdev_open,
+	.read	= seq_read,
+	.llseek	= seq_lseek,
+	.release= single_release,
+};
+
+static int proc_qdev_create(const char *name,void *data)
+{
+	struct proc_dir_entry *entry;
+	entry = proc_create_data(name,0,NULL,&qdev_proc_ops,data);
+	if(!entry)
+		return -1;
+	return 0;
+}
+
+static int proc_qdev_remove(void)
+{
+	int i;
+	for(i = 0;i < ARRAY_SIZE(rda_qtag);i++)
+		remove_proc_entry(rda_qtag[i].proc_name,NULL);
+	return 0;
+}
+
 static int qdev_open(struct inode *node, struct file *fp)
 {
 	struct cdev *cdev = node->i_cdev;
@@ -161,9 +219,10 @@ static ssize_t qdev_read(struct file *fp, char __user *buf, size_t count,loff_t 
 	struct rda_queue_dev *qdev = fp->private_data;
 	struct rda_queue *q = qdev->q;
 	int ret;
+	unsigned long flags = 0;
 
-	pr_info("%s, count = %d, fpos = %d\n",__func__,count,*fpos);
-
+	pr_info("%s, count = %d, fpos = %d\n",__func__,count,(int)(*fpos));
+	spin_lock_irqsave(&qdev->lock,flags);
 	if(count > q->size)
 		count = q->size;
 
@@ -172,8 +231,8 @@ static ssize_t qdev_read(struct file *fp, char __user *buf, size_t count,loff_t 
 		pr_err("%s, copy data failed, %d\n",__func__,ret);
 		return -EFAULT;
 	}
-
 	*fpos = count;
+	spin_lock_irqrestore(&qdev->lock,flags);
 	return count;
 }
 
@@ -182,9 +241,10 @@ static ssize_t qdev_write(struct file *fp, const char __user *pdata, size_t coun
 	struct rda_queue_dev *qdev = fp->private_data;
 	struct rda_queue *q = qdev->q;
 	int ret = 0;
+	unsigned long flags = 0;
 
-	pr_info("%s, count = %d, fpos = %d\n",__func__,count,*fpos);
-
+	pr_info("%s, count = %d, fpos = %d\n",__func__,count,(int)(*fpos));
+	spin_lock_irqsave(&qdev->lock,flags);
 	if(count > q->size)
 		count = q->size;
 
@@ -194,6 +254,7 @@ static ssize_t qdev_write(struct file *fp, const char __user *pdata, size_t coun
 		return -EFAULT;
 	}
 	*fpos = count;
+	spin_unlock_irqrestore(&qdev->lock,flags);
 	return count;
 }
 
@@ -277,6 +338,7 @@ static int __init rda_qdev_init(void)
 			pr_err("%s, kzalloc failed\n",__func__);
 			goto out_err_3;
 		}
+		spin_lock_init(&qdev->lock);
 
 		qdev->name	= rda_qtag[i].name;
 		qdev->dev_num	= MKDEV(major,i + total_rda_qdevs);
@@ -289,12 +351,16 @@ static int __init rda_qdev_init(void)
 			pr_err("%s, cdev add failed, %d\n",__func__,ret);
 			goto out_err_4;
 		}
-		rda_qtag[i].dev = qdev;
 		pr_info("%s, device number: %x\n",qdev->name,qdev->dev_num);
+	
+		if(proc_qdev_create(rda_qtag[i].proc_name,qdev)) {
+			pr_info("%s, create proc failed\n",__func__);
+		}
+
+		rda_qtag[i].dev = qdev;
 	}
 	total_rda_qdevs += n;
-
-	pr_info("%s, initialized %d queue devices done !\n",__func__,total_rda_qdevs);
+		pr_info("%s, initialized %d queue devices done !\n",__func__,total_rda_qdevs);
 
 	return 0;
 out_err_4:
@@ -308,8 +374,8 @@ out_err_1:
 out_err_0:
 	return ret;
 }
-module_init(rda_qdev_init);
-//postcore_initcall(rda_qdev_init);
+//module_init(rda_qdev_init);
+postcore_initcall(rda_qdev_init);
 
 static void __exit rda_qdev_exit(void)
 {
@@ -328,6 +394,7 @@ static void __exit rda_qdev_exit(void)
 		n++;
 	}
 	total_rda_qdevs -= n;
+	proc_qdev_remove();
 }
 
 module_exit(rda_qdev_exit);

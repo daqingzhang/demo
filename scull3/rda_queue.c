@@ -13,6 +13,7 @@
 #include <linux/seq_file.h>
 #include <linux/proc_fs.h>
 #include <linux/spinlock.h>
+#include <linux/ioctl.h>
 
 #define RDAQUEUE_MAX_SIZE (1024 * 8)
 #define RDAQUEUE_DEVS	4
@@ -141,7 +142,7 @@ static void queue_show(struct rda_queue *q)
 		__func__,q->size,q->i_idx,q->o_idx);
 }
 
-static struct rda_queue_ops rda_qops = {
+static struct rda_queue_ops queue_ops = {
 	.init	 = queue_init,
 	.enqueue = queue_enqueue,
 	.dequeue = queue_dequeue,
@@ -232,7 +233,7 @@ static ssize_t qdev_read(struct file *fp, char __user *buf, size_t count,loff_t 
 		return -EFAULT;
 	}
 	*fpos = count;
-	spin_lock_irqrestore(&qdev->lock,flags);
+	spin_unlock_irqrestore(&qdev->lock,flags);
 	return count;
 }
 
@@ -291,13 +292,124 @@ static int qdev_release(struct inode *node, struct file *fp)
 	return 0;
 }
 
-static struct file_operations rda_qdevops = {
+#define RDA_QDEV_MAGIC 'v'
+#define QDEV_CMD_SHOW_NAME	_IO(RDA_QDEV_MAGIC,0)
+#define QDEV_CMD_RD_SIZE	_IOR(RDA_QDEV_MAGIC,1,struct rda_queue_dev)
+#define QDEV_CMD_RD_DEVNUM	_IOR(RDA_QDEV_MAGIC,2,struct rda_queue_dev)
+#define QDEV_CMD_RD_DATA	_IOR(RDA_QDEV_MAGIC,3,struct rda_queue_dev)
+#define QDEV_CMD_WR_DATA	_IOW(RDA_QDEV_MAGIC,4,struct rda_queue_dev)
+
+static int qdev_do_ioctl(struct rda_queue_dev *dev, unsigned int cmd, unsigned long arg, int kernel)
+{
+	switch(cmd) {
+	case QDEV_CMD_SHOW_NAME:
+	{
+		pr_info("%s, device name: %s\n",__func__,dev->name);
+		break;
+	}
+	case QDEV_CMD_RD_SIZE:
+	{
+		void *buf = (void *)arg;
+		unsigned long size = dev->q->size;
+		int ret;
+
+		pr_info("%s, read size\n",__func__);
+		if(!buf) {
+			pr_err("%s, arg is null\n",__func__);
+			return -EINVAL;
+		}
+		ret = put_user(size,(unsigned long __user *)buf);
+		break;
+	}
+	case QDEV_CMD_RD_DEVNUM:
+	{
+		void *buf = (void *)arg;
+		unsigned long devnum = dev->dev_num;
+		int ret;
+
+		pr_info("%s, read devnum\n",__func__);
+		if(!buf) {
+			pr_err("%s, arg is null\n",__func__);
+			return -EINVAL;
+		}
+		ret = put_user(devnum,(unsigned long __user *)buf);
+		break;
+	}
+	case QDEV_CMD_RD_DATA:
+	{
+		struct rda_queue *q = dev->q;
+		int size = q->size;
+		void *buf = (void *)arg;
+		int ret;
+
+		pr_info("%s, read data\n",__func__);
+		if(!buf) {
+			pr_err("%s, arg is null\n",__func__);
+			return -EINVAL;
+		}
+		if((!q->pdata) || (q->size == 0)) {
+			pr_err("%s, data is null or size is zero\n",__func__);
+			return -EINVAL;
+		}
+		ret = copy_to_user(buf,q->pdata,size);
+		if(ret) {
+			pr_err("%s, copy data error ,%d\n",__func__,ret);
+			return -EINVAL;
+		}
+		break;
+	}
+	case QDEV_CMD_WR_DATA:
+	{
+		struct rda_queue *q = dev->q;
+		int size = q->size;
+		void *buf = (void *)arg;
+		int ret = 0;
+
+		pr_info("%s, write data\n",__func__);
+		if(!buf) {
+			pr_err("%s, arg is null\n",__func__);
+			return -EINVAL;
+		}
+		if((!q->pdata) || (!q->size)) {
+			pr_err("%s, data is null or size is zero\n",__func__);
+			return -EINVAL;
+		}
+		ret = copy_from_user(q->pdata,buf,size);
+		if(ret) {
+			pr_err("%s, copy data error ,%d\n",__func__,ret);
+			return -EINVAL;
+		}
+		break;
+	}
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+static long qdev_unlocked_ioctl(struct file *fp,unsigned int cmd, unsigned long arg)
+{
+	long ret;
+	struct rda_queue_dev *dev = fp->private_data;
+
+	if(!dev) {
+		pr_err("%s, dev is null\n",__func__);
+		return -EINVAL;
+	}
+	ret = qdev_do_ioctl(dev,cmd,arg,0);
+	pr_info("%s, cmd = 0x%x, arg = 0x%x, ret = %d\n",
+			__func__,cmd,(unsigned int)arg,(int)ret);
+	return ret;
+}
+
+static struct file_operations rda_qdev_ops = {
 	.owner	= THIS_MODULE,
 	.open 	= qdev_open,
 	.read 	= qdev_read,
 	.write	= qdev_write,
 	.release= qdev_release,
 	.llseek = noop_llseek,
+	.unlocked_ioctl = qdev_unlocked_ioctl,
 };
 
 static int __init rda_qdev_init(void)
@@ -343,9 +455,9 @@ static int __init rda_qdev_init(void)
 		qdev->name	= rda_qtag[i].name;
 		qdev->dev_num	= MKDEV(major,i + total_rda_qdevs);
 		qdev->q		= pq;
-		qdev->qops	= &rda_qops;
+		qdev->qops	= &queue_ops;
 
-		cdev_init(&qdev->cdev,&rda_qdevops);
+		cdev_init(&qdev->cdev,&rda_qdev_ops);
 		ret = cdev_add(&qdev->cdev,qdev->dev_num,1);
 		if(ret) {
 			pr_err("%s, cdev add failed, %d\n",__func__,ret);

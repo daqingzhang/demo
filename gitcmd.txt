@@ -1,0 +1,64 @@
+#create a new repository
+git init
+
+# write config file
+git config --global user.name daqingzhang
+git config --global user.email daqingzhang@rdamicro.com
+git config --global core.editor vim
+git config --global color.ui auto
+
+#define alias
+git config --local alias.st status
+git config --local alias.br branch
+git config --local alias.ch checkout
+
+# read config file
+git config --local user.name
+git config --global user.email
+
+#open .git/config file to edit
+git config -e
+git config --global -e
+
+#show all information of config file
+git config --list
+
+
+# create a new local branch
+git branch test
+
+#switch to new local branch
+git checkout test
+
+#push local branch to remote server
+git push origin test
+
+#delete local branch
+git checkout master
+git branch -d test
+
+#checkout remote branch to local workspace
+git checkout -b test origin/test
+
+#merge a branch to master branch
+git checkout master
+git merge b1
+git branch -d b1
+
+#delete a remote branch
+git push origin --delete test2
+
+#delete a local branch
+git branch -d test
+
+#to gernate a bare repository of git
+git clone --bare abc abc.git
+
+#copy remote repository to local workspace
+git clone ssh://daqingzhang@build4.rdamicro.com/home/daqingzhang/workspace/abc.git
+
+#upload local reopsitory to remote server
+scp -r abc.git daqingzhang@build4.rdamicro.com:/home/daqingzhang/workspace/abc.git
+
+
+

@@ -60,5 +60,52 @@ git clone ssh://daqingzhang@build4.rdamicro.com/home/daqingzhang/workspace/abc.g
 #upload local reopsitory to remote server
 scp -r abc.git daqingzhang@build4.rdamicro.com:/home/daqingzhang/workspace/abc.git
 
+#add a remote repostory's url
+git remote add origin http://build4.rdamicro.com:8808/git/daqingzhang/hello.git
+
+--------------------------------------------------------------------------------------
+#delete remote master branch and then init new repostory
+
+git push --delete origin master
+
+rm -rf .git
+
+git init
+
+git add .
+
+git commit -m "Initial Commit"
+
+git remote add origin http://build4.rdamicro.com:8808/git/daqingzhang/hello.git
+
+git push origin master
+-------------------------------------------------------------------------------------
 
 
+-------------------------------------------------------------------------------------
+build a git server and create a new repository on it
+
+On Server:
+++++++++++++++++++++++++++++
+adduser git
+mkdir hello.git
+cd hello.git
+git init --bare
+
+#change server's login shell to git-shell to forbid logining server
+su root
+add /usr/bin/git-shell to /etc/shells
+exit root
+chsh -s /usr/bin/git-shell
+
+On Client:
+++++++++++++++++++++++++++++
+mkdir hello
+cd hello
+git init
+git remote add origin git@10.102.21.61:/home/git/hello.git
+	or git remote add origin ssh://git@10.102.21.61/home/git/hello.git
+
+git push origin master
+
+git clone ssh://git@10.102.21.61/home/git/hello.git

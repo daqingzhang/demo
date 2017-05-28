@@ -1,0 +1,2 @@
+make error: no such file or directory: libusb.h
+solve:	sudo apt-get install libusb-1.0-0-dev

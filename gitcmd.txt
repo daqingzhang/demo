@@ -23,7 +23,6 @@ git config --global -e
 #show all information of config file
 git config --list
 
-
 # create a new local branch
 git branch test
 
@@ -32,6 +31,10 @@ git checkout test
 
 #push local branch to remote server
 git push origin test
+
+#local branch to track remote branch
+git checkout test
+git branch --set-upstream-to=origin/test
 
 #delete local branch
 git checkout master
@@ -62,6 +65,22 @@ scp -r abc.git daqingzhang@build4.rdamicro.com:/home/daqingzhang/workspace/abc.g
 
 #add a remote repostory's url
 git remote add origin http://build4.rdamicro.com:8808/git/daqingzhang/hello.git
+
+--------------------------------------------------------------------------------------
+#migrate a repository to new place
+git clone --bare openocd openocd.git
+cd openocd.git
+git push --mirror https://github.com/daqingzhang/ocd.git
+git push --mirror ssh://build4.rdamicro.com:/home/daqingzhang/workspace/ocd.git
+
+++++++++++++++++++++++++++++
+#create a new empty repo in server
+mkdir abc.git
+cd abc.git
+git init --bare
+
+--------------------------------------------------------------------------------------
+
 
 --------------------------------------------------------------------------------------
 #delete remote master branch and then init new repostory

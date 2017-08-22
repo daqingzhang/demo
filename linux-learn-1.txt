@@ -1,0 +1,91 @@
+Platform Device
+==================================================================
+
+struct resource xxx_resource[] = {
+	{
+		.start = phyaddr,
+		.end   = phyaddr + physize - 1,
+		.flags = IORESOURCE_MEM,
+	},
+	{
+		.start = INT_RTC_TIMER,
+		.end   = INT_RTC_TIMER,
+		.flags = IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device {
+	.name = "xxx",
+	.id = x,
+	.resource = xxx_resource,
+	.num_resources = ARRAY_SIZE(xxx_resource),
+};
+
+int platform_device_register(struct platform_device *pdev);
+void platform_device_unregister(struct platform_device *pdev);
+
+/**
+ * @pdev: platform device
+ * @type: resource type
+ *	IORESOURCE_MEM
+ *	IORESOURCE_IRQ
+ * @num: resource index
+ */
+struct resource *platform_get_resource(struct platform_device *pdev,
+					unsigned int type,
+					unsigned int num);
+struct resource *platform_get_resource_by_name(struct platform_device *dev,
+						unsigned int type,
+						const char *name);
+
+int platform_get_irq(struct platfor_device *dev, unsigned int num);
+int platform_get_irq_byname(struct platform_device *dev, const char *name);
+
+int platform_add_devices(struct platform_device **devs, int num);
+
+###################################################################
+static struct platform_device *devlist[] = {
+	&a,
+	&b,
+};
+
+platform_add_devices(devlist,ARRAY_SIZE(devlist);
+###################################################################
+
+Platform Driver
+==================================================================
+static struct platform_driver xxx_driver = {
+	.probe = xxx_proble,
+	.remove = xxx_remove,
+	.driver = {
+		.name = "xxx",
+		.owner = THIS_MODULE,
+		.of_match_table = xxx_of_match,
+	},
+};
+
+int platform_driver_register(struct platform_driver *drv);
+void platform_driver_unregister(struct platform_driver *drv);
+
+void platform_set_drvdata(const struct paltform_device *pdev, void *data);
+void *platform_get_drvdata(const struct platform_device *pdev);
+
+
+Memory Remap
+==================================================================
+void __iomem *ioremap(unsigned long phyaddr, unsigned long size);
+void iounmap(void __iomem *addr);
+
+void __iomem *devm_ioremap(struct device *dev, resource_size_t *phyaddr,
+				unsigned long size);
+void devm_iounmap(struct device *dev, void __iomem *addr);
+
+
+Driver Info
+==================================================================
+MODULE_AUTHOR("xxx <xxx@yyy.com>");
+MODULE_DESCRIPTION("xxx");
+MODULE_LICENSE("GPL");
+
+
+

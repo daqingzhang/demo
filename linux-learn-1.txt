@@ -14,7 +14,7 @@ struct resource xxx_resource[] = {
 	},
 };
 
-static struct platform_device {
+static struct platform_device xxx_device {
 	.name = "xxx",
 	.id = x,
 	.resource = xxx_resource,
@@ -54,6 +54,16 @@ platform_add_devices(devlist,ARRAY_SIZE(devlist);
 
 Platform Driver
 ==================================================================
+static int xxx_probe(struct platform_device *pdev)
+{
+	...
+}
+
+static int xxx_remove(struct platform_device *pdev)
+{
+	...
+}
+
 static struct platform_driver xxx_driver = {
 	.probe = xxx_proble,
 	.remove = xxx_remove,

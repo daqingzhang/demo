@@ -41,9 +41,13 @@
 struct rda_dmadev;
 
 static struct dma_slave_map rda_dma_slave_map[] = {
-	{ "rda-dmatest", 	"rx-tx",(void *)RDA_DMA_CH0 },
-	{ "rda-arm_uart.0",	"rx",	(void *)RDA_DMA_CH1 },
-	{ "rda-arm_uart.0",	"tx",	(void *)RDA_DMA_CH2 },
+	{ "8816000.rda-uart1",	"rx",	(void *)RDA_DMA_CH0 },
+	{ "8816000.rda-uart1",	"tx",	(void *)RDA_DMA_CH1 },
+	{ "8817000.rda-uart2",	"rx",	(void *)RDA_DMA_CH2 },
+	{ "8817000.rda-uart2",	"tx",	(void *)RDA_DMA_CH3 },
+	{ "8818000.rda-uart3",	"rx",	(void *)RDA_DMA_CH4 },
+	{ "8818000.rda-uart3",	"tx",	(void *)RDA_DMA_CH5 },
+	{ "dmahost.1", 		"rxtx",	(void *)RDA_DMA_CH11 },
 };
 
 /* dma channel state */
@@ -108,14 +112,13 @@ struct rda_dma_cmn_reg {
 /* dma channel */
 struct rda_dma_chan {
 	int id;
-	const char *name;
-	struct virt_dma_chan vc;
+	enum rda_dma_ch_state state;
 	struct rda_dma_ch_reg *regs;
-	struct rda_dma_config config;
 	struct rda_dma_txd *at;
 	struct rda_dmadev *dev;
-	enum rda_dma_ch_state state;
-	bool forced;
+	struct virt_dma_chan vc;
+	struct dma_tx_state ts;
+	struct rda_dma_config config;
 	spinlock_t lock;
 };
 
@@ -156,10 +159,17 @@ static void axidma_ch_irq_set(struct rda_dma_chan *c, int irq)
 	axidma_writel(conf, c->regs->conf);
 }
 
+static unsigned int axidma_ch_get_count(struct rda_dma_chan *c)
+{
+	return axidma_readl(c->regs->count);
+}
+
 static irqreturn_t rda_dma_irq(int irq, void *devid)
 {
 	struct rda_dmadev *rda_dma = devid;
 	unsigned int status, ch;
+
+	dma_debug("%s, irq %d, devid(%p)\n", __func__, irq, devid);
 
 	spin_lock(&rda_dma->irq_lock);
 
@@ -175,7 +185,7 @@ static irqreturn_t rda_dma_irq(int irq, void *devid)
 						| ARM_AXIDMA_COUNT_FINISH
 						| ARM_AXIDMA_SG_FINISH));
 			axidma_ch_clear_status(c, mask);
-			dma_debug("%s, ch %d clear bit %x\n",__func__, ch, mask);
+			dma_debug("chan %d clear bit %x\n", ch, mask);
 
 			if(ch_status & ARM_AXIDMA_COUNT_FINISH) {
 				struct rda_dma_config *conf = &c->config;
@@ -204,13 +214,6 @@ struct rda_dma_txd *to_rda_dma_txd(struct dma_async_tx_descriptor *tx)
 	return container_of(tx, struct rda_dma_txd, vd.tx);
 }
 
-#if 0
-static struct rda_dmadev *to_rda_dma_dev(struct dma_device *d)
-{
-	return container_of(d, struct rda_dmadev, ddev);
-}
-#endif
-
 /*
  * DMA Device Operations
  */
@@ -235,8 +238,8 @@ static int rda_dma_slave_config(struct dma_chan *chan,
 	struct rda_dma_config *conf = to_rda_dma_config(config);
 	unsigned long flags;
 
-	dma_debug("%s, chan %p, config %p, c %p, conf %p\n",
-			__func__, chan, config, c, conf);
+	dma_debug("%s, c(%p), chan(%p), conf(%p),config(%p)\n",
+			__func__, c, chan, conf, config);
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 
@@ -244,9 +247,9 @@ static int rda_dma_slave_config(struct dma_chan *chan,
 
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 
-	dma_debug("ie_stop: %d, ie_trans: %d, ie_finish: %d, forced: %d\n",
-		c->config.ie_stop, c->config.ie_transmit, c->config.ie_finish,
-		c->config.forced);
+	dma_debug("ie [s=%d, t=%d, f=%d], forced=%d, src=%x, dst=%x, len=%d\n",
+		conf->ie_stop, conf->ie_transmit, conf->ie_finish, conf->forced,
+		config->src_addr, config->dst_addr, config->src_maxburst);
 
 	return 0;
 }
@@ -278,6 +281,8 @@ static struct dma_async_tx_descriptor *rda_dma_prep_dma_memcpy(
 	struct rda_dma_txd *txd;
 	struct rda_dma_sg *dsg;
 
+	// FIXME: to free txd, dsg
+
 	txd = rda_dma_alloc_txd();
 	if(!txd)
 		return NULL;
@@ -289,17 +294,15 @@ static struct dma_async_tx_descriptor *rda_dma_prep_dma_memcpy(
 	}
 	list_add_tail(&dsg->node, &txd->dsg_list);
 
-//	c->at = txd;
-
 	dsg->src_addr = src;
 	dsg->dst_addr = dst;
 	dsg->len = len;
 
-	txd->width = 8;// {8,16,32} bits
+	txd->width  = 8;
+	txd->cyclic = false;
 
-	dma_debug("%s, txd %p, dsg %p, src %x, dst %x, len %d, width %d\n",
-		__func__, txd, dsg, dsg->src_addr,
-		dsg->dst_addr, dsg->len, txd->width);
+	dma_debug("%s, txd(%p), dsg(%p), src=%x, dst=%x, len=%d\n",
+		__func__, txd, dsg, src, dst, len);
 
 	return vchan_tx_prep(&c->vc, &txd->vd, flags);
 }
@@ -309,14 +312,46 @@ struct dma_async_tx_descriptor *rda_dma_prep_slave_sg(
 		unsigned int sg_len, enum dma_transfer_direction direction,
 		unsigned long flags, void *context)
 {
-	return NULL;
+	struct dma_async_tx_descriptor *tx = NULL;
+
+	if(direction == DMA_DEV_TO_DEV) {
+		dma_debug("%s, not support\n", __func__);
+		return NULL;
+	} else {
+		struct rda_dma_chan *c = to_rda_dma_chan(chan);
+		struct dma_slave_config *cfg = &c->config.cfg;
+		size_t len;
+
+		if(cfg->src_maxburst < cfg->dst_maxburst)
+			len = cfg->src_maxburst;
+		else
+			len = cfg->dst_maxburst;
+
+		c->ts.used = len;
+		c->ts.residue = len;
+		c->ts.last = 0;
+		tx = rda_dma_prep_dma_memcpy(chan, cfg->dst_addr, cfg->src_addr,
+						len, flags);
+	}
+	return tx;
+}
+
+static void rda_dma_dump_regs(struct rda_dma_chan *c)
+{
+	struct rda_dma_ch_reg *regs = c->regs;
+
+	dma_debug("conf(%8x)   = %8x\n",(u32)&regs->conf,axidma_readl(regs->conf));
+	dma_debug("map(%8x)    = %8x\n",(u32)&regs->map,axidma_readl(regs->map));
+	dma_debug("saddr(%8x)  = %8x\n",(u32)&regs->saddr,axidma_readl(regs->saddr));
+	dma_debug("daddr(%8x)  = %8x\n",(u32)&regs->daddr,axidma_readl(regs->daddr));
+	dma_debug("count(%8x)  = %8x\n",(u32)&regs->count,axidma_readl(regs->count));
+	dma_debug("countp(%8x) = %8x\n",(u32)&regs->countp,axidma_readl(regs->countp));
 }
 
 static int rda_dma_config_chan(struct rda_dma_chan *c, struct rda_dma_config *config)
 {
 	int requested = 1;
-	unsigned int chan_id = config->cfg.slave_id;
-	unsigned int map = (chan_id << 8) | chan_id;
+	unsigned int map = (c->id << 8) | c->id;
 	unsigned int conf;
 
 	conf = axidma_readl(c->regs->conf);
@@ -385,6 +420,9 @@ static int rda_dma_config_transfer(struct rda_dma_chan *c, struct rda_dma_sg *ds
 	else
 		pcount = 512;
 
+	dma_debug("%s, dsg(%p), src=%x, dst=%x, len=%d\n", __func__,
+			dsg, dsg->src_addr, dsg->dst_addr, dsg->len);
+
 	axidma_writel(pcount, c->regs->countp);
 	axidma_writel(dsg->len, c->regs->count);
 	axidma_writel(dsg->src_addr, c->regs->saddr);
@@ -431,7 +469,7 @@ static int rda_dma_transmit(struct rda_dma_chan *c)
 	rda_dma_config_chan(c, config);
 	rda_dma_config_transfer(c, dsg);
 	rda_dma_start_transfer(c, config);
-
+	rda_dma_dump_regs(c);
 	return 0;
 }
 
@@ -440,7 +478,7 @@ static void rda_dma_issue_pending(struct dma_chan *chan)
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
 	unsigned long flags;
 
-	dma_debug("%s, chan %p, rda chan %p\n",__func__,chan, c);
+	dma_debug("%s, c(%p) chan(%p)\n",__func__,c, chan);
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 
@@ -453,75 +491,54 @@ static void rda_dma_issue_pending(struct dma_chan *chan)
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 }
 
-#define CONFIG_RDA_DMA_HW_STATUS
 static enum dma_status rda_dma_tx_status(struct dma_chan *chan,
 				    dma_cookie_t cookie,
 				    struct dma_tx_state *txstate)
 {
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
-#ifndef CONFIG_RDA_DMA_HW_STATUS
-	struct rda_dma_txd *txd;
-	struct rda_dma_sg *dsg;
-	struct virt_dma_desc *vd;
-#endif
-	unsigned long flags;
-	enum dma_status ret;
+	enum dma_status ret = DMA_ERROR;
 	size_t bytes = 0;
-
-	dma_debug("%s\n",__func__);
+	unsigned long flags;
 
 	spin_lock_irqsave(&c->vc.lock, flags);
-	ret = dma_cookie_status(chan, cookie, txstate);
 
 	if(c->state == RDA_DMA_CH_RUNNING) {
 		unsigned ch_status = axidma_ch_get_status(c);
 
-		if((ch_status & ARM_AXIDMA_RUN) == 0) {
+		bytes = axidma_ch_get_count(c);
+
+		if((ch_status & ARM_AXIDMA_RUN) || bytes)
+			ret = DMA_IN_PROGRESS;
+		else
 			ret = DMA_COMPLETE;
-			dma_debug("status %x, tx complete\n", ch_status);
-		}
-	}
-	if(ret == DMA_COMPLETE || !txstate) {
-		spin_unlock_irqrestore(&c->vc.lock, flags);
-		return ret;
-	}
-#ifndef CONFIG_RDA_DMA_HW_STATUS
-	vd = vchan_find_desc(&c->vc, cookie);
-	if(vd) {
-		txd = to_rda_dma_txd(&vd->tx);
-		list_for_each_entry(dsg, &txd->dsg_list, node)
-			bytes += dsg->len;
-	} else {
-		txd = c->at;
 
-		dsg = list_entry(txd->at, struct rda_dma_sg, node);
-		list_for_each_entry_from(dsg, &txd->dsg_list, node)
-			bytes += dsg->len;
-
-		bytes += axidma_readl(c->regs->count);
+		c->ts.residue = bytes;
+		c->ts.last = c->ts.used - bytes;
+		if(txstate)
+			*txstate = c->ts;
+		dma_debug("%s, ch_status=%x\n", __func__, ch_status);
 	}
-#else
-	bytes += axidma_readl(c->regs->count);
-#endif
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 
-	dma_set_residue(txstate, bytes);
-	dma_debug("residue %d bytes\n",bytes);
-
+	dma_debug("%s, bytes=%d\n", __func__, bytes);
 	return ret;
 }
 
 static int rda_dma_hard_sync(struct rda_dma_chan *c, unsigned int tm)
 {
-	unsigned int status;
+	unsigned int status, bytes;
 	int cnt = tm / 20;
 
 	while(1) {
-		status = axidma_ch_get_status(c);
-		if(!(status & ARM_AXIDMA_RUN))
+		bytes = axidma_ch_get_count(c);
+		status = axidma_ch_get_status(c) & ARM_AXIDMA_RUN;
+
+		if((!status) && (!bytes))
 			break;
-		if(!cnt)
+		if(!cnt) {
+			dma_debug("%s, timeout\n", __func__);
 			return -EBUSY;
+		}
 		msleep(20);
 		cnt--;
 	}
@@ -552,7 +569,7 @@ static int rda_dma_terminate_all(struct dma_chan *chan)
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 
 	dma_debug("%s, c %p, %s\n",__func__, c,
-			(retval ? "failed" : "done"));
+			(retval ? "failed" : "okay"));
 	return retval;
 }
 
@@ -569,7 +586,7 @@ static void rda_dma_synchronize(struct dma_chan *chan)
 
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 	dma_debug("%s, %s\n",__func__,
-		(retval ? "failed" : "done"));
+		(retval ? "failed" : "okay"));
 }
 
 static int rda_dma_setup_regs(struct platform_device *pdev,
@@ -648,7 +665,7 @@ static int rda_dma_setup_ddev(struct platform_device *pdev,
 	dma->filter.mapcnt = ARRAY_SIZE(rda_dma_slave_map);
 	dma->filter.fn = rda_dma_filter_fn;
 
-	dma_debug("%s, done\n", __func__);
+	dma_debug("%s, dma(%p) done\n", __func__, dma);
 	return 0;
 }
 
@@ -672,26 +689,26 @@ static int rda_dma_setup_chan(struct platform_device *pdev,
 	rda_dma->num_chan = RDA_AXIDMA_CHAN_NUM;
 
 	rda_dma->chan = devm_kzalloc(&pdev->dev,
-				sizeof(struct rda_dma_chan) * rda_dma->num_chan,
-				GFP_KERNEL);
+			sizeof(struct rda_dma_chan) * rda_dma->num_chan,
+			GFP_KERNEL);
 	if(!rda_dma->chan)
 		return -ENOMEM;
 
 	regs = rda_dma->regs;
 
 	for(i = 0;i < rda_dma->num_chan;i++) {
-		struct rda_dma_chan *ch = &rda_dma->chan[i];
+		struct rda_dma_chan *c = &rda_dma->chan[i];
 
-		ch->id = i;
-		ch->state = RDA_DMA_CH_IDLE;
-		ch->regs = &regs->ch[i];
-		ch->dev = rda_dma;
-		spin_lock_init(&ch->lock);
+		c->id = i;
+		c->state = RDA_DMA_CH_IDLE;
+		c->regs = &regs->ch[i];
+		c->dev = rda_dma;
+		spin_lock_init(&c->lock);
 
-		vchan_init(&ch->vc, &rda_dma->ddev);
-		ch->vc.desc_free = rda_dma_desc_free;
-		dma_debug("%s,init dma chan(%p): id=%d, state=%d, regs=%p\n",
-				__func__, ch, ch->id, ch->state, ch->regs);
+		vchan_init(&c->vc, &rda_dma->ddev);
+		c->vc.desc_free = rda_dma_desc_free;
+		dma_debug("%s, dma chan[%d] at %p, state=%d, regs(%p)\n",
+			__func__, c->id, c, c->state, c->regs);
 	}
 	return 0;
 }
@@ -723,7 +740,7 @@ static int rda_dma_setup_irq(struct platform_device *pdev,
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq <= 0) {
-		dev_err(&pdev->dev, "failed to get IRQ: %d\n", irq);
+		dev_err(&pdev->dev, "get IRQ failed, %d\n", irq);
 		return -EINVAL;
 	}
 	rda_dma->irq = irq;
@@ -733,7 +750,7 @@ static int rda_dma_setup_irq(struct platform_device *pdev,
 	retval = devm_request_irq(&pdev->dev, irq, rda_dma_irq,
 			      IRQF_SHARED, "rda_dma_irq", rda_dma);
 	if (retval) {
-		dev_err(&pdev->dev, "failed to request IRQ: %d\n", irq);
+		dev_err(&pdev->dev, "request IRQ failed, %d\n", irq);
 		return retval;
 	}
 	dma_debug("%s, irq = %d\n", __func__, irq);
@@ -843,17 +860,30 @@ static int rda_dma_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int rda_dma_restore_regs(struct device *dev, bool restore)
+static void rda_dma_save_regs(struct device *dev)
 {
 	struct rda_dmadev *rda_dma = dev_get_drvdata(dev);
 	struct rda_dma_reg *regs = rda_dma->regs;
 	struct rda_dma_cmn_reg *cmn_regs = rda_dma->cmn_regs;
-	int ret;
 
 	/* DMA channels' register don't need to be saved */
 	cmn_regs->conf = axidma_readl(regs->conf);
 	cmn_regs->delay = axidma_readl(regs->delay);
+}
 
+static void rda_dma_restore_regs(struct device *dev)
+{
+	struct rda_dmadev *rda_dma = dev_get_drvdata(dev);
+	struct rda_dma_reg *regs = rda_dma->regs;
+	struct rda_dma_cmn_reg *cmn_regs = rda_dma->cmn_regs;
+
+	axidma_writel(cmn_regs->delay, regs->delay);
+	axidma_writel(cmn_regs->conf, regs->conf);
+}
+
+static int rda_dma_pm_suspend(struct device *dev)
+{
+	int ret;
 
 	/* enable clock before accessing register */
 	ret = pm_runtime_get_sync(dev);
@@ -862,30 +892,33 @@ static int rda_dma_restore_regs(struct device *dev, bool restore)
 		return ret;
 	}
 
-	/* DMA channels' register don't need to be saved */
-	if(!restore) {
-		cmn_regs->conf = axidma_readl(regs->conf);
-		cmn_regs->delay = axidma_readl(regs->delay);
-	} else {
-		axidma_writel(cmn_regs->delay, regs->delay);
-		axidma_writel(cmn_regs->conf, regs->conf);
-	}
+	rda_dma_save_regs(dev);
 
 	/* disable clock */
 	pm_runtime_put(dev);
-	dma_debug("%s, %s regs\n", __func__,
-			(saved ? "saved" : "restored"));
-	return ret;
-}
 
-static int rda_dma_pm_suspend(struct device *dev)
-{
-	return rda_dma_restore_regs(dev, false);
+	dev_info(dev, "%s saved\n", __func__);
+	return ret;
 }
 
 static int rda_dma_pm_resume(struct device *dev)
 {
-	return rda_dma_restore_regs(dev, true);
+	int ret;
+
+	/* enable clock before accessing register */
+	ret = pm_runtime_get_sync(dev);
+	if(ret < 0) {
+		dma_debug("%s, sync failed, %d\n", __func__, ret);
+		return ret;
+	}
+
+	rda_dma_restore_regs(dev);
+
+	/* disable clock */
+	pm_runtime_put(dev);
+
+	dev_info(dev, "%s restored\n", __func__);
+	return ret;
 }
 
 static const struct dev_pm_ops rda_dma_pm_ops = {
@@ -924,15 +957,18 @@ module_exit(rda_dma_exit);
 
 static bool rda_dma_filter_fn(struct dma_chan *chan, void *param)
 {
+	dma_debug("%s, chan(%p), param = %d\n", __func__, chan, (int)param);
+
 	if (chan->device->dev->driver == &rda_dma_driver.driver) {
 		struct rda_dma_chan *c = to_rda_dma_chan(chan);
 		struct rda_dmadev *dma = c->dev;
-		unsigned req = *(unsigned *)param;
+		unsigned req = (unsigned)param;
 
-		if (req <= dma->num_chan) {
-			c->id = req;
+		dma_debug("%s, c(%p), dma(%p), req = %d\n",
+			__func__, c, dma, req);
+
+		if (req <= dma->num_chan)
 			return true;
-		}
 	}
 	return false;
 }

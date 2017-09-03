@@ -187,7 +187,8 @@ static irqreturn_t rda_dma_irq(int irq, void *devid)
 			axidma_ch_clear_status(c, mask);
 			dma_debug("chan %d clear bit %x\n", ch, mask);
 
-			if(ch_status & ARM_AXIDMA_COUNT_FINISH) {
+			if(ch_status & (ARM_AXIDMA_COUNT_FINISH
+					| ARM_AXIDMA_COUNTP_FINISH)) {
 				struct rda_dma_config *conf = &c->config;
 
 				if(conf->handler)
@@ -501,15 +502,13 @@ static enum dma_status rda_dma_tx_status(struct dma_chan *chan,
 {
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
 	enum dma_status ret = DMA_ERROR;
-	size_t bytes = 0;
 	unsigned long flags;
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 
 	if(c->state == RDA_DMA_CH_RUNNING) {
 		unsigned ch_status = axidma_ch_get_status(c);
-
-		bytes = axidma_ch_get_count(c);
+		size_t bytes = axidma_ch_get_count(c);
 
 		if((ch_status & ARM_AXIDMA_RUN) || bytes)
 			ret = DMA_IN_PROGRESS;
@@ -523,8 +522,6 @@ static enum dma_status rda_dma_tx_status(struct dma_chan *chan,
 		dma_debug("%s, ch_status=%x\n", __func__, ch_status);
 	}
 	spin_unlock_irqrestore(&c->vc.lock, flags);
-
-	dma_debug("%s, bytes=%d\n", __func__, bytes);
 	return ret;
 }
 
@@ -573,15 +570,12 @@ static int rda_dma_terminate_all(struct dma_chan *chan)
 		axidma_writel(0, c->regs->countp);
 
 		rda_dma_del_handler(c);
-
-		retval = rda_dma_hard_sync(c, 2000);
 	}
 
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 
-	dma_debug("%s, c %p, %s\n",__func__, c,
-			(retval ? "failed" : "okay"));
-	return retval;
+	dma_debug("%s,done\n",__func__);
+	return 0;
 }
 
 static void rda_dma_synchronize(struct dma_chan *chan)

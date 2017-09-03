@@ -234,6 +234,7 @@ static void rda_dma_free_chan_resources(struct dma_chan *chan)
 static int rda_dma_slave_config(struct dma_chan *chan,
 			struct dma_slave_config *config)
 {
+	int ret = 0;
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
 	struct rda_dma_config *conf = to_rda_dma_config(config);
 	unsigned long flags;
@@ -243,15 +244,18 @@ static int rda_dma_slave_config(struct dma_chan *chan,
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 
+	if(!conf) {
+		ret = -ENODEV;
+		goto out;
+	}
 	c->config = *conf;
-
-	spin_unlock_irqrestore(&c->vc.lock, flags);
 
 	dma_debug("ie [s=%d, t=%d, f=%d], forced=%d, src=%x, dst=%x, len=%d\n",
 		conf->ie_stop, conf->ie_transmit, conf->ie_finish, conf->forced,
 		config->src_addr, config->dst_addr, config->src_maxburst);
-
-	return 0;
+out:
+	spin_unlock_irqrestore(&c->vc.lock, flags);
+	return ret;
 }
 
 static struct rda_dma_txd *rda_dma_alloc_txd(void)
@@ -547,6 +551,11 @@ static int rda_dma_hard_sync(struct rda_dma_chan *c, unsigned int tm)
 	return 0;
 }
 
+static void rda_dma_del_handler(struct rda_dma_chan *c)
+{
+	c->config.handler = NULL;
+}
+
 static int rda_dma_terminate_all(struct dma_chan *chan)
 {
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
@@ -562,6 +571,8 @@ static int rda_dma_terminate_all(struct dma_chan *chan)
 		axidma_writel(conf, c->regs->conf);
 		axidma_writel(0, c->regs->count);
 		axidma_writel(0, c->regs->countp);
+
+		rda_dma_del_handler(c);
 
 		retval = rda_dma_hard_sync(c, 2000);
 	}
@@ -585,8 +596,9 @@ static void rda_dma_synchronize(struct dma_chan *chan)
 		retval = rda_dma_hard_sync(c, 2000);
 
 	spin_unlock_irqrestore(&c->vc.lock, flags);
-	dma_debug("%s, %s\n",__func__,
-		(retval ? "failed" : "okay"));
+
+	if(retval)
+		pr_err("rda dma sync failed\n");
 }
 
 static int rda_dma_setup_regs(struct platform_device *pdev,

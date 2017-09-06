@@ -1,0 +1,57 @@
+Time:		2017-09-06
+Platform:	FPGA(version date=20170815)
+Soc:		RDA8910
+Linux Kernel Branch:	rda_iot_dev
+
+Envrionment:
+CPU = 60MHz, DDR = 40MHz, SRAM = 40MHz
+HWTimer = 2MHz(1 tick = 0.5us)
+Cache enabled, Write Through
+
+1. no local_irq_disable
+==============================================================================================
+Cycle 1:
+-------------------------------------------------
+memcpy, from DRAM to SRAM 180 KB, cost 9104 ticks
+memcpy, from SRAM to DRAM 180 KB, cost 4523 ticks
+memcpy, from DRAM to SRAM 200 KB, cost 7074 ticks
+memcpy, from SRAM to DRAM 200 KB, cost 6093 ticks
+memcpy, from DRAM to SRAM 220 KB, cost 7883 ticks
+memcpy, from SRAM to DRAM 220 KB, cost 5621 ticks
+
+
+dmahost_probe, dma memcpy 204800 bytes, cost 23998 ticks
+
+Cycle 2:
+-------------------------------------------------
+memcpy, from DRAM to SRAM 180 KB, cost 9212 ticks
+memcpy, from SRAM to DRAM 180 KB, cost 4551 ticks
+memcpy, from DRAM to SRAM 200 KB, cost 7115 ticks
+memcpy, from SRAM to DRAM 200 KB, cost 6053 ticks
+memcpy, from DRAM to SRAM 220 KB, cost 7799 ticks
+memcpy, from SRAM to DRAM 220 KB, cost 5624 ticks
+
+dmahost_probe, dma memcpy 204800 bytes, cost 24099 ticks
+
+
+2. with local_irq_disable
+================================================================================================
+Cycle 1:
+-------------------------------------------------
+memcpy, from DRAM to SRAM 180 KB, cost 8067 ticks
+memcpy, from SRAM to DRAM 180 KB, cost 4536 ticks
+memcpy, from DRAM to SRAM 200 KB, cost 7040 ticks
+memcpy, from SRAM to DRAM 200 KB, cost 4999 ticks
+memcpy, from DRAM to SRAM 220 KB, cost 7780 ticks
+memcpy, from SRAM to DRAM 220 KB, cost 5494 ticks
+
+Cycle 2:
+-------------------------------------------------
+memcpy, from DRAM to SRAM 180 KB, cost 7876 ticks
+memcpy, from SRAM to DRAM 180 KB, cost 4524 ticks
+memcpy, from DRAM to SRAM 200 KB, cost 7041 ticks
+memcpy, from SRAM to DRAM 200 KB, cost 4998 ticks
+memcpy, from DRAM to SRAM 220 KB, cost 7761 ticks
+memcpy, from SRAM to DRAM 220 KB, cost 5491 ticks
+
+

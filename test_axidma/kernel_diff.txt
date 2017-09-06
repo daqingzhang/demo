@@ -1,0 +1,25 @@
+diff --git a/arch/arm/plat-rda/timer.c b/arch/arm/plat-rda/timer.c
+index 1afe15e3f2dc..f9751c9026ed 100644
+--- a/arch/arm/plat-rda/timer.c
++++ b/arch/arm/plat-rda/timer.c
+@@ -20,7 +20,7 @@
+ static unsigned long rda_clk_rate = CLOCK_TICK_RATE;
+ static void __iomem *rda_timer_base;
+ 
+-static cycle_t rda_hwtimer_read(struct clocksource *cs)
++cycle_t rda_hwtimer_read(struct clocksource *cs)
+ {
+ 	unsigned int lo, hi;
+ 
+diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+index b94da3d9e02c..4048d03db21f 100644
+--- a/drivers/dma/Makefile
++++ b/drivers/dma/Makefile
+@@ -68,6 +68,7 @@ obj-$(CONFIG_TI_EDMA) += edma.o
+ obj-$(CONFIG_XGENE_DMA) += xgene-dma.o
+ obj-$(CONFIG_ZX_DMA) += zx296702_dma.o
+ obj-$(CONFIG_RDA_AXIDMA) += rda_axidma.o
++obj-$(CONFIG_RDA_AXIDMA) += dmatest_rda.o
+ 
+ obj-y += qcom/
+ obj-y += xilinx/

@@ -40,7 +40,7 @@
 
 struct rda_dmadev;
 
-static struct dma_slave_map rda_dma_slave_map[] = {
+const static struct dma_slave_map rda_dma_slave_map[] = {
 	{ "8816000.rda-uart1",	"rx",	(void *)RDA_DMA_CH0 },
 	{ "8816000.rda-uart1",	"tx",	(void *)RDA_DMA_CH1 },
 	{ "8817000.rda-uart2",	"rx",	(void *)RDA_DMA_CH2 },
@@ -104,17 +104,19 @@ struct rda_dma_reg {
 	struct rda_dma_ch_reg ch[RDA_AXIDMA_CHAN_NUM];
 };
 
+/* dma common registers (pm suspend or resume) */
 struct rda_dma_cmn_reg {
 	unsigned int conf;
 	unsigned int delay;
 };
 
+/* dma channel common registers (dma pause or resume) */
 struct rda_dma_ch_cmn_reg {
 	unsigned int conf;
 	unsigned int saddr;
 	unsigned int daddr;
 	unsigned int count;
-	unsigned int countp
+	unsigned int countp;
 };
 
 /* dma channel */
@@ -122,9 +124,9 @@ struct rda_dma_chan {
 	int id;
 	enum rda_dma_ch_state state;
 	struct rda_dma_ch_reg *regs;
+	struct rda_dma_ch_cmn_reg *cmn_regs;
 	struct rda_dma_txd *at;
 	struct rda_dmadev *dev;
-	struct rda_dma_ch_cmn_reg cmn_regs;
 	struct virt_dma_chan vc;
 	struct dma_tx_state ts;
 	struct rda_dma_config config;
@@ -148,10 +150,9 @@ struct rda_dmadev {
 #define axidma_writel(val, reg) writel((unsigned int)(val), (volatile void __iomem *)&(reg))
 #define axidma_readl(reg) readl((const volatile void __iomem *)&(reg))
 
-#define RDA_AXIDMA_STATE_MASK 0x1FFFFF
 static unsigned int axidma_ch_get_status(struct rda_dma_chan *c)
 {
-	return (axidma_readl(c->regs->status) & RDA_AXIDMA_STATE_MASK);
+	return (axidma_readl(c->regs->status) & 0x1fffff);
 }
 
 static void axidma_ch_clear_status(struct rda_dma_chan *c, unsigned int mask)
@@ -178,8 +179,6 @@ static irqreturn_t rda_dma_irq(int irq, void *devid)
 	struct rda_dmadev *rda_dma = devid;
 	unsigned int status, ch;
 
-	dma_debug("%s, irq %d, devid(%p)\n", __func__, irq, devid);
-
 	spin_lock(&rda_dma->irq_lock);
 
 	status = axidma_readl(rda_dma->regs->irq_status);
@@ -194,7 +193,6 @@ static irqreturn_t rda_dma_irq(int irq, void *devid)
 						| ARM_AXIDMA_COUNT_FINISH
 						| ARM_AXIDMA_SG_FINISH));
 			axidma_ch_clear_status(c, mask);
-			dma_debug("chan %d clear bit %x\n", ch, mask);
 
 			if(ch_status & (ARM_AXIDMA_COUNT_FINISH
 					| ARM_AXIDMA_COUNTP_FINISH)) {
@@ -204,7 +202,7 @@ static irqreturn_t rda_dma_irq(int irq, void *devid)
 					conf->handler(c->id, conf->data);
 			}
 			if(ch_status & ARM_AXIDMA_COUNT_FINISH)
-				c->state = RDA_DMA_IDLE;
+				c->state = RDA_DMA_CH_IDLE;
 		}
 	}
 	spin_unlock(&rda_dma->irq_lock);
@@ -297,18 +295,22 @@ static struct dma_async_tx_descriptor *rda_dma_prep_dma_memcpy(
 	struct rda_dma_txd *txd;
 	struct rda_dma_sg *dsg;
 
-	// FIXME: to free txd, dsg
+	if(!c->at) {
+		txd = rda_dma_alloc_txd();
+		if(!txd)
+			return NULL;
 
-	txd = rda_dma_alloc_txd();
-	if(!txd)
-		return NULL;
-
-	dsg = kzalloc(sizeof(struct rda_dma_sg), GFP_NOWAIT);
-	if(!dsg) {
-		rda_dma_free_txd(txd);
-		return NULL;
+		dsg = kzalloc(sizeof(struct rda_dma_sg), GFP_NOWAIT);
+		if(!dsg) {
+			rda_dma_free_txd(txd);
+			return NULL;
+		}
+		list_add_tail(&dsg->node, &txd->dsg_list);
+		c->at = txd;
 	}
-	list_add_tail(&dsg->node, &txd->dsg_list);
+	txd = c->at;
+
+	dsg = list_last_entry(&txd->dsg_list, struct rda_dma_sg, node);
 
 	dsg->src_addr = src;
 	dsg->dst_addr = dst;
@@ -354,14 +356,24 @@ struct dma_async_tx_descriptor *rda_dma_prep_slave_sg(
 
 static void rda_dma_dump_regs(struct rda_dma_chan *c)
 {
+#ifdef CONFIG_RDA_AXIDMA_DEBUG
 	struct rda_dma_ch_reg *regs = c->regs;
+	u32 t[6];
 
-	dma_debug("conf(%8x)   = %8x\n",(u32)&regs->conf,axidma_readl(regs->conf));
-	dma_debug("map(%8x)    = %8x\n",(u32)&regs->map,axidma_readl(regs->map));
-	dma_debug("saddr(%8x)  = %8x\n",(u32)&regs->saddr,axidma_readl(regs->saddr));
-	dma_debug("daddr(%8x)  = %8x\n",(u32)&regs->daddr,axidma_readl(regs->daddr));
-	dma_debug("count(%8x)  = %8x\n",(u32)&regs->count,axidma_readl(regs->count));
-	dma_debug("countp(%8x) = %8x\n",(u32)&regs->countp,axidma_readl(regs->countp));
+	t[0] = axidma_readl(regs->saddr);
+	t[1] = axidma_readl(regs->daddr);
+	t[2] = axidma_readl(regs->countp);
+	t[3] = axidma_readl(regs->count);
+	t[4] = axidma_readl(regs->conf);
+	t[5] = axidma_readl(regs->map);
+
+	dma_debug("saddr(%8x)  = %8x\n",(u32)&regs->saddr, t[0]);
+	dma_debug("daddr(%8x)  = %8x\n",(u32)&regs->daddr, t[1]);
+	dma_debug("countp(%8x) = %8x\n",(u32)&regs->countp,t[2]);
+	dma_debug("count(%8x)  = %8x\n",(u32)&regs->count, t[3]);
+	dma_debug("conf(%8x)   = %8x\n",(u32)&regs->conf,  t[4]);
+	dma_debug("map(%8x)    = %8x\n",(u32)&regs->map,   t[5]);
+#endif
 }
 
 static int rda_dma_config_chan(struct rda_dma_chan *c, struct rda_dma_config *config)
@@ -369,6 +381,8 @@ static int rda_dma_config_chan(struct rda_dma_chan *c, struct rda_dma_config *co
 	int requested = 1;
 	unsigned int map = (c->id << 8) | c->id;
 	unsigned int conf;
+	unsigned int delay = config->itv_cycles;
+	struct rda_dma_reg *dma_regs = c->dev->regs;
 
 	conf = axidma_readl(c->regs->conf);
 
@@ -420,6 +434,9 @@ static int rda_dma_config_chan(struct rda_dma_chan *c, struct rda_dma_config *co
 	} else
 		conf &= ~ARM_AXIDMA_SYN_IRQ;
 
+	if(delay)
+		axidma_writel(delay, dma_regs->delay);
+
 	axidma_writel(conf, c->regs->conf);
 	axidma_writel(map, c->regs->map);
 	return 0;
@@ -432,17 +449,17 @@ static int rda_dma_config_transfer(struct rda_dma_chan *c, struct rda_dma_sg *ds
 	if(dsg->len < 256)
 		pcount = 1;
 	else if(dsg->len < 65535)
-		pcount = 256;
+		pcount = 32;
 	else
-		pcount = 512;
+		pcount = 64;
 
 	dma_debug("%s, dsg(%p), src=%x, dst=%x, len=%d\n", __func__,
 			dsg, dsg->src_addr, dsg->dst_addr, dsg->len);
 
-	axidma_writel(pcount, c->regs->countp);
-	axidma_writel(dsg->len, c->regs->count);
 	axidma_writel(dsg->src_addr, c->regs->saddr);
 	axidma_writel(dsg->dst_addr, c->regs->daddr);
+	axidma_writel(pcount, c->regs->countp);
+	axidma_writel(dsg->len, c->regs->count);
 	return 0;
 }
 
@@ -473,8 +490,6 @@ static int rda_dma_transmit(struct rda_dma_chan *c)
 
 	list_del(&txd->vd.node);
 
-	c->at = txd;
-
 	txd->at = txd->dsg_list.next;
 
 	dsg = list_entry(txd->at, struct rda_dma_sg, node);
@@ -484,8 +499,8 @@ static int rda_dma_transmit(struct rda_dma_chan *c)
 
 	rda_dma_config_chan(c, config);
 	rda_dma_config_transfer(c, dsg);
-	rda_dma_start_transfer(c, config);
 	rda_dma_dump_regs(c);
+	rda_dma_start_transfer(c, config);
 	return 0;
 }
 
@@ -530,7 +545,7 @@ static enum dma_status rda_dma_tx_status(struct dma_chan *chan,
 		c->ts.last = c->ts.used - bytes;
 		if(txstate)
 			*txstate = c->ts;
-		dma_debug("%s, ch_status=%x\n", __func__, ch_status);
+		//dma_debug("%s, ch_status=%x\n", __func__, ch_status);
 	}
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 	return ret;
@@ -539,21 +554,21 @@ static enum dma_status rda_dma_tx_status(struct dma_chan *chan,
 static int rda_dma_hard_sync(struct rda_dma_chan *c, unsigned int tm)
 {
 	unsigned int status, bytes;
-	int cnt = tm / 20;
+	unsigned long timeout;
 
-	while(1) {
-		bytes = axidma_ch_get_count(c);
-		status = axidma_ch_get_status(c) & ARM_AXIDMA_RUN;
+	timeout = jiffies + msecs_to_jiffies(tm);
+	bytes = axidma_ch_get_count(c);
+	status = axidma_ch_get_status(c);
 
-		if((!status) && (!bytes))
-			break;
-		if(!cnt) {
+	while ((status & ARM_AXIDMA_RUN) || bytes) {
+		if(time_after(jiffies, timeout)) {
 			dma_debug("%s, timeout\n", __func__);
 			return -EBUSY;
 		}
-		msleep(20);
-		cnt--;
+		bytes = axidma_ch_get_count(c);
+		status = axidma_ch_get_status(c);
 	}
+
 	c->state = RDA_DMA_CH_IDLE;
 	dma_debug("%s, done\n",__func__);
 	return 0;
@@ -578,7 +593,6 @@ static int rda_dma_terminate_all(struct dma_chan *chan)
 {
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
 	unsigned long flags;
-	int retval;
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 
@@ -587,7 +601,7 @@ static int rda_dma_terminate_all(struct dma_chan *chan)
 		rda_dma_hard_stop(c);
 		rda_dma_del_handler(c);
 
-		c->state = RDA_DMA_IDLE;
+		c->state = RDA_DMA_CH_IDLE;
 	}
 
 	spin_unlock_irqrestore(&c->vc.lock, flags);
@@ -618,24 +632,24 @@ static int rda_dma_pause(struct dma_chan *chan)
 
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
 	unsigned long flags;
-	int retval;
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 	if(c->state == RDA_DMA_CH_RUNNING) {
 		struct rda_dma_ch_reg *regs = c->regs;
-		struct rda_dma_ch_cmn_reg *cmn_regs = &c->cmn_regs;
+		struct rda_dma_ch_cmn_reg *cmn_regs = c->cmn_regs;
 
-		cmn_regs->conf   = axidma_readl(regs->conf);
 		cmn_regs->saddr  = axidma_readl(regs->saddr);
 		cmn_regs->daddr  = axidma_readl(regs->daddr);
-		cmn_regs->countp = axidma_readl(regs->countp);
 		cmn_regs->count  = axidma_readl(regs->count);
+		cmn_regs->countp = axidma_readl(regs->countp);
+		cmn_regs->conf   = axidma_readl(regs->conf);
 
 		rda_dma_hard_stop(c);
 
 		c->state = RDA_DMA_CH_PAUSED;
 	}
 	spin_unlock_irqrestore(&c->vc.lock, flags);
+
 	return 0;
 }
 
@@ -648,15 +662,15 @@ static int rda_dma_resume(struct dma_chan *chan)
 	spin_lock_irqsave(&c->vc.lock, flags);
 	if(c->state == RDA_DMA_CH_PAUSED) {
 		struct rda_dma_ch_reg *regs = c->regs;
-		struct rda_dma_ch_cmn_reg *cmn_regs = &c->cmn_regs;
+		struct rda_dma_ch_cmn_reg *cmn_regs = c->cmn_regs;
 
-		axidma_writel(cmn_regs->conf, c->regs->conf);
-		axidma_writel(cmn_regs->saddr, c->regs->saddr);
-		axidma_writel(cmn_regs->daddr, c->regs->daddr);
-		axidma_writel(cmn_regs->count, c->regs->count);
-		axidma_writel(cmn_regs->countp, c->regs->countp);
+		axidma_writel(cmn_regs->saddr, regs->saddr);
+		axidma_writel(cmn_regs->daddr, regs->daddr);
+		axidma_writel(cmn_regs->count, regs->count);
+		axidma_writel(cmn_regs->countp, regs->countp);
+		axidma_writel(cmn_regs->conf, regs->conf);
 
-		c->state = RDA_DMA_CH_RDA_DMA_CH_RUNNING;
+		c->state = RDA_DMA_CH_RUNNING;
 	}
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 	return 0;
@@ -760,13 +774,20 @@ static int rda_dma_setup_chan(struct platform_device *pdev,
 {
 	int i;
 	struct rda_dma_reg *regs;
+	struct rda_dma_ch_cmn_reg *cmn_regs;
 
 	rda_dma->num_chan = RDA_AXIDMA_CHAN_NUM;
 
 	rda_dma->chan = devm_kzalloc(&pdev->dev,
-			sizeof(struct rda_dma_chan) * rda_dma->num_chan,
-			GFP_KERNEL);
+				sizeof(struct rda_dma_chan) * rda_dma->num_chan,
+				GFP_KERNEL);
 	if(!rda_dma->chan)
+		return -ENOMEM;
+
+	cmn_regs = devm_kzalloc(&pdev->dev,
+			sizeof(struct rda_dma_ch_cmn_reg) * rda_dma->num_chan,
+			GFP_KERNEL);
+	if(!cmn_regs)
 		return -ENOMEM;
 
 	regs = rda_dma->regs;
@@ -777,6 +798,7 @@ static int rda_dma_setup_chan(struct platform_device *pdev,
 		c->id = i;
 		c->state = RDA_DMA_CH_IDLE;
 		c->regs = &regs->ch[i];
+		c->cmn_regs = &cmn_regs[i];
 		c->dev = rda_dma;
 		spin_lock_init(&c->lock);
 
@@ -847,14 +869,12 @@ static void rda_dma_hw_init(struct platform_device *pdev,
 	spin_lock_irqsave(&rda_dma->lock, flags);
 
 	axidma_writel(ARM_AXIDMA_STOP, regs->conf);
-	msleep(2);// need delay ???
 
 	if(axidma_readl(regs->status) & ARM_AXIDMA_STOP_STATUS)
 		axidma_writel(ARM_AXIDMA_STOP_STATUS, regs->status);
 
 	axidma_writel(ARM_AXIDMA_OUTSTAND(2), regs->conf);
 	axidma_writel(0xffff, regs->delay);
-
 	spin_unlock_irqrestore(&rda_dma->lock, flags);
 }
 

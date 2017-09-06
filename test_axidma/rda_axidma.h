@@ -27,6 +27,7 @@ struct rda_dma_config {
 	bool forced;
 	irq_handler_t handler;
 	void *data;
+	unsigned short itv_cycles;//interval cycles number [0,0xffff]
 };
 
 #endif /* _RDA_AXIDMA_H_ */

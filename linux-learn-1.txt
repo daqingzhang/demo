@@ -1,5 +1,10 @@
-Platform Device
+1. Platform Device
 ==================================================================
+
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/platform.h>
+#include <linux/interrupt.h>
 
 struct resource xxx_resource[] = {
 	{
@@ -43,16 +48,14 @@ int platform_get_irq_byname(struct platform_device *dev, const char *name);
 
 int platform_add_devices(struct platform_device **devs, int num);
 
-###################################################################
 static struct platform_device *devlist[] = {
 	&a,
 	&b,
 };
 
 platform_add_devices(devlist,ARRAY_SIZE(devlist);
-###################################################################
 
-Platform Driver
+2. Platform Driver
 ==================================================================
 static int xxx_probe(struct platform_device *pdev)
 {
@@ -81,17 +84,8 @@ void platform_set_drvdata(const struct paltform_device *pdev, void *data);
 void *platform_get_drvdata(const struct platform_device *pdev);
 
 
-Memory Remap
-==================================================================
-void __iomem *ioremap(unsigned long phyaddr, unsigned long size);
-void iounmap(void __iomem *addr);
 
-void __iomem *devm_ioremap(struct device *dev, resource_size_t *phyaddr,
-				unsigned long size);
-void devm_iounmap(struct device *dev, void __iomem *addr);
-
-
-Driver Info
+3. Driver Info
 ==================================================================
 MODULE_AUTHOR("xxx <xxx@yyy.com>");
 MODULE_DESCRIPTION("xxx");
@@ -99,3 +93,105 @@ MODULE_LICENSE("GPL");
 
 
 
+4. Memory Access
+==================================================================
+
+#include <linux/io.h>
+//arch/arm/include/asm/io.h
+// #include <asm/io.h>
+
+/*
+ * devm_ioremap - remap a physicall memory space to a virtual io memory space
+ */
+void __iomem *ioremap(unsigned long phyaddr, unsigned long size);
+void __iomem *devm_ioremap(struct device *dev, resource_size_t phyaddr, unsigned long size);
+void __iomem *devm_ioremap_resource(struct device *dev, struct resource *res);
+
+void iounmap(void __iomem *addr);
+void devm_iounmap(struct device *dev, void __iomem *addr);
+
+/*
+ * devm_memremap - remap a physical memory space to virtual memory space
+ * offset	physical address
+ * size		memory size
+ * flags	MEMREMAP_WB,
+ *		MEMREMAP_WT,
+ *		MEMREMAP_WC,
+ */
+void *devm_memremap(struct device *dev, resource_size_t offset, size_t size, unsigned long flags);
+void devm_memunmap(struct device *dev, void *addr);
+
+void *memremap(resource_size_t paddr, size_t size, unsigned long flags);
+void memunmap(void *vaddr);
+
+u8  readb(const volatile void __iomem *vaddr);
+u16 readw(const volatile void __iomem *vaddr);
+u32 readl(const volatile void __iomem *vaddr);
+
+void writeb(u8 b, volatile const __iomem *vaddr);
+void writeb(u16 b, volatile const __iomem *vaddr);
+void writel(u32 b, volatile const __iomem *vaddr);
+
+
+
+5. Memory Allocate
+==================================================================
+#include <linux/slab.h>
+
+/*
+ * flags:
+ *	GFP_KERNEL, allocate normal kernel ram, may sleep
+ *	GFP_NOWAIT, allocate kernel ram, not sleep
+ */
+
+void *kmalloc(size_t size, gfp_t flags);
+void *kzalloc(size_t size, gfp_t flags);
+void  kfree(const void *vaddr);
+
+void *devm_kzalloc(size_t size, gfp_t flags);
+void devm_kfree(const void *vaddr);
+
+
+
+6. DMA client
+==================================================================
+#include <linux/dmaengine.h>
+#include <linux/dma-mapping.h>
+
+(1) get a dma channel by dev and channel name
+struct dma_chan *dma_request_chan(struct device *dev, const char *name);
+
+(2) configure dma channel
+int dmaengine_slave_config(struct dma_chan *chan, struct dma_slave_config *cfg);
+
+(3) get dma tx descriptor
+struct dma_async_tx_descriptor *dmaengine_prep_slave_sg(struct dma_chan *chan,
+				struct scatterlist *sgl, unsigned int sg_len,
+				enum dma_transfer_direction dir, unsigned int flags);
+
+(4) submit tx descriptor
+dma_cookie_t dmaengine_submit(struct dma_async_tx_descriptor *tx);
+
+(5) start dma transfer
+void dma_async_issue_pending(struct dma_chan *chan);
+
+(6) remap virtual memory space to physical memory for dma
+
+/*
+ * dir: DMA_FROM_DEVICE
+ *	DMA_TO_DEVICE
+ *	DMA_BIDIRECTIONAL
+ */
+
+dma_addr_t dma_map_single(struct device *dev, void *vaddr, size_t size, enum dma_data_direction dir);
+
+(7) remap physical memory address to virtual memory space for cpu
+
+void dma_unmap_single(struct device *dev, dma_addr_t paddr, size_t size, enum dma_data_direction dir);
+
+
+(8) pause dma transmition
+int dmaengine_pause(struct dma_chan *chan);
+
+(9) resume dma transmition
+int dmaengine_resume(struct dma_chan *chan);

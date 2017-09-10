@@ -20,29 +20,54 @@ enum
 	SCULL_TYPE_WR,
 };
 
-struct scull_data_block
-{
-	const char *label;
-	unsigned int id;
-	void *pdata;
-	unsigned int size;
+#define SCULL_BLOCK_SIZE	1024
+#define SCULL_BLOCK_NUM		1
+
+struct scull_block {
+	void *buf;
+	int size;
 };
 
-struct scull_device
-{
-	spinlock_t		lock;
-	struct cdev		chr_dev;
+struct scull_data {
+	struct scull_block *block;
+	int num;
+};
+
+struct scull_device {
+	int			id;
+	const char 		*name;
+	struct scull_data 	*data;
+	struct cdev		chrdev;
 	struct file_operations 	fops;
-	struct scull_data_block *blocks;
-	const char *name;
-	int id;
-	int num;//block number
-	int type;
+	spinlock_t		lock;
 };
 
-#define SCULL_MAJOR	260
-#define SCULL_BLOCK_MAX_SIZE	2048
-#define SCULL_BLOCK_MAX_NUM	2
+struct scull_info {
+	struct scull_dev *dev;
+	int nr;
+};
+
+static struct scull_info scuinfo;
+
+static void init_scull_info()
+{
+	scuinfo.dev = NULL;
+	scuinfo.nr = 0;
+}
+
+static void set_scull_info(struct scull_device *dev, int nr)
+{
+	scuinfo.dev = dev;
+	scuinfo.nr = 0;
+}
+
+static void get_scull_info(struct scull_device **dev, int *nr)
+{
+	if(dev)
+		*dev = scuinfo.dev;
+	if(nr)
+		*nr = scuinfo.nr;
+}
 
 static int scull_open(struct inode *node,struct file *filp)
 {
@@ -69,7 +94,7 @@ static ssize_t scull_read(struct file *filp, char __user *buf,
 				size_t len,loff_t *offs)
 {
 	struct scull_device *pdev = filp->private_data;
-	struct scull_data_block *ptr_blk = pdev->blocks;
+	struct scull_data *ptr_blk = pdev->blocks;
 	unsigned long pos = *offs,count = len;
 
 //	spin_lock_irqsave(&(pdev->lock),flags);
@@ -97,7 +122,7 @@ static ssize_t scull_write(struct file *filp, const char __user *data,
 				size_t len,loff_t *offs)
 {
 	struct scull_device *pdev = filp->private_data;
-	struct scull_data_block *ptr_blk = pdev->blocks;
+	struct scull_data *ptr_blk = pdev->blocks;
 	unsigned long pos = *offs, count = len;
 
 //	spin_lock_irqsave(&(pdev->lock),flags);
@@ -120,30 +145,7 @@ static ssize_t scull_write(struct file *filp, const char __user *data,
 			(int)(*offs));
 	return count;
 }
-#if 0
-static ssize_t sleepy_read(struct file *filp, char __user *buf,
-				size_t count,loff_t *pos)
-{
-	struct scull_device *ptr_scull = filp->private_data;
 
-	printk(KERN_ALERT "sleepy_read, wait event,suspend task\n");
-	wait_event_interruptible(ptr_scull->wqueue,ptr_scull->flag != 0);
-	ptr_scull->flag = 0;
-	printk(KERN_ALERT "sleepy_read, evnet come,resume task\n");
-	return 0;
-}
-
-static ssize_t sleepy_write(struct file *filp, char __user *data,
-				size_t count,loff_t *pos)
-{
-	struct scull_devie *ptr_scull = filp->private_data;
-
-	printk(KERN_ALERT "sleepy write, wake up task\n");
-	scull_device->flag = 1;
-	wake_up_interruptible(&ptr_scull->wqueue);
-	return count;
-}
-#endif
 enum SCULL_DEV_LLSEEK_CMD
 {
 	LLS_SET_POS = 0,
@@ -190,35 +192,6 @@ static loff_t scull_llseek(struct file *filp, loff_t offs, int cmd)
 	.release= _release,	\
 }
 
-struct scull_device scull_dev[] = {
-	[0] = {
-		.name = "scull0",
-		.id   = 0,
-		.num  = SCULL_BLOCK_MAX_NUM,
-		.type = SCULL_TYPE_WR,
-		.fops = SCULL_DEV_FOPS_INIT(
-			THIS_MODULE,
-			scull_open,
-			scull_read,
-			scull_write,
-			scull_llseek,
-			scull_release),
-	},
-	[1] = {
-		.name = "scull1",
-		.id    = 1,
-		.num  = SCULL_BLOCK_MAX_NUM,
-		.type = SCULL_TYPE_WR,
-		.fops = SCULL_DEV_FOPS_INIT(
-			THIS_MODULE,
-			scull_open,
-			scull_read,
-			scull_write,
-			scull_llseek,
-			scull_release),
-	},
-};
-
 static int scull_setup_cdev(struct scull_device *scull)
 {
 	int err, devno = MKDEV(SCULL_MAJOR,scull->id);
@@ -249,9 +222,9 @@ static void scull_free_cdev(struct scull_device *scull)
 static int scull_setup_block(struct scull_device *scull)
 {
 	int i;
-	struct scull_data_block *ptr_blocks;
+	struct scull_data *ptr_blocks;
 
-	ptr_blocks = kmalloc((scull->num) * sizeof(struct scull_data_block),GFP_KERNEL);
+	ptr_blocks = kmalloc((scull->num) * sizeof(struct scull_data),GFP_KERNEL);
 	if(ptr_blocks == NULL)
 		return -1;
 
@@ -274,58 +247,87 @@ static int scull_setup_block(struct scull_device *scull)
 	return 0;
 }
 
-static int scull_free_data(struct scull_device *scull)
+#define to_scull_block(s)	((s)->data->block)
+#define to_block_num(s)		((s)->data->num)
+#define to_block_buf(b)		((b)->buf)
+#define to_buf_size(b)		((b)->size)
+
+static int scull_del_data(struct scull_device *scull)
 {
-	struct scull_data_block *ptr_blk = scull->blocks;
+	struct scull_block *blk = to_scull_block(scull);
+	int num = to_block_num(s);
 	int i;
-	for(i = 0;i < scull->num;i++) {
-		kfree(ptr_blk[i].pdata);
-		printk(KERN_ALERT "free %s block %d done\n",
-			scull->name,ptr_blk[i].id);
+
+	for(i = 0;i < num;i++) {
+		void *pbuf = &blk[i];
+		kfree(pbuf);
+		pr_info("%s, block buf %p freed\n", __func__, pbuf);
 	}
-	kfree(ptr_blk);
-	printk(KERN_ALERT "free %s all block done\n",scull->name);
+	kfree(blk);
+	pr_info("%s, block %p freed\n", __func__, blk);
 	return 0;
 }
 
 static int __init scull_dev_init(void)
 {
-	int i;
-	for(i = 0;i < ARRAY_SIZE(scull_dev);i++) {
-		/* init spin lock */
-		spin_lock_init(&scull_dev[i].lock);
-		/* init data */
-		if(scull_setup_block(&scull_dev[i]))
-			goto end_init_data;
-		/* init cdev */
-		if(scull_setup_cdev(&scull_dev[i]))
-			goto end_init_cdev;
+	int ret;
+	struct scull_device *scu;
+
+	init_scull_info();
+
+	scu = kzalloc(sizeof(struct scull_device), GFP_KERNEL);
+	if(!scu) {
+		pr_err("%s, alloc scull failed\n", __func__);
+		return -ENOMEM;
 	}
-	printk(KERN_ALERT "scull module initialized\n");
+
+	pr_info("%s, scu(%p)\n", __func__, scu);
+	set_scull_info(scu, 1);
+#if 1
+	get_scull_info(&scu, &ret);
+	pr_info("%s, get scu(%p), ret=%d\n", __func__, scu, ret);
+#endif
+	spin_lock_init(&scu->lock);
+
+	ret = scull_setup_data(scu);
+	if(ret) {
+		pr_err("%s, setup data failed\n", __func__);
+		goto fail_free_mem;
+	}
+	ret = scull_setup_cdev(scu);
+	if(ret) {
+		pr_err("%s, setup cdev failed\n", __func__);
+		goto fail_del_data;
+	}
+	pr_info("%s, done\n", __func__);
 	return 0;
 
-end_init_cdev:
-	scull_free_data(&scull_dev[i]);
-	return -ERR_SCULL_INI_CDEV;
-
-end_init_data:
-	return -ERR_SCULL_INI_DATA;
+fail_del_data:
+	scull_del_data(scu);
+fail_free_mem:
+	kfree(scu);
+	return ret;
 }
 
 static void __exit scull_dev_exit(void)
 {
+	struct scull_device *scu;
+	int num;
 	int i;
-	for(i = 0;i < ARRAY_SIZE(scull_dev);i++) {
-		scull_free_cdev(&scull_dev[i]);
-		scull_free_data(&scull_dev[i]);
+
+	get_scull_info(&scu, &num);
+
+	pr_info("%s, scu(%p), num=%d\n", __func__, scu, num);
+
+	for(i = 0;i < num;i++) {
+		kfree(scu);
+		scull_del_data(scu);
 	}
-	printk(KERN_ALERT "scull module exit\n");
 }
 
 module_init(scull_dev_init);
 module_exit(scull_dev_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("TariqZhang");
-MODULE_VERSION("V1.0");
-MODULE_DESCRIPTION("scull device module");
+MODULE_AUTHOR("Tariq");
+MODULE_DESCRIPTION("scull device driver");

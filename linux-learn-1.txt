@@ -195,3 +195,67 @@ int dmaengine_pause(struct dma_chan *chan);
 
 (9) resume dma transmition
 int dmaengine_resume(struct dma_chan *chan);
+
+
+7. container_of(ptr, type, member)
+==================================================================
+
+#define container_of(ptr, type, member) \
+	(type *)((char *)(ptr) - (char *) &((type *)0)->member)<F12>
+
+
+8. GPIO Driver
+==================================================================
+struct xxx_gpio_chip {
+	int irq;
+	struct gpio_chip *gc;
+	struct xxx_regs *regs;
+	struct irq_chip *irqc;
+	void __iomem *base;
+	spinlock_t lock;
+};
+
+// register a gpio chip
+int gpiochip_add(struct gpio_chip *gc);
+
+// register a gpio chip with private data
+int gpiochip_add_data(struct gpio_chip *gc, void *data);
+
+// find a gpio chip by a special function
+struct gpio_chip *gpiochip_find(void *data,
+				int (*match)(struct gpio_chip *chip, void *data));
+
+// get gpio gpio chip's private data
+void *gpiochip_get_data(struct gpio_chip *gc);
+
+// remove a gpio chip
+void gpiochip_remove(struct gpio_chip *gc);
+
+9. GPIO Driver User
+==================================================================
+int gpio_request(unsigned gpio, const char *label);
+int gpio_direction_input(unsigned gpio);
+int gpio_direction_output(unsigned gpio, int value);
+int gpio_set_debounce(unsigned gpio, unsigned debounce);
+int gpio_get_value(unsigned gpio);
+int gpio_set_value(unsigned gpio);
+int gpio_to_irq(unsigned gpio);
+void gpio_free(unsigned gpio);
+
+
+
+10. Interrupt
+==================================================================
+int request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
+			const char *name, void *dev);
+
+example:
+	ret = request_irq(irq, xxx_irq_handler, IRQF_SHARED, "xxx_irq", prvdata);
+	if(ret) {
+		pr_err("error\n");
+		return ret;
+	}
+
+
+
+

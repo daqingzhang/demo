@@ -18,7 +18,7 @@
  */
 
 //#define CONFIG_DMA_PAUSE
-//#define CONFIG_DMA_PERF
+#define CONFIG_DMA_PERF
 
 extern cycle_t rda_hwtimer_read(struct clocksource *cs);
 #define get_hwtick(a) rda_hwtimer_read(0)
@@ -28,7 +28,7 @@ extern cycle_t rda_hwtimer_read(struct clocksource *cs);
 #define CONFIG_DH_MEM_START	(0x00800100)
 #define CONFIG_DH_MEM_END	(CONFIG_DH_MEM_START + CONFIG_DH_MEM_SIZE - 1)
 
-#define CONFIG_DH_BUF_SIZE (256)
+#define CONFIG_DH_BUF_SIZE (200 * 1024)
 #define CONFIG_DH_WAIT_TM 5000
 
 enum dmahost_cmd {
@@ -89,6 +89,8 @@ struct dmahost_dev {
 	struct	completion comp;
 };
 
+static volatile int dma_cb_done = 0;
+
 static irqreturn_t dmahost_irq_handler(int id, void *data)
 {
 	struct dmahost_dev *dma_host = data;
@@ -99,8 +101,10 @@ static irqreturn_t dmahost_irq_handler(int id, void *data)
 	state = dma_async_is_tx_complete(chan, 0, &last, &used);
 	if(state == DMA_COMPLETE) {
 		complete(&dma_host->comp);
+		dma_cb_done = 1;
 		//pr_info("%s, last=%d, used=%d\n", __func__, last, used);
 	}
+	pr_info("%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -122,13 +126,23 @@ void *dmahost_setup_mem(struct platform_device *pdev, u32 size)
 	return vaddr;
 }
 
+dma_addr_t dmahost_setup_phymem(struct platform_device *pdev, u32 size)
+{
+	struct resource *res;
+
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+
+	dev_info(&pdev->dev, "%s, start=%x\n", __func__, (u32)(res->start));
+	return (u32)(res->start);
+}
+
 void *dmahost_setup_buf(struct platform_device *pdev, u32 size)
 {
 	void *vaddr;
 
 	vaddr = devm_kzalloc(&pdev->dev, sizeof(char) * size, GFP_KERNEL);
 
-	dev_info(&pdev->dev, "%s, buf_addr=%x\n", __func__, (u32)vaddr);
+	dev_info(&pdev->dev, "%s, buf_addr=%x, size = %x\n", __func__, (u32)vaddr, size);
 	return vaddr;
 }
 
@@ -174,8 +188,8 @@ void dmahost_init_config(struct dmahost_dev *dev,
 	struct rda_dma_config *conf = &dev->config;
 
 	conf->cfg.direction = DMA_MEM_TO_MEM;
-	conf->cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
-	conf->cfg.dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+	conf->cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_8_BYTES;
+	conf->cfg.dst_addr_width = DMA_SLAVE_BUSWIDTH_8_BYTES;
 //	conf->cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_1_BYTE;
 //	conf->cfg.dst_addr_width = DMA_SLAVE_BUSWIDTH_1_BYTE;
 	conf->cfg.src_maxburst = size;
@@ -192,6 +206,18 @@ void dmahost_init_config(struct dmahost_dev *dev,
 	conf->itv_cycles  = 1;
 }
 
+int dmahost_tx_done(struct dma_chan *chan)
+{
+
+	enum dma_status state;
+
+	state = dma_async_is_tx_complete(chan, 0, 0, 0);
+
+	if(state == DMA_COMPLETE)
+		return 1;
+	return 0;
+}
+
 static int dmahost_probe(struct platform_device *pdev)
 {
 	int retval;
@@ -204,6 +230,8 @@ static int dmahost_probe(struct platform_device *pdev)
 	u32 tick1,tick2;
 
 	pr_info("%s, ************ test 1\n", __func__);
+
+	dma_cb_done = 0;
 
 	dhdev = devm_kzalloc(&pdev->dev, sizeof(struct dmahost_dev), GFP_KERNEL);
 	if(!dhdev) {
@@ -229,6 +257,7 @@ static int dmahost_probe(struct platform_device *pdev)
 
 	dst_addr = dmahost_setup_mem(pdev, CONFIG_DH_MEM_SIZE);
 	src_addr = dmahost_setup_buf(pdev, CONFIG_DH_MEM_SIZE);
+	bufsize  = 200 * 1024;
 
 	dmahost_buf_set(src_addr, 0, CONFIG_DH_MEM_SIZE, DH_BUF_DATA_CLR); //clear src buffer
 	dmahost_buf_set(dst_addr, 0, CONFIG_DH_MEM_SIZE, DH_BUF_DATA_CLR); //clear dst buffer
@@ -254,11 +283,10 @@ static int dmahost_probe(struct platform_device *pdev)
 	local_irq_enable();
 
 	dmahost_buf_set(src_addr, dst_addr, bufsize, DH_BUF_DATA_CMP);
-	dmahost_buf_set(src_addr, dst_addr, bufsize, DH_BUF_DATA_DUMP);
+//	dmahost_buf_set(src_addr, dst_addr, bufsize, DH_BUF_DATA_DUMP);
 	flush_cache_all();
 
-	bufsize = 200 * 1024;
-	pr_info("%s, memory copy test done\n", __func__);
+	pr_info("%s, CPU memcpy test done\n", __func__);
 #endif
 	/* retrive a dma channel */
 	chan = dma_request_chan(&pdev->dev, "rxtx");
@@ -273,17 +301,28 @@ static int dmahost_probe(struct platform_device *pdev)
 	dhdev->dev = &pdev->dev;
 	init_completion(&dhdev->comp);
 
+#ifndef CONFIG_DMA_PERF
 	/* remap buffer's memory space for dma device */
 	src_paddr = dma_map_single(&pdev->dev, (void *)src_addr,
 						bufsize, DMA_FROM_DEVICE);
 	dst_paddr = dma_map_single(&pdev->dev, (void *)dst_addr,
 						bufsize, DMA_TO_DEVICE);
-
+#else
+	/* src is DDR memory space address */
+	src_paddr = dma_map_single(&pdev->dev, (void *)src_addr,
+						bufsize, DMA_FROM_DEVICE);
+	/* dst is SRAM memory space address */
+	dst_paddr = dmahost_setup_phymem(pdev, CONFIG_DH_MEM_SIZE);
+#endif
 	pr_info("%s, src_paddr(%x), dst_paddr(%x)\n",
 			__func__, src_paddr, dst_paddr);
 
 	/* configure dma channel */
+	pr_info("%s, DMA memcpy to SRAM from DRAM\n", __func__);
 	dmahost_init_config(dhdev, dst_paddr, src_paddr, bufsize);
+
+//	pr_info("%s, DMA memcpy to DRAM from SRAM\n", __func__);
+//	dmahost_init_config(dhdev, src_paddr, dst_paddr, bufsize);
 
 	retval = dmaengine_slave_config(chan, &dhdev->config.cfg);
 	if(retval) {
@@ -302,6 +341,8 @@ static int dmahost_probe(struct platform_device *pdev)
 	/* submit descriptor */
 	dmaengine_submit(dhdev->tx);
 
+	local_irq_disable();
+
 	/* start dma transfer */
 	dma_async_issue_pending(chan);
 	tick1 = get_hwtick(0);
@@ -317,22 +358,34 @@ static int dmahost_probe(struct platform_device *pdev)
 	dmaengine_resume(chan);
 #endif
 
+
+#if 0
 	retval = wait_for_completion_timeout(&dhdev->comp, wait);
 	if(retval <= 0) {
 		pr_err("%s, wait comp timeout %d\n", __func__, retval);
 	} else {
 		pr_info("%s, wait comp okay\n", __func__);
 	}
-	tick2 = get_hwtick(0);
-	pr_info("%s, dma memcpy %d bytes, cost %d ticks\n", __func__,
-			bufsize, (tick2 - tick1));
+#else
+//	while(dma_cb_done == 0);
+	while(dmahost_tx_done(dhdev->chan) == 0);
+#endif
 
+	tick2 = get_hwtick(0);
+	pr_info("%s, dma memcpy %d KB, cost %d ticks\n", __func__,
+			bufsize / 0x400, (tick2 - tick1));
+
+	local_irq_enable();
+#ifndef CONFIG_DMA_PERF
 	dma_unmap_single(&pdev->dev, src_paddr, bufsize, DMA_FROM_DEVICE);
 	dma_unmap_single(&pdev->dev, dst_paddr, bufsize, DMA_TO_DEVICE);
+#else
+	dma_unmap_single(&pdev->dev, src_paddr, bufsize, DMA_FROM_DEVICE);
 
+#endif
 	/* check result */
 	dmahost_buf_set(src_addr, dst_addr, bufsize, DH_BUF_DATA_CMP);
-	dmahost_buf_set(src_addr, dst_addr, bufsize, DH_BUF_DATA_DUMP);
+//	dmahost_buf_set(src_addr, dst_addr, bufsize, DH_BUF_DATA_DUMP);
 
 	pr_info("%s, test done\n", __func__);
 	return 0;
@@ -381,6 +434,7 @@ static int dmahost_buf_set(void *src, void *dst, unsigned len, int cmd)
 	}
 		break;
 	case DH_BUF_DATA_DUMP:
+#if 0
 	{
 		unsigned char *pd = dst;
 		unsigned char *ps = src;
@@ -405,6 +459,7 @@ static int dmahost_buf_set(void *src, void *dst, unsigned len, int cmd)
 			pr_info("\n");
 		}
 	}
+#endif
 	default:
 		break;
 	}

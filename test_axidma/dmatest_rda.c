@@ -174,15 +174,18 @@ void dmahost_memcpy_test(void *dst, void *src, u32 size, int dram2sram)
 
 	tick2 = get_hwtick(0);
 
-	if(dram2sram)
-		pr_info("memcpy, from DRAM to SRAM %d KB, cost %d ticks\n",
-			(size/0x400), tick2 - tick1);
+	if(dram2sram == 1)
+		pr_info("memcpy, from DRAM %p to SRAM %p, %d KB, cost %d ticks\n",
+			src, dst, (size/0x400), tick2 - tick1);
+	else if(dram2sram == 0)
+		pr_info("memcpy, from SRAM %p to DRAM %p, %d KB, cost %d ticks\n",
+			src, dst, (size/0x400), tick2 - tick1);
 	else
-		pr_info("memcpy, from SRAM to DRAM %d KB, cost %d ticks\n",
-			(size/0x400), tick2 - tick1);
+		pr_info("memcpy, from DRAM %p to DRAM %p, %d KB, cost %d ticks\n",
+			src, dst, (size/0x400), tick2 - tick1);
 }
 
-void dmahost_init_config(struct dmahost_dev *dev,
+void dmahost_config_chan(struct dmahost_dev *dev,
 		dma_addr_t dst_paddr, dma_addr_t src_paddr, u32 size)
 {
 	struct rda_dma_config *conf = &dev->config;
@@ -224,7 +227,7 @@ static int dmahost_probe(struct platform_device *pdev)
 	struct dmahost_dev *dhdev;
 	struct dma_chan *chan;
 	dma_addr_t src_paddr, dst_paddr;
-	u8 *src_addr, *dst_addr;
+	u8 *src_addr, *dst_addr, *dst_addr2;
 	u32 bufsize;
 	u32 wait = msecs_to_jiffies(CONFIG_DH_WAIT_TM);
 	u32 tick1,tick2;
@@ -256,6 +259,7 @@ static int dmahost_probe(struct platform_device *pdev)
 	 */
 
 	dst_addr = dmahost_setup_mem(pdev, CONFIG_DH_MEM_SIZE);
+	dst_addr2 = dmahost_setup_buf(pdev, CONFIG_DH_MEM_SIZE);
 	src_addr = dmahost_setup_buf(pdev, CONFIG_DH_MEM_SIZE);
 	bufsize  = 200 * 1024;
 
@@ -278,6 +282,8 @@ static int dmahost_probe(struct platform_device *pdev)
 	dmahost_memcpy_test(dst_addr, src_addr, 220 * 0x400, 1);
 	/* DRAM <== SRAM */
 	dmahost_memcpy_test(src_addr, dst_addr, 220 * 0x400, 0);
+	/* DRAM ==> DRAM */
+	dmahost_memcpy_test(src_addr, dst_addr2, 200 * 0x400, 2);
 
 	/* enable IRQ */
 	local_irq_enable();
@@ -317,13 +323,14 @@ static int dmahost_probe(struct platform_device *pdev)
 	pr_info("%s, src_paddr(%x), dst_paddr(%x)\n",
 			__func__, src_paddr, dst_paddr);
 
+#if 1
 	/* configure dma channel */
 	pr_info("%s, DMA memcpy to SRAM from DRAM\n", __func__);
-	dmahost_init_config(dhdev, dst_paddr, src_paddr, bufsize);
-
-//	pr_info("%s, DMA memcpy to DRAM from SRAM\n", __func__);
-//	dmahost_init_config(dhdev, src_paddr, dst_paddr, bufsize);
-
+	dmahost_config_chan(dhdev, dst_paddr, src_paddr, bufsize);
+#else
+	pr_info("%s, DMA memcpy to DRAM from SRAM\n", __func__);
+	dmahost_config_chan(dhdev, src_paddr, dst_paddr, bufsize);
+#endif
 	retval = dmaengine_slave_config(chan, &dhdev->config.cfg);
 	if(retval) {
 		pr_err("%s, config dma failed, %d\n", __func__, retval);
@@ -341,7 +348,7 @@ static int dmahost_probe(struct platform_device *pdev)
 	/* submit descriptor */
 	dmaengine_submit(dhdev->tx);
 
-	local_irq_disable();
+//	local_irq_disable();
 
 	/* start dma transfer */
 	dma_async_issue_pending(chan);
@@ -359,7 +366,7 @@ static int dmahost_probe(struct platform_device *pdev)
 #endif
 
 
-#if 0
+#if 1
 	retval = wait_for_completion_timeout(&dhdev->comp, wait);
 	if(retval <= 0) {
 		pr_err("%s, wait comp timeout %d\n", __func__, retval);
@@ -368,14 +375,15 @@ static int dmahost_probe(struct platform_device *pdev)
 	}
 #else
 //	while(dma_cb_done == 0);
-	while(dmahost_tx_done(dhdev->chan) == 0);
+//	while(dmahost_tx_done(dhdev->chan) == 0);
+	dmaengine_synchronize(chan);
 #endif
 
 	tick2 = get_hwtick(0);
 	pr_info("%s, dma memcpy %d KB, cost %d ticks\n", __func__,
 			bufsize / 0x400, (tick2 - tick1));
 
-	local_irq_enable();
+//	local_irq_enable();
 #ifndef CONFIG_DMA_PERF
 	dma_unmap_single(&pdev->dev, src_paddr, bufsize, DMA_FROM_DEVICE);
 	dma_unmap_single(&pdev->dev, dst_paddr, bufsize, DMA_TO_DEVICE);

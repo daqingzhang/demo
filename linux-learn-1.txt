@@ -258,4 +258,35 @@ example:
 
 
 
+11. Semaphore & Mutex & SpinLock
+==================================================================
+#include <linux/semaphore.h>
+
+void sema_init(struct semaphore *sem, int val);
+
+//return 0 if semaphore is acquired
+//return -ETIME if timeout
+
+int down_timeout(struct semaphore *sem, long jiffies);
+
+//try to acquire the sema without waiting
+//return 0 if semaphore is acquired
+//return 1 if failed to acquire sema
+
+int down_trylock(struct semaphore *sem);
+void up(struct semaphore *sem);
+
+
+void spin_lock_init(spinlock_t *lock);
+void spin_lock_irqsave(spinlock_t *lock, unsigned long flags);
+void spin_lock_irqrestore(spinlock_t *lock, unsigned long flags);
+
+#include <linux/completion.h>
+
+void init_completion(struct completion *comp);
+void reinit_completion(struct completion *comp);
+unsigned long wait_for_completion_timeout(struct completion *comp, unsigned long timeout);
+void complete(struct completion *comp);
+
+
 

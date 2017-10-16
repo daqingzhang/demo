@@ -42,7 +42,20 @@ struct resource *platform_get_resource(struct platform_device *pdev,
 struct resource *platform_get_resource_by_name(struct platform_device *dev,
 						unsigned int type,
 						const char *name);
+/*
+ * example:
+ 	struct resource *res;
 
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if(!res) {
+		pr_err("error \n");
+	}
+
+	res = platform_get_resource(pdev, IORESOURCE_IRQ, 1);
+	if(!res) {
+		pr_err("error \n");
+	}
+ */
 int platform_get_irq(struct platfor_device *dev, unsigned int num);
 int platform_get_irq_byname(struct platform_device *dev, const char *name);
 
@@ -53,13 +66,12 @@ static struct platform_device *devlist[] = {
 	&b,
 };
 
-platform_add_devices(devlist,ARRAY_SIZE(devlist);
+//platform_add_devices(devlist,ARRAY_SIZE(devlist);
 
 2. Platform Driver
 ==================================================================
 static int xxx_probe(struct platform_device *pdev)
 {
-	...
 }
 
 static int xxx_remove(struct platform_device *pdev)

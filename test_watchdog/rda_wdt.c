@@ -98,12 +98,14 @@ static inline void watchdog_set_timer(struct rda_wdt_dev *wdev,
 	writel(TIMER_WDLOADVAL(count), &wdev->regs->WDTimer_LoadVal);
 }
 
-#if 0
-static inline int watchdog_is_running(struct rda_wdt_dev *wdev)
+static inline unsigned int watchdog_is_running(struct rda_wdt_dev *wdev)
 {
-	return readl(&wdev->regs->WDTimer_Ctrl) & TIMER_WDENABLED;
+	unsigned int r = 0;
+
+	if (readl(&wdev->regs->WDTimer_Ctrl) & TIMER_WDENABLED)
+		r = 1;
+	return r;
 }
-#endif
 
 /* WDT operations functions */
 static int rda_wdt_start(struct watchdog_device *wdd)
@@ -165,6 +167,18 @@ static int rda_wdt_set_timeout(struct watchdog_device *wdd, unsigned int sec)
 	return 0;
 }
 
+static unsigned int rda_wdt_status(struct watchdog_device *wdd)
+{
+	struct rda_wdt_dev *wdev = watchdog_get_drvdata(wdd);
+	unsigned int status;
+
+	mutex_lock(&wdev->lock);
+	status = watchdog_is_running(wdev);
+	mutex_unlock(&wdev->lock);
+
+	return status;
+}
+
 static const struct watchdog_ops rda_wdt_ops = {
 	.owner = THIS_MODULE,
 	.start = rda_wdt_start,
@@ -177,6 +191,96 @@ static const struct watchdog_info rda_wdt_info = {
 	.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT,
 	.identity = "rda watchdog",
 };
+
+/* WDT device attributes */
+static ssize_t wdt_timeout_show(struct device *dev,
+				struct device_attribute *attr,
+				char *buf)
+{
+	struct watchdog_device *wdd = dev_get_drvdata(dev);
+	unsigned int tm;
+
+	tm = wdd->timeout;
+	return sprintf(buf, "%d\n", tm);
+}
+
+static ssize_t wdt_timeout_store(struct device *dev,
+				struct device_attribute *attr,
+				const char *buf, size_t count)
+{
+	struct watchdog_device *wdd = dev_get_drvdata(dev);
+	unsigned int sec, i;
+	unsigned char tmp[10];
+
+	for(i = 0;i < count;i++)
+		tmp[i] = buf[i] - 0x30;
+
+	if (count == 1)
+		sec = tmp[0];
+	else if (count > 1)
+		sec = tmp[0] * 10 + tmp[1];
+	else
+		sec = wdd->timeout;
+
+	DBG("sec = %d\n", sec);
+
+	rda_wdt_set_timeout(wdd, sec);
+
+	return sprintf((char *)buf, "%d\n", sec);
+}
+static DEVICE_ATTR_RW(wdt_timeout);
+
+static ssize_t wdt_status_show(struct device *dev,
+				struct device_attribute *attr,
+				char *buf)
+{
+	struct watchdog_device *wdd = dev_get_drvdata(dev);
+	unsigned int status;
+
+	status = rda_wdt_status(wdd);
+	return sprintf(buf, "%d\n", status);
+}
+
+static ssize_t wdt_status_store(struct device *dev,
+				struct device_attribute *attr,
+				const char *buf, size_t count)
+{
+	struct watchdog_device *wdd = dev_get_drvdata(dev);
+
+	if (count > 0) {
+		int run = buf[0] - 0x30;
+
+		DBG("run = %d\n", run);
+		if (run) {
+			rda_wdt_start(wdd);
+		} else {
+			rda_wdt_stop(wdd);
+		}
+	}
+	return 0;
+}
+static DEVICE_ATTR_RW(wdt_status);
+
+static struct attribute *rda_wdt_attrs[] = {
+	&dev_attr_wdt_status.attr,
+	&dev_attr_wdt_timeout.attr,
+	NULL,
+};
+
+static const struct attribute_group rda_wdt_group = {
+	.name = "rda_wdt",
+	.attrs = rda_wdt_attrs,
+};
+
+static int rda_wdt_init_sysfs(struct device *dev)
+{
+	int error = 0;
+
+	error = sysfs_create_group(&dev->kobj, &rda_wdt_group);
+	if (error)
+		printk(KERN_ERR "%s failed %d\n", __func__, error);
+	return error;
+}
 
 static int rda_wdt_probe(struct platform_device *pdev)
 {
@@ -277,6 +381,7 @@ static int rda_wdt_probe(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, wdd);
+	rda_wdt_init_sysfs(&pdev->dev);
 	dev_info(&pdev->dev, "RDA wdt init done\n");
 	return 0;
 

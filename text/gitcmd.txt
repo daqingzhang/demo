@@ -133,3 +133,24 @@ git clone ssh://git@10.102.21.61/home/git/hello.git
 git remote add tc http://toolchain.rdamicro.com:8808/git/daqingzhang/openocd.git
 git remote -v
 
+
+
+Create a new repository from the command line
+-------------------------------------------------------------------------------
+touch README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin http://toolchain.rdamicro.com:8808/git/daqingzhang/qm.git
+git push -u origin master
+
+
+Push an existing repository from the command line
+-------------------------------------------------------------------------------
+git remote add origin http://toolchain.rdamicro.com:8808/git/daqingzhang/qm.git
+git push -u origin master
+
+
+
+
+

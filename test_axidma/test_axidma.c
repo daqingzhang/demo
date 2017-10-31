@@ -50,7 +50,7 @@ static irqreturn_t dmaclient_irq_handler(int id, void *data)
 	enum dma_status s;
 	dma_cookie_t last = 0, used = 0;
 
-	pr_info("%s \n", __func__);
+	pr_info("%s dc=%p\n", __func__, dc);
 
 	s = dma_async_is_tx_complete(dc->chan, 0, &last, &used);
 	if (s == DMA_COMPLETE) {
@@ -62,7 +62,7 @@ static irqreturn_t dmaclient_irq_handler(int id, void *data)
 	return IRQ_HANDLED;
 }
 
-void dmaclient_init(struct dmaclient_dev *dc, dma_addr_t dst, dma_addr_t src, u32 size)
+static void dmaclient_init(struct dmaclient_dev *dc, dma_addr_t dst, dma_addr_t src, u32 size)
 {
 	struct rda_dma_config *conf = &dc->conf;
 
@@ -109,12 +109,14 @@ static unsigned dmaclient_prep_buf(u8 *buf, int len, int cmd)
 			buf[i] = i;
 		break;
 	case CMD_DUMP_BUF:
-		for(i = 0;i < len;i += 8) {
-			pr_info("%2x %2x %2x %2x %2x %2x %2x %2x\n",
-				buf[i+0], buf[i+1], buf[i+2], buf[i+3],
-				buf[i+4], buf[i+5], buf[i+6], buf[i+7]);
+		printk(KERN_INFO "\ndump dma buffer data at %p:\n", buf);
+		for(i = 0;i < len;i += 16) {
+			pr_info("# %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x #\n",
+				buf[i+0],  buf[i+1],  buf[i+2],  buf[i+3],
+				buf[i+4],  buf[i+5],  buf[i+6],  buf[i+7],
+				buf[i+8],  buf[i+9],  buf[i+10], buf[i+11],
+				buf[i+12], buf[i+13], buf[i+14], buf[i+15]);
 		}
-		break;
 	default:
 		break;
 	}
@@ -123,7 +125,7 @@ static unsigned dmaclient_prep_buf(u8 *buf, int len, int cmd)
 
 static int dmaclient_probe(struct platform_device *pdev)
 {
-	int ret, tx_cnt = 1, len = DMABUF_DST_SIZE;
+	int ret, tx_cnt = 3, len = DMABUF_DST_SIZE;
 	struct dma_chan *chan;
 	struct dmaclient_dev *pdc = &dcdev;
 	struct device *dev;
@@ -137,16 +139,15 @@ static int dmaclient_probe(struct platform_device *pdev)
 
 	pr_info("%s\n", __func__);
 
+	init_completion(&pdc->comp);
+
 	// find axidma device
 	dev = bus_find_device_by_name(&platform_bus_type, NULL, RDA_AXIDMA_DEV_NAME);
 	if (!dev) {
 		pr_err("axidma dev is null\n");
 		return -ENODEV;
-	} else {
-		pr_info("axidma dev=%p\n", dev);
 	}
 	pdc->dev = dev;
-	init_completion(&pdc->comp);
 
 	// request dma channel
 	chan = dma_request_chan(dev, RDA_AXIDMA_CH1_NAME);
@@ -155,15 +156,20 @@ static int dmaclient_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 	pdc->chan = chan;
+	pr_info("axidma dev=%p, chan=%p\n", dev, chan);
 
 	// prepare data
 	dmaclient_prep_buf(vir_src, len, CMD_WRITE_BUF);
 	dmaclient_prep_buf(vir_dst, len, CMD_CLEAR_BUF);
 	flush_cache_all();
+	dmaclient_prep_buf(vir_src, len, CMD_DUMP_BUF);
+	dmaclient_prep_buf(vir_dst, len, CMD_DUMP_BUF);
+	pr_info("vir_src=%p, vir_dst=%p\n", vir_src, vir_dst);
 
 	// map dma memory
 	src = dma_map_single(&pdev->dev, vir_src, len, DMA_BIDIRECTIONAL);
 	dst = dma_map_single(&pdev->dev, vir_dst, len, DMA_BIDIRECTIONAL);
+	pr_info("src=%x, dst=%x\n", src, dst);
 
 	// init dmaclient
 	dmaclient_init(pdc, dst, src, len);
@@ -189,10 +195,9 @@ dma_start:
 
 	wait = msecs_to_jiffies(DMACLIENT_TIMEOUT_MS);
 	ret = wait_for_completion_timeout(&pdc->comp, wait);
-	if (ret > 0) {
-		pr_info("dma complete\n");
-	} else {
-		pr_err("dma timeout\n");
+	pr_info("dma %s\n", (ret > 0) ? ("complete") : ("timeout"));
+	if (ret <= 0) {
+		dmaengine_terminate_all(chan);
 	}
 
 	// unmap dma memory
@@ -200,6 +205,7 @@ dma_start:
 	dma_unmap_single(&pdev->dev, dst, len, DMA_BIDIRECTIONAL);
 
 	// diaplay buffer's data
+	pr_info("after dma finish trasmition\n");
 	dmaclient_prep_buf(vir_src, len, CMD_DUMP_BUF);
 	dmaclient_prep_buf(vir_dst, len, CMD_DUMP_BUF);
 
@@ -211,14 +217,25 @@ dma_start:
 		//delay sometime
 		msleep(100);
 
+		reinit_completion(&pdc->comp);
+
 		// prepare data
 		dmaclient_prep_buf(vir_src, len, CMD_WRITE_BUF);
 		dmaclient_prep_buf(vir_dst, len, CMD_CLEAR_BUF);
 		flush_cache_all();
+		pr_info("before dma start transmition\n");
+		dmaclient_prep_buf(vir_src, len, CMD_DUMP_BUF);
+		dmaclient_prep_buf(vir_dst, len, CMD_DUMP_BUF);
 
 		// map dma memory
 		src = dma_map_single(&pdev->dev, vir_src, len, DMA_BIDIRECTIONAL);
 		dst = dma_map_single(&pdev->dev, vir_dst, len, DMA_BIDIRECTIONAL);
+		pr_info("src=%x, dst=%x\n", src, dst);
+
+		pdc->dst_sg.dma_address = dst;
+		pdc->src_sg.dma_address = src;
+		pdc->dst_sg.length = len;
+		pdc->src_sg.length = len;
 
 		tx = dmaengine_prep_dma_sg(chan, &pdc->dst_sg, 1, &pdc->src_sg, 1, 0);
 		if (!tx) {
@@ -260,7 +277,7 @@ static void __exit dmaclient_drv_exit(void)
 	platform_driver_unregister(&dmaclient_drv);
 }
 
-module_init(dmaclient_drv_init);
+late_initcall(dmaclient_drv_init);
 module_exit(dmaclient_drv_exit);
 
 MODULE_LICENSE("GPL");

@@ -41,18 +41,18 @@
 struct rda_dmadev;
 
 static const struct dma_slave_map rda_dma_slave_map[] = {
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH0_NAME, (void *)RDA_DMA_CH0 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH1_NAME, (void *)RDA_DMA_CH1 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH2_NAME, (void *)RDA_DMA_CH2 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH3_NAME, (void *)RDA_DMA_CH3 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH4_NAME, (void *)RDA_DMA_CH4 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH5_NAME, (void *)RDA_DMA_CH5 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH6_NAME, (void *)RDA_DMA_CH6 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH7_NAME, (void *)RDA_DMA_CH7 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH8_NAME, (void *)RDA_DMA_CH8 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH9_NAME, (void *)RDA_DMA_CH9 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH10_NAME, (void *)RDA_DMA_CH10 },
-	{ RDA_AXIDMA_DEV_NAME, RDA_DMA_CH11_NAME, (void *)RDA_DMA_CH11 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH0_NAME, (void *)RDA_DMA_CH0 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH1_NAME, (void *)RDA_DMA_CH1 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH2_NAME, (void *)RDA_DMA_CH2 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH3_NAME, (void *)RDA_DMA_CH3 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH4_NAME, (void *)RDA_DMA_CH4 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH5_NAME, (void *)RDA_DMA_CH5 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH6_NAME, (void *)RDA_DMA_CH6 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH7_NAME, (void *)RDA_DMA_CH7 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH8_NAME, (void *)RDA_DMA_CH8 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH9_NAME, (void *)RDA_DMA_CH9 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH10_NAME, (void *)RDA_DMA_CH10 },
+	{ RDA_AXIDMA_DEV_NAME, RDA_AXIDMA_CH11_NAME, (void *)RDA_DMA_CH11 },
 };
 
 /* dma channel state */
@@ -124,7 +124,7 @@ struct rda_dma_ch_cmn_reg {
 	unsigned int countp;
 };
 
-#define RDA_AXIDMA_DSG_NR 5
+#define RDA_AXIDMA_DSG_NR 3
 
 /* dma channel */
 struct rda_dma_chan {
@@ -132,7 +132,6 @@ struct rda_dma_chan {
 	enum rda_dma_ch_state state;
 	struct rda_dma_ch_reg *regs;
 	struct rda_dma_ch_cmn_reg cmn_regs;
-	struct rda_dma_txd *at;
 	struct rda_dma_txd txd;
 	struct rda_dma_sg dsg[RDA_AXIDMA_DSG_NR];
 	struct rda_dmadev *dev;
@@ -252,6 +251,8 @@ static void rda_dma_free_chan_resources(struct dma_chan *chan)
 	dma_debug("%s, done\n",__func__);
 }
 
+static int rda_dma_config_chan(struct rda_dma_chan *c, struct rda_dma_config *config);
+
 static int rda_dma_slave_config(struct dma_chan *chan,
 			struct dma_slave_config *config)
 {
@@ -260,16 +261,17 @@ static int rda_dma_slave_config(struct dma_chan *chan,
 	struct rda_dma_config *conf = to_rda_dma_config(config);
 	unsigned long flags;
 
-	dma_debug("%s, c(%p), chan(%p), conf(%p),config(%p)\n",
-			__func__, c, chan, conf, config);
+	dma_debug("%s, c(%p), chan(%p), conf(%p)\n", __func__, c, chan, conf);
 
 	spin_lock_irqsave(&c->vc.lock, flags);
 
 	if(!conf) {
+		dma_debug("%s, conf is null\n", __func__);
 		ret = -ENODEV;
 		goto out;
 	}
 	c->config = *conf;
+	rda_dma_config_chan(c, conf);
 
 	dma_debug("ie [s=%d, t=%d, f=%d], forced=%d, src=%x, dst=%x, len=%d\n",
 		conf->ie_stop, conf->ie_transmit, conf->ie_finish, conf->forced,
@@ -277,17 +279,6 @@ static int rda_dma_slave_config(struct dma_chan *chan,
 out:
 	spin_unlock_irqrestore(&c->vc.lock, flags);
 	return ret;
-}
-
-static struct rda_dma_txd *rda_dma_txd_get(struct rda_dma_chan *ch)
-{
-	struct rda_dma_txd *ptxd;
-
-	ptxd = &ch->txd;
-	if(ptxd)
-		INIT_LIST_HEAD(&ptxd->dsg_list);
-
-	return ptxd;
 }
 
 static struct rda_dma_sg *rda_dma_dsg_get(struct rda_dma_chan *ch)
@@ -305,7 +296,7 @@ static struct rda_dma_sg *rda_dma_dsg_get(struct rda_dma_chan *ch)
 	return empty;
 }
 
-static int rda_dma_dsg_put(struct rda_dma_dsg *dsg)
+static void rda_dma_dsg_put(struct rda_dma_sg *dsg)
 {
 	dsg->len = 0;
 }
@@ -319,21 +310,12 @@ static struct dma_async_tx_descriptor *rda_dma_prep_dma_memcpy(
 {
 	struct rda_dma_chan *c = to_rda_dma_chan(chan);
 	struct rda_dma_sg *dsg;
-	struct rda_dma_txd *txd;
-
-	txd = rda_dma_txd_get();
-	if (!txd) {
-		dma_debug("%s, get dsg failed\n", __func__);
-		return NULL;
-	}
-	txd->width  = 8;
-	txd->cyclic = false;
-	txd->at = NULL;
+	struct rda_dma_txd *txd = &c->txd;
 
 	dsg = rda_dma_dsg_get(c);
-	if(!dsg) {
+	if (!dsg) {
 		dma_debug("%s, get dsg failed\n", __func__);
-		return NULL:
+		return NULL;
 	}
 	dsg->src_addr = src;
 	dsg->dst_addr = dst;
@@ -341,9 +323,9 @@ static struct dma_async_tx_descriptor *rda_dma_prep_dma_memcpy(
 
 	list_add_tail(&dsg->node, &txd->dsg_list);
 
-
-	dma_debug("%s, txd(%p), dsg(%p), src=%x, dst=%x, len=%d\n",
-		__func__, txd, dsg, src, dst, len);
+	dma_debug("%s, chan(%p), c(%p), txd(%p) "
+		"dsg(%p), dst=%x, src=%x, len=%d\n",
+		__func__, chan, c, txd, dsg, dst, src, len);
 
 	return vchan_tx_prep(&c->vc, &txd->vd, flags);
 }
@@ -355,8 +337,8 @@ struct dma_async_tx_descriptor *rda_dma_prep_slave_sg(
 {
 	struct dma_async_tx_descriptor *tx = NULL;
 
-	if(direction == DMA_DEV_TO_DEV) {
-		dma_debug("%s, not support\n", __func__);
+	if (direction == DMA_DEV_TO_DEV) {
+		dma_debug("%s, direction error\n", __func__);
 		return NULL;
 	} else {
 		struct rda_dma_chan *c = to_rda_dma_chan(chan);
@@ -374,6 +356,42 @@ struct dma_async_tx_descriptor *rda_dma_prep_slave_sg(
 		tx = rda_dma_prep_dma_memcpy(chan, cfg->dst_addr, cfg->src_addr,
 						len, flags);
 	}
+	return tx;
+}
+
+struct dma_async_tx_descriptor *rda_dma_prep_dma_sg(
+		struct dma_chan *chan,
+		struct scatterlist *dst_sg, unsigned int dst_nents,
+		struct scatterlist *src_sg, unsigned int src_nents,
+		unsigned long flags)
+{
+	struct dma_async_tx_descriptor *tx;
+	struct rda_dma_chan *c = to_rda_dma_chan(chan);
+	size_t len;
+	dma_addr_t src, dst;
+
+	if ((dst_sg != NULL) && (src_sg != NULL)) {
+		dst = dst_sg[0].dma_address;
+		src = src_sg[0].dma_address;
+		if (dst_sg[0].length < src_sg[0].length)
+			len = dst_sg[0].length;
+		else
+			len = src_sg[0].length;
+	} else {
+		struct dma_slave_config *cfg = &c->config.cfg;
+
+		dst = cfg->dst_addr;
+		src = cfg->src_addr;
+		if(cfg->src_maxburst < cfg->dst_maxburst)
+			len = cfg->src_maxburst;
+		else
+			len = cfg->dst_maxburst;
+	}
+	c->ts.used = len;
+	c->ts.residue = len;
+	c->ts.last = 0;
+
+	tx = rda_dma_prep_dma_memcpy(chan, dst, src, len, flags);
 	return tx;
 }
 
@@ -465,6 +483,8 @@ static int rda_dma_config_chan(struct rda_dma_chan *c, struct rda_dma_config *co
 
 	axidma_writel(conf, c->regs->conf);
 	axidma_writel(map, c->regs->map);
+	dma_debug("config axidma reg: delay=%x, conf=%x, map=%x\n",
+			delay, conf, map);
 	return 0;
 }
 
@@ -508,25 +528,27 @@ static int rda_dma_transmit(struct rda_dma_chan *c)
 {
 	struct virt_dma_desc *vd = vchan_next_desc(&c->vc);
 	struct rda_dma_txd *txd = to_rda_dma_txd(&vd->tx);
-
 	struct rda_dma_sg *dsg;
-	struct rda_dma_config *config = &c->config;
 
 	list_del(&txd->vd.node);
 
-	dsg = list_entry(txd->at, struct rda_dma_sg, node);
+	if (list_empty(&txd->dsg_list)) {
+		dma_debug("%s, empty list\n", __func__);
+		return 0;
+	}
 
-	txd->at = txd->dsg_list.next;
+	dsg = list_last_entry(&txd->dsg_list, struct rda_dma_sg, node);
+	list_del(&dsg->node);
 
-	dma_debug("%s, c %p, config %p, txd %p, dsg %p, vd %p\n",
-		__func__, c, config, txd, dsg, vd);
-
-	rda_dma_config_chan(c, config);
 	rda_dma_config_transfer(c, dsg);
 #ifdef CONFIG_RDA_AXIDMA_DEBUG
 	rda_dma_dump_regs(c);
 #endif
-	rda_dma_start_transfer(c, config);
+	rda_dma_start_transfer(c, &c->config);
+	rda_dma_dsg_put(dsg);
+
+	dma_debug("%s, c(%p),txd(%p), dsg(%p), vd(%p)\n",
+		__func__, c, txd, dsg, vd);
 	return 0;
 }
 
@@ -764,6 +786,7 @@ static int rda_dma_setup_ddev(struct platform_device *pdev,
 	dma->device_config 		= rda_dma_slave_config;
 	dma->device_prep_dma_memcpy 	= rda_dma_prep_dma_memcpy;
 	dma->device_prep_slave_sg	= rda_dma_prep_slave_sg;
+	dma->device_prep_dma_sg		= rda_dma_prep_dma_sg;
 	dma->device_issue_pending	= rda_dma_issue_pending;
 	dma->device_tx_status		= rda_dma_tx_status;
 	dma->device_terminate_all 	= rda_dma_terminate_all;
@@ -814,6 +837,7 @@ static int rda_dma_setup_chan(struct platform_device *pdev,
 		spin_lock_init(&ch->lock);
 		vchan_init(&ch->vc, &rda_dma->ddev);
 		ch->vc.desc_free = rda_dma_desc_free;
+		INIT_LIST_HEAD(&ch->txd.dsg_list);
 
 		dma_debug("%s, dma chan[%d] at %p, state=%d, regs(%p)\n",
 			__func__, ch->id, ch, ch->state, ch->regs);
@@ -1022,7 +1046,7 @@ static int rda_dma_pm_suspend(struct device *dev)
 
 	clk_disable(rda_dma->dma_clk);
 
-	dma_debug(dev, "%s\n", __func__);
+	dma_debug("%s\n", __func__);
 	return ret;
 }
 
@@ -1033,7 +1057,6 @@ static int rda_dma_pm_resume(struct device *dev)
 	struct rda_dmadev *rda_dma = dev_get_drvdata(dev);
 	struct rda_dma_reg *regs = rda_dma->regs;
 	struct rda_dma_cmn_reg *cmn_regs = &rda_dma->cmn_regs;
-	struct rda_dmadev *dma_dev = dev_get_drvdata(dev);
 
 	ret = clk_enable(rda_dma->dma_clk);
 	if (ret) {
@@ -1044,7 +1067,7 @@ static int rda_dma_pm_resume(struct device *dev)
 	axidma_writel(cmn_regs->delay, regs->delay);
 	axidma_writel(cmn_regs->conf, regs->conf);
 
-	dma_debug(dev, "%s\n", __func__);
+	dma_debug("%s\n", __func__);
 	return ret;
 }
 

@@ -1,7 +1,7 @@
 Time:		2017-09-06
 Platform:	FPGA(version date=20170815)
-Soc:		RDA8910
-Linux Kernel Branch:	rda_iot_dev
+Soc:		8910
+Linux Kernel Branch:	iot_dev
 
 Envrionment:
 CPU = 60MHz, DDR = 40MHz, SRAM = 40MHz

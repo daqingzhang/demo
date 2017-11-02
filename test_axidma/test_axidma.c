@@ -10,9 +10,10 @@
 #include <linux/delay.h>
 #include <linux/completion.h>
 #include <asm-generic/cacheflush.h>
-#include <plat/rda_axidma.h>
+#include <plat/devices.h>
 
-#define DMACLIENT_NAME "dmaclient"
+//#define DMACLIENT_NAME "dmaclient"
+#define DMACLIENT_NAME "rda-undef"
 
 static struct platform_device dmaclient = {
 	.name = DMACLIENT_NAME,
@@ -31,61 +32,84 @@ arch_initcall(dmaclient_dev_init);
 struct dmaclient_dev {
 	struct device *dev;
 	struct dma_chan *chan;
-	struct rda_dma_config conf;
+	struct dma_async_tx_descriptor *tx;
+	struct dma_slave_config conf;
 	struct scatterlist dst_sg;
 	struct scatterlist src_sg;
 	struct completion comp;
 };
 
-#define DMABUF_SRC_SIZE 512
-#define DMABUF_DST_SIZE 512
+#define DMABUF_SRC_SIZE 1024
+#define DMABUF_DST_SIZE 1024
 
 static struct dmaclient_dev dcdev;
 static u8 dmabuf_src[DMABUF_SRC_SIZE];
 static u8 dmabuf_dst[DMABUF_DST_SIZE];
 
-static irqreturn_t dmaclient_irq_handler(int id, void *data)
+static void dmaclient_callback_tx_done(void *data)
 {
 	struct dmaclient_dev *dc = data;
-	enum dma_status s;
-	dma_cookie_t last = 0, used = 0;
 
 	pr_info("%s dc=%p\n", __func__, dc);
 
-	s = dma_async_is_tx_complete(dc->chan, 0, &last, &used);
-	if (s == DMA_COMPLETE) {
-		pr_info("last=%d, used=%d\n", last, used);
-		complete(&dc->comp);
-	} else {
-		pr_info("state=%d\n", s);
+	if (!dc) {
+		pr_info("data is null, exit\n");
+		return;
 	}
-	return IRQ_HANDLED;
+	complete(&dc->comp);
 }
 
-static void dmaclient_init(struct dmaclient_dev *dc, dma_addr_t dst, dma_addr_t src, u32 size)
+static void dmaclient_init(struct dmaclient_dev *dc, dma_addr_t dst, dma_addr_t src, u32 size, int width)
 {
-	struct rda_dma_config *conf = &dc->conf;
+	struct dma_slave_config *conf = &dc->conf;
 
-	conf->cfg.direction = DMA_MEM_TO_MEM;
-	conf->cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_8_BYTES;
-	conf->cfg.dst_addr_width = DMA_SLAVE_BUSWIDTH_8_BYTES;
-	conf->cfg.src_maxburst = size;
-	conf->cfg.dst_maxburst = size;
-	conf->cfg.src_addr = src;
-	conf->cfg.dst_addr = dst;
+	conf->direction = DMA_MEM_TO_MEM;
+	conf->src_maxburst = size;
+	conf->dst_maxburst = size;
+	conf->src_addr = src;
+	conf->dst_addr = dst;
+	conf->slave_id = 0;
 
-	conf->handler = dmaclient_irq_handler;
-	conf->data = (void *)dc;
-	conf->ie_finish = true;
-	conf->ie_stop = false;
-	conf->ie_transmit = false;
-	conf->itv_cycles = 1;
-
+	switch (width) {
+	case 8:
+		conf->src_addr_width = DMA_SLAVE_BUSWIDTH_8_BYTES;
+		conf->dst_addr_width = DMA_SLAVE_BUSWIDTH_8_BYTES;
+		break;
+	case 4:
+		conf->src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+		conf->dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+		break;
+	case 2:
+		conf->src_addr_width = DMA_SLAVE_BUSWIDTH_2_BYTES;
+		conf->dst_addr_width = DMA_SLAVE_BUSWIDTH_2_BYTES;
+		break;
+	case 1:
+	default:
+		conf->src_addr_width = DMA_SLAVE_BUSWIDTH_1_BYTE;
+		conf->dst_addr_width = DMA_SLAVE_BUSWIDTH_1_BYTE;
+		break;
+	}
 	dc->dst_sg.dma_address = dst;
 	dc->dst_sg.length = size;
 
 	dc->src_sg.dma_address = src;
 	dc->src_sg.length = size;
+
+	pr_info("%s, src=%x, dst=%x, size=%d, width=%d\n", __func__,
+		src, dst, size, width);
+}
+
+static int dmaclient_setup_callback(struct dmaclient_dev *dc, dma_async_tx_callback cb)
+{
+	struct dma_async_tx_descriptor *ptx = dc->tx;
+
+	if (!ptx) {
+		pr_err("%s, tx is null\n", __func__);
+		return -EINVAL;
+	}
+	ptx->callback = cb;
+	ptx->callback_param = (void *)dc;
+	return 0;
 }
 
 enum dmaclient_cmd {
@@ -102,7 +126,7 @@ static unsigned dmaclient_prep_buf(u8 *buf, int len, int cmd)
 	switch(cmd) {
 	case CMD_CLEAR_BUF:
 		for(i = 0;i < len;i++)
-			buf[i] = 0;
+			buf[i] = 0x5a;
 		break;
 	case CMD_WRITE_BUF:
 		for(i = 0;i < len;i++)
@@ -123,9 +147,32 @@ static unsigned dmaclient_prep_buf(u8 *buf, int len, int cmd)
 	return ret;
 } 
 
+void dmaclient_request_chan_test(struct device *dev)
+{
+	struct dma_chan *chan;
+
+	pr_info("request dma chan test 1\n");
+	chan = dma_request_chan(dev, RDA_AXIDMA_CH_RX);
+	if (IS_ERR(chan))
+		pr_err("request chan failed, %d\n", (int)PTR_ERR(chan));
+	else
+		pr_info("chan=%p\n", chan);
+
+	dma_release_channel(chan);
+	pr_info("chan %p is released\n", chan);
+
+	pr_info("request dma chan test 2\n");
+	chan = dma_request_chan(dev, RDA_AXIDMA_CH_RX);
+	if (IS_ERR(chan))
+		pr_err("request chan failed, %d\n", (int)PTR_ERR(chan));
+	else
+		pr_info("chan=%p\n", chan);
+}
+
 static int dmaclient_probe(struct platform_device *pdev)
 {
-	int ret, tx_cnt = 3, len = DMABUF_DST_SIZE;
+	int ret, tx_cnt = 3, len = DMABUF_DST_SIZE >> 1;
+	int bus_width[] = {8,4,2,1};
 	struct dma_chan *chan;
 	struct dmaclient_dev *pdc = &dcdev;
 	struct device *dev;
@@ -139,18 +186,37 @@ static int dmaclient_probe(struct platform_device *pdev)
 
 	pr_info("%s\n", __func__);
 
-	init_completion(&pdc->comp);
+#if 1
+	vir_src = (u8 *)(((u32)dmabuf_src & (~0x7)) + 0x10);
+	vir_dst = (u8 *)(((u32)dmabuf_dst & (~0x7)) + 0x10);
+#endif
 
+	init_completion(&pdc->comp);
+#if 0
 	// find axidma device
 	dev = bus_find_device_by_name(&platform_bus_type, NULL, RDA_AXIDMA_DEV_NAME);
 	if (!dev) {
 		pr_err("axidma dev is null\n");
 		return -ENODEV;
 	}
+#else
+	dev = &pdev->dev;
+#endif
 	pdc->dev = dev;
 
+	// print device name
+	pr_info("dev name: %s, ch name: %s\n",
+		dev_name(dev), RDA_AXIDMA_CH_RX);
+
+	if (dev->init_name) {
+		pr_info("dev->init_name: %s\n", dev->init_name);
+	}
+	if (dev->kobj.name) {
+		pr_info("dev->kobj.name: %s\n", dev->kobj.name);
+	}
+
 	// request dma channel
-	chan = dma_request_chan(dev, RDA_AXIDMA_CH1_NAME);
+	chan = dma_request_chan(dev, RDA_AXIDMA_CH_RX);
 	if (IS_ERR(chan)) {
 		pr_err("request chan failed, %d\n", (int)PTR_ERR(chan));
 		return -ENODEV;
@@ -158,6 +224,9 @@ static int dmaclient_probe(struct platform_device *pdev)
 	pdc->chan = chan;
 	pr_info("axidma dev=%p, chan=%p\n", dev, chan);
 
+#if 0
+	dmaclient_request_chan_test(dev);
+#endif
 	// prepare data
 	dmaclient_prep_buf(vir_src, len, CMD_WRITE_BUF);
 	dmaclient_prep_buf(vir_dst, len, CMD_CLEAR_BUF);
@@ -169,13 +238,12 @@ static int dmaclient_probe(struct platform_device *pdev)
 	// map dma memory
 	src = dma_map_single(&pdev->dev, vir_src, len, DMA_BIDIRECTIONAL);
 	dst = dma_map_single(&pdev->dev, vir_dst, len, DMA_BIDIRECTIONAL);
-	pr_info("src=%x, dst=%x\n", src, dst);
 
 	// init dmaclient
-	dmaclient_init(pdc, dst, src, len);
+	dmaclient_init(pdc, dst, src, len, bus_width[tx_cnt % 4]);
 
 	// configure dma channel
-	ret = dmaengine_slave_config(chan, &pdc->conf.cfg);
+	ret = dmaengine_slave_config(chan, &pdc->conf);
 	if (ret) {
 		pr_err("config dma failed, %d\n", ret);
 		goto fail_cfg;
@@ -185,6 +253,14 @@ static int dmaclient_probe(struct platform_device *pdev)
 	tx = dmaengine_prep_slave_sg(chan, 0, 0, DMA_MEM_TO_MEM, 0);
 	if (!tx) {
 		pr_err("get tx failed\n");
+		goto fail_cfg;
+	}
+	pdc->tx = tx;
+
+	// setup callback function
+	ret = dmaclient_setup_callback(pdc, dmaclient_callback_tx_done);
+	if (ret) {
+		pr_err("setup callback failed\n");
 		goto fail_cfg;
 	}
 
@@ -198,8 +274,13 @@ dma_start:
 	pr_info("dma %s\n", (ret > 0) ? ("complete") : ("timeout"));
 	if (ret <= 0) {
 		dmaengine_terminate_all(chan);
+	} else {
+		enum dma_status s;
+		dma_cookie_t last = 0, used = 0;
+		s = dma_async_is_tx_complete(chan, 0, &last, &used);
+		pr_info("%s state %d, last=%d, used=%d\n",
+			(s == DMA_COMPLETE) ? "good" : "bad", s, last, used);
 	}
-
 	// unmap dma memory
 	dma_unmap_single(&pdev->dev, src, len, DMA_BIDIRECTIONAL);
 	dma_unmap_single(&pdev->dev, dst, len, DMA_BIDIRECTIONAL);
@@ -230,13 +311,20 @@ dma_start:
 		// map dma memory
 		src = dma_map_single(&pdev->dev, vir_src, len, DMA_BIDIRECTIONAL);
 		dst = dma_map_single(&pdev->dev, vir_dst, len, DMA_BIDIRECTIONAL);
-		pr_info("src=%x, dst=%x\n", src, dst);
 
-		pdc->dst_sg.dma_address = dst;
-		pdc->src_sg.dma_address = src;
-		pdc->dst_sg.length = len;
-		pdc->src_sg.length = len;
-
+		dmaclient_init(pdc, dst, src, len, bus_width[tx_cnt % 4]);
+#if 1
+		/*
+		 * It's not necessary to configure dma channel again after this channel
+		 * is configured.
+		 */
+		// configure dma channel
+		ret = dmaengine_slave_config(chan, &pdc->conf);
+		if (ret) {
+			pr_err("config dma failed, %d\n", ret);
+			goto fail_cfg;
+		}
+#endif
 		tx = dmaengine_prep_dma_sg(chan, &pdc->dst_sg, 1, &pdc->src_sg, 1, 0);
 		if (!tx) {
 			pr_err("get tx failed\n");

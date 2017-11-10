@@ -172,7 +172,7 @@ void dmaclient_request_chan_test(struct device *dev)
 static int dmaclient_probe(struct platform_device *pdev)
 {
 	int ret, tx_cnt = 3, len = DMABUF_DST_SIZE >> 1;
-	int bus_width[] = {8,4,2,1};
+	int bus_width[] = {1,2,4,8};
 	struct dma_chan *chan;
 	struct dmaclient_dev *pdc = &dcdev;
 	struct device *dev;
@@ -240,6 +240,7 @@ static int dmaclient_probe(struct platform_device *pdev)
 	dst = dma_map_single(&pdev->dev, vir_dst, len, DMA_BIDIRECTIONAL);
 
 	// init dmaclient
+//	dmaclient_init(pdc, dst | 0x2, src, len, bus_width[tx_cnt % 4]);//test address aligned
 	dmaclient_init(pdc, dst, src, len, bus_width[tx_cnt % 4]);
 
 	// configure dma channel

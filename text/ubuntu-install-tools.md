@@ -7,6 +7,8 @@ sudo apt-get install git git-doc git-man
 sudo apt-get install vim vim-doc vim-scripts
 sudo apt-get install ctags
 sudo apt-get install terminator
+sudo apt-get install minicom
+sudo apt-get install fastboot
 
 2. install sunpinyin
 --------------------------------------------------

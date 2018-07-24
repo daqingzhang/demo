@@ -168,3 +168,10 @@ push an existing repository from the command line
 
 git remote add origin https://github.com/daqingzhang/mk.git
 git push -u origin master
+
+
+delete remote branch
+-------------------------------------------------------------------------------
+git branch -r -d origion/branch-name
+git push origin :branch-name
+

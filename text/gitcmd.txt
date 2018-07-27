@@ -175,3 +175,26 @@ delete remote branch
 git branch -r -d origion/branch-name
 git push origin :branch-name
 
+
+use tag
+-------------------------------------------------------------------------------
+1. add light tag
+git tag v0.1
+
+2. add tag with comments
+git tag -a v0.1
+
+3. show tag info
+git tag
+git show v0.1
+
+4. delete a local tag
+git tag --delete v0.1
+
+5. push local tag to remote repo
+git push origin v0.1
+
+6. delete tag from remote repo
+git push origin --delete v0.1
+
+

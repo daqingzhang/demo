@@ -169,6 +169,35 @@ login_in()
 	done;
 }
 
-login_in
+#login_in
 
+################### case 5 ########################
+set dir_list
+
+dir_list=$(ls ./)
+for i in $dir_list;
+do
+	echo "dir=$i"
+done
+
+find_dir()
+{
+	echo "find_dir: $*"
+	while [ "$1" != "" ];
+	do
+		if [ -d $1 ]
+		then
+			echo "directory=$1"
+		fi
+
+		if [ -f $1 ]
+		then
+			echo "file=$1"
+		fi
+
+		shift
+	done
+}
+
+find_dir $dir_list
 exit 0

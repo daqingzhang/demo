@@ -1,4 +1,5 @@
 ans=""
+def=""
 
 #############################################
 # combox list: select only one item
@@ -37,6 +38,11 @@ combox_list()
 
 	set k
 	read k
+
+	if [ -z $k ]; then
+		k=$def
+	fi
+
 	if [ $k -gt $j ]; then
 		echo "invalid input $k"
 		exit -2;
@@ -91,6 +97,10 @@ check_box()
 	set k
 	read k
 
+	if [ -z $k ]; then
+		k=$def
+	fi
+
 	for i in $k; do
 		if [ $i -gt $j ]; then
 			echo "invalid input $k"
@@ -125,14 +135,19 @@ question_yesno()
 {
 	ans=""
 
-	title=$1
-	if [ -z $title ]; then
+	title=$*
+	if [ "$title" == "" ]; then
 		title="continue"
 	fi
 
 	echo "$title(yes/no) ? ,default is yes)"
 
 	read k
+
+	if [ -z $k ]; then
+		k=$def
+	fi
+
 	case $k in
 	y | yes | YES | Y )
 		echo "yes";;
@@ -173,7 +188,7 @@ list_dir()
 	for i in $ans; do
 		j=$((j+1))
 	done
-	echo "dir num:$j"
+	#echo "dir num:$j"
 
 	return $j
 }
@@ -181,7 +196,7 @@ list_dir()
 #############################################
 #############################################
 
-chips="2300 1400 3001 3002"
+chips="1000 2000 2300 2300p 1400 3001 3002"
 debug="uart0 uart1"
 
 build_tgt()
@@ -189,20 +204,28 @@ build_tgt()
 	list_dir "config/"
 	dirs=$ans
 
+	def=2
 	check_box "targets:" $dirs
 	tgt=$ans
+	echo "T=$tgt"
 
+	def=3
 	combox_list "chips:" $chips
 	chip=$ans
+	echo "CHIP=best${chip}"
 
+	def=1
 	combox_list "debug:" $debug
 	port=$?
+	echo "DEBUG_PORT=$port"
 
+	echo " "
 	echo "T=$tgt"
 	echo "CHIP=$chip"
 	echo "DEBUG_PORT=$port"
+	echo " "
 
-	question_yesno
+	question_yesno "make target"
 
 	for i in $tgt; do
 		make T=$i CHIP=best${chip} DEBUG_PORT=${port} -j4

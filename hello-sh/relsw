@@ -1,0 +1,1 @@
+	git archive --format=tar -o file_rel.tar.gz HEAD file/

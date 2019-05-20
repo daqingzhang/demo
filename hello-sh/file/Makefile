@@ -1,3 +1,4 @@
+AR	:=ar
 CC	:=gcc
 CCP	:=g++
 CFLAGS	:=-g -O2
@@ -10,14 +11,28 @@ OBJS	:=main.o \
 
 SRCS	:=$(OBJS:.o=.c)
 
-.PHONY: all clean
+ifeq ($(GEN_LIB),1)
+LIBS	:=lib.a
+else
+LIBS	:=
+endif
 
-all: clean $(APP)
+.PHONY: all clean lib
+
+all: clean $(APP) $(LIBS)
 	@echo "done"
 
 $(APP): $(OBJS)
 	@echo "$^ --> $@"
 	$(CCP) -o $@ $(INC) $(CFLAGS) $^
+
+$(LIBS): $(OBJS)
+	@echo "$^ --> $@"
+	$(AR) -rv $@ $^
+
+rel: $(LIBS)
+	cd ../
+	git archive --format=tar -o $@.tar.gz HEAD file
 
 %.o: %.c
 	@echo "$< --> $@"

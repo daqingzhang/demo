@@ -7,6 +7,7 @@ INC	:=-I./
 APP	:=main
 OBJS	:=main.o \
 		basefile.o \
+		datafile.o \
 		a.o
 
 SRCS	:=$(OBJS:.o=.c)

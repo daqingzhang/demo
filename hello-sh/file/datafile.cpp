@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <datafile.h>
 
-#define DEBUG printf
+//#define DEBUG printf
+#define DEBUG(...) do{ }while(0)
+
 
 clsDataFile::clsDataFile()
 {
@@ -21,10 +23,10 @@ int clsDataFile::fileOpen(const char *pathname, enum OFLAG flag)
 	const char *m;
 
 	if (!pathname) {
-		DEBUG("null pathname");
+		DEBUG("null pathname\n");
 	}
 	if (f_opened) {
-		DEBUG("file already opened");
+		DEBUG("file already opened\n");
 		return 0;
 	}
 	if (flag == OFLAG_RO) {
@@ -36,17 +38,17 @@ int clsDataFile::fileOpen(const char *pathname, enum OFLAG flag)
 	}
 	f_stream = fopen(pathname, m);
 	if (!f_stream) {
-		DEBUG("open file %s failed", pathname);
+		DEBUG("open file %s failed\n", pathname);
 		return -1;
 	}
 	f_opened = 1;
 	f_name = pathname;
 	f_flag = flag;
 
-	DEBUG("%s, name:%s, mode:%d, flag:%d",
+	DEBUG("%s, name:%s, mode:%d, flag:%d\n",
 		__func__, f_name, f_mode, f_flag);
 
-	DEBUG("%s, done", __func__);
+	DEBUG("%s, done\n", __func__);
 	return 0;
 }
 
@@ -58,7 +60,7 @@ int clsDataFile::fileClose(void)
 		r = fclose(f_stream);
 		f_opened = 0;
 	}
-	DEBUG("%s, done", __func__);
+	DEBUG("%s, done\n", __func__);
 	return r;
 }
 
@@ -76,9 +78,9 @@ int clsDataFile::fileRead(char *buf, int bytes)
 	len = fread((void *)buf, 1, bytes, f_stream);
 
 	if (len != bytes) {
-		DEBUG("%s, read %d bytes while bytes=%d", __func__, len, bytes);
+		DEBUG("%s, read %d bytes while bytes=%d\n", __func__, len, bytes);
 	}
-	DEBUG("%s, read %d bytes", __func__, len);
+	DEBUG("%s, read %d bytes\n", __func__, len);
 	return len;
 }
 
@@ -94,7 +96,7 @@ int clsDataFile::fileWrite(const char *buf, int bytes)
 	}
 	len = fwrite((const void *)buf, 1, bytes, f_stream);
 
-	DEBUG("%s, write %d bytes", __func__, len);
+	DEBUG("%s, write %d bytes\n", __func__, len);
 	return len;
 }
 
@@ -105,7 +107,7 @@ int clsDataFile::fileFlush(void)
 	if (f_opened)
 		r = fflush(f_stream);
 
-	DEBUG("%s, done", __func__);
+	DEBUG("%s, done\n", __func__);
 	return r;
 }
 
@@ -116,7 +118,7 @@ int clsDataFile::atStart(void)
 
 	r = fseek(f_stream, 0, SEEK_SET);
 
-	DEBUG("%s, %d, done", __func__, r);
+	DEBUG("%s, %d, done\n", __func__, r);
 	return r;
 }
 
@@ -125,10 +127,10 @@ int clsDataFile::atEnd(void)
 	int r;
 
 	r = fseek(f_stream, 0, SEEK_END);
-	DEBUG("%s, fseek, r=%d", __func__, r);
+	DEBUG("%s, fseek, r=%d\n", __func__, r);
 
 	r = ftell(f_stream);
-	DEBUG("%s, ftell, r=%d", __func__, r);
+	DEBUG("%s, ftell, r=%d\n", __func__, r);
 	return r;
 }
 
@@ -137,7 +139,7 @@ int clsDataFile::atPos(int position)
 	int r;
 
 	r = fseek(f_stream, position, SEEK_SET);
-	DEBUG("%s, fseek, r=%d", __func__, r);
+	DEBUG("%s, fseek, r=%d\n", __func__, r);
 
 	return position;
 }
@@ -147,13 +149,22 @@ int clsDataFile::getPos(void)
 	int r;
 
 	r = ftell(f_stream);
-	DEBUG("%s, ftell, r=%d", __func__, r);
+	DEBUG("%s, ftell, r=%d\n", __func__, r);
 	return r;
 }
 
 int clsDataFile::getSize(void)
 {
-	return atEnd();
+	int len, cur_len = ftell(f_stream);
+
+	cur_len = ftell(f_stream);
+
+	fseek(f_stream, 0, SEEK_END);
+	len = ftell(f_stream);
+
+	fseek(f_stream, cur_len, SEEK_SET);
+
+	return len;
 }
 
 int clsDataFile::isError(void)
@@ -165,7 +176,7 @@ int clsDataFile::isError(void)
 		clearerr(f_stream);
 	}
 
-	DEBUG("%s, r=%d", __func__, r);
+	DEBUG("%s, r=%d\n", __func__, r);
 	return r;
 }
 
@@ -174,7 +185,7 @@ int clsDataFile::isEnd(void)
 	int r;
 
 	r = feof(f_stream);
-	DEBUG("%s, r=%d", __func__, r);
+	DEBUG("%s, r=%d\n", __func__, r);
 	return r;
 }
 

@@ -8,6 +8,7 @@ APP	:=main
 OBJS	:=main.o \
 		basefile.o \
 		datafile.o \
+		test.o \
 		a.o
 
 SRCS	:=$(OBJS:.o=.c)

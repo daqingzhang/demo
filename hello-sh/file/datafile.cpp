@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <datafile.h>
 
-//#define DEBUG printf
-#define DEBUG(...) do{ }while(0)
-
+#define DEBUG printf
+//#define DEBUG(...) do{ }while(0)
+#define FILE_ERR printf
 
 clsDataFile::clsDataFile()
 {
-	f_name=NULL;
-	f_opened=0;
-	f_flag = OFLAG_RO;
-	f_mode = OMODE_NO_BLOCK;
+	f_name  = NULL;
+	f_opened= 0;
+	f_flag  = OFLAG_RO;
 }
 
 clsDataFile::~clsDataFile()
@@ -24,79 +23,116 @@ int clsDataFile::fileOpen(const char *pathname, enum OFLAG flag)
 
 	if (!pathname) {
 		DEBUG("null pathname\n");
+		return -1;
 	}
 	if (f_opened) {
 		DEBUG("file already opened\n");
-		return 0;
+		return -2;
 	}
-	if (flag == OFLAG_RO) {
+	switch(flag) {
+	case OFLAG_RO:
 		m = "r";
-	} else if (flag == OFLAG_WO) {
-		m = "w";
-	} else {
+		break;
+	case OFLAG_WO:
+		m = "a";//write only,
+		break;
+	case OFLAG_WR:
 		m = "r+";
+		break;
+	case OFLAG_AP:
+	default:
+		m = "a+";
+		break;
 	}
+
 	f_stream = fopen(pathname, m);
 	if (!f_stream) {
 		DEBUG("open file %s failed\n", pathname);
-		return -1;
+		return -3;
 	}
 	f_opened = 1;
 	f_name = pathname;
 	f_flag = flag;
 
-	DEBUG("%s, name:%s, mode:%d, flag:%d\n",
-		__func__, f_name, f_mode, f_flag);
-
-	DEBUG("%s, done\n", __func__);
+	DEBUG("%s, name:%s, flag:%d\n",
+		__func__, f_name, f_flag);
 	return 0;
 }
 
-int clsDataFile::fileClose(void)
+void clsDataFile::fileClose(void)
 {
-	int r = 0;
-
 	if (f_opened) {
+		int r;
+
 		r = fclose(f_stream);
 		f_opened = 0;
+		if (r) {
+			DEBUG("close file error %d\n", r);
+			return;
+		}
 	}
-	DEBUG("%s, done\n", __func__);
-	return r;
 }
 
-int clsDataFile::fileRead(char *buf, int bytes)
+uint32_t clsDataFile::fileRead(char *buf, uint32_t bytes)
 {
-	int len = 0;
+	uint32_t len = 0;
 
-	if  (!buf) {
-		return -1;
+	if (!bytes) {
+		DEBUG("%s, zero bytes\n", __func__);
+		return 0;
+	}
+	if (!buf) {
+		DEBUG("%s, null buffer\n", __func__);
+		return 0;
 	}
 	if (!f_opened) {
-		return -2;
+		DEBUG("%s, not opened\n", __func__);
+		return 0;
+	}
+	if (f_flag == OFLAG_WO) {
+		DEBUG("%s, oflag=%d error\n", __func__, f_flag);
+		return 0;
 	}
 
 	len = fread((void *)buf, 1, bytes, f_stream);
-
-	if (len != bytes) {
-		DEBUG("%s, read %d bytes while bytes=%d\n", __func__, len, bytes);
+	if (len == 0) {
+		DEBUG("%s, read error\n", __func__);
+		return 0;
 	}
-	DEBUG("%s, read %d bytes\n", __func__, len);
+	if (len != bytes) {
+		DEBUG("%s, lost %d B data\n", __func__, bytes - len);
+	}
 	return len;
 }
 
-int clsDataFile::fileWrite(const char *buf, int bytes)
+uint32_t clsDataFile::fileWrite(const char *buf, uint32_t bytes)
 {
-	int len = 0;
+	uint32_t len = 0;
 
-	if  (!buf) {
-		return -1;
+	if (!bytes) {
+		DEBUG("%s, zero bytes\n", __func__);
+		return 0;
+	}
+	if (!buf) {
+		DEBUG("%s, null buffer\n", __func__);
+		return 0;
 	}
 	if (!f_opened) {
-		return -2;
+		DEBUG("%s, not opened\n", __func__);
+		return 0;
+	}
+	if (f_flag == OFLAG_RO) {
+		DEBUG("%s, oflag=%d error\n", __func__, f_flag);
+		return 0;
 	}
 	len = fwrite((const void *)buf, 1, bytes, f_stream);
-
-	DEBUG("%s, write %d bytes\n", __func__, len);
+	if (len == 0) {
+		DEBUG("%s, read error\n", __func__);
+		return 0;
+	}
+	if (len != bytes) {
+		DEBUG("%s, lost %d B data\n", __func__, bytes - len);
+	}
 	return len;
 }
 
@@ -107,18 +143,17 @@ int clsDataFile::fileFlush(void)
 	if (f_opened)
 		r = fflush(f_stream);
 
-	DEBUG("%s, done\n", __func__);
 	return r;
 }
-
 
 int clsDataFile::atStart(void)
 {
 	int r;
 
 	r = fseek(f_stream, 0, SEEK_SET);
-
-	DEBUG("%s, %d, done\n", __func__, r);
+	if (r) {
+		DEBUG("%s, error %d\n", __func__, r);
+	}
 	return r;
 }
 
@@ -127,43 +162,48 @@ int clsDataFile::atEnd(void)
 	int r;
 
 	r = fseek(f_stream, 0, SEEK_END);
-	DEBUG("%s, fseek, r=%d\n", __func__, r);
-
-	r = ftell(f_stream);
-	DEBUG("%s, ftell, r=%d\n", __func__, r);
+	if (r) {
+		DEBUG("%s, error %d\n", __func__, r);
+	}
 	return r;
 }
 
-int clsDataFile::atPos(int position)
+int clsDataFile::atPos(uint32_t new_pos)
 {
 	int r;
 
-	r = fseek(f_stream, position, SEEK_SET);
-	DEBUG("%s, fseek, r=%d\n", __func__, r);
-
-	return position;
-}
-
-int clsDataFile::getPos(void)
-{
-	int r;
-
-	r = ftell(f_stream);
-	DEBUG("%s, ftell, r=%d\n", __func__, r);
+	r = fseek(f_stream, new_pos, SEEK_SET);
+	if (r) {
+		DEBUG("%s, error %d\n", __func__, r);
+	}
 	return r;
 }
 
-int clsDataFile::getSize(void)
+uint32_t clsDataFile::getPos(void)
 {
-	int len, cur_len = ftell(f_stream);
+	uint32_t r;
+
+	r = ftell(f_stream);
+	return r;
+}
+
+uint32_t clsDataFile::getSize(void)
+{
+	int r;
+	uint32_t len, cur_len;
 
 	cur_len = ftell(f_stream);
 
-	fseek(f_stream, 0, SEEK_END);
+	r = fseek(f_stream, 0, SEEK_END);
+	if (r) {
+		DEBUG("%s, error %d\n", __func__, r);
+	}
 	len = ftell(f_stream);
 
-	fseek(f_stream, cur_len, SEEK_SET);
-
+	r = fseek(f_stream, cur_len, SEEK_SET);
+	if (r) {
+		DEBUG("%s, error %d\n", __func__, r);
+	}
 	return len;
 }
 

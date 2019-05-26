@@ -9,7 +9,7 @@ OBJS	:=main.o \
 		basefile.o \
 		datafile.o \
 		test.o \
-		a.o
+		test2.o
 
 SRCS	:=$(OBJS:.o=.c)
 
@@ -26,7 +26,7 @@ all: clean $(APP) $(LIBS)
 
 $(APP): $(OBJS)
 	@echo "$^ --> $@"
-	$(CCP) -o $@ $(INC) $(CFLAGS) $^
+	$(CCP) -o $@ $(INC) $(CFLAGS) $^ -lusb-1.0
 
 $(LIBS): $(OBJS)
 	@echo "$^ --> $@"

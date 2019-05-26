@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <a.h>
-#include <basefile.h>
 #include <string.h>
+#include <basefile.h>
 #include <datafile.h>
+#include <test2.h>
 
 int test_basefile(void)
 {
@@ -54,12 +54,15 @@ extern int test_datafile(int argc, const char *argv[]);
 
 int main(int argc, const char *argv[])
 {
+#if 0
 	int a=10, b=20;
 
 	printf("hello world\n");
 	printf("a+b=%d\n", add(a,b));
+#endif
 
-	test_datafile(argc, argv);
+//	test_datafile(argc, argv);
+	test_libusb(argc, argv);
 #if 0
 	int fdin=0, fdout=1, ret;
 	char dat[]="helloworld\n";

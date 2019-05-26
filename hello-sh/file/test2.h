@@ -1,11 +1,13 @@
-#ifndef __A_H__
-#define __A_H__
+#ifndef __TEST2_H__
+#define __TEST2_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int add(int a, int c);
+
+int test_libusb(int argc, const char *argv[]);
 
 #ifdef __cplusplus
 }

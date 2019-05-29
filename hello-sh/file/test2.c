@@ -8,7 +8,139 @@ int add(int a, int c)
 	return a+c;
 }
 
-int test_libusb(int argc, const char *argv[])
+void print_config_desc(struct libusb_config_descriptor *desc)
+{
+	if (!desc) {
+		return;
+	}
+	printf("config desc info: \n");
+	printf("bmAttrbutes: %d\n", desc->bmAttributes);
+	printf("MaxPower:    %d\n", desc->MaxPower);
+}
+
+struct usb_message {
+	struct libusb_control_setup b;
+	uint8_t  *data;
+	uint16_t wLength;
+};
+
+enum USB_OPCODE {
+	OP_NULL,
+	OP_RW_ANA,
+	OP_RW_PMU,
+	OP_RW_DIG,
+	OP_RW_MEM,
+	OP_EXEC,
+	OP_RESET,
+};
+
+#define REQ_TYPE_WR (LIBUSB_ENDPOINT_OUT \
+		   | LIBUSB_REQUEST_TYPE_VENDOR \
+		   | LIBUSB_RECIPIENT_DEVICE)
+
+#define REQ_TYPE_RD (LIBUSB_ENDPOINT_IN \
+		   | LIBUSB_REQUEST_TYPE_VENDOR \
+		   | LIBUSB_RECIPIENT_DEVICE)
+
+int test_usb_write(libusb_device_handle *h, uint8_t opcode,
+		uint32_t addr, const uint8_t *data, uint32_t len)
+{
+	int status;
+	struct usb_message msg;
+
+	printf("%s, opcode=%x, addr=%x, data=%p, len=%d\n", __func__,
+		opcode, addr, data, len);
+
+	msg.b.bmRequestType = REQ_TYPE_WR;
+	msg.b.bRequest      = opcode;
+	msg.b.wValue        = addr & 0xFFFF;
+	msg.b.wIndex        = addr >> 16;
+	msg.data            = (uint8_t *)data;
+	msg.wLength         = (uint16_t)len;
+
+	status = libusb_control_transfer(h, msg.b.bmRequestType,
+		msg.b.bRequest, msg.b.wValue, msg.b.wIndex,
+		msg.data, msg.wLength, 1000);
+
+	if (status < 0) {
+		perror("write usb dev");
+	}
+	printf("status=%d\n", status);
+	return status;
+}
+
+int test_usb_read(libusb_device_handle *h, uint8_t opcode,
+		uint32_t addr, uint8_t *data, uint32_t len)
+{
+	int status;
+	struct usb_message msg;
+
+	printf("%s, opcode=%x, addr=%x, data=%p, len=%d\n", __func__,
+		opcode, addr, data, len);
+
+	msg.b.bmRequestType = REQ_TYPE_RD;
+	msg.b.bRequest      = opcode;
+	msg.b.wValue        = addr & 0xFFFF;
+	msg.b.wIndex        = addr >> 16;
+	msg.data            = (uint8_t *)data;
+	msg.wLength         = (uint16_t)len;
+
+	status = libusb_control_transfer(h, msg.b.bmRequestType,
+		msg.b.bRequest, msg.b.wValue, msg.b.wIndex,
+		msg.data, msg.wLength, 1000);
+
+	if (status < 0) {
+		perror("read usb dev");
+	}
+	printf("status=%d\n", status);
+	return status;
+}
+
+int test_device(void)
+{
+	libusb_device_handle *handle = NULL;
+	libusb_device *dev;
+	struct libusb_device_descriptor dev_desc;
+
+	uint16_t vid = 0x0A5C, pid=0x216F;
+	int r;
+
+	r = libusb_init(NULL);
+	if (r) {
+		return -1;
+	}
+
+	handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
+	if (!handle) {
+		perror("open libusb");
+		return -1;
+	}
+	printf("open usb dev okay, vid=%x, pid=%x\n", vid, pid);
+
+	uint32_t addr = 0x20000004;
+	uint32_t data = 0x12345678;
+
+	//test_usb_write(handle, OP_RW_MEM, addr, (const uint8_t *)data, 4);
+
+	data = 0;
+	test_usb_read(handle, OP_RW_MEM, addr, (uint8_t *)&data, 4);
+	printf("data=%x\n", data);
+
+#if 0
+	dev = libusb_get_device(handle);
+
+	// get dev desc
+	r = libusb_get_device_descriptor(dev, &dev_desc);
+	if (r < 0) {
+		printf("get dev desc failed %d", r);
+		return -1;
+	}
+#endif
+
+	libusb_exit(NULL);
+}
+
+int list_device(void)
 {
 	libusb_device **devs;
 	int r,i;
@@ -37,6 +169,7 @@ int test_libusb(int argc, const char *argv[])
 	for(i = 0; devs[i] != NULL; i++) {
 		dev = devs[i];
 
+		// get dev desc
 		r = libusb_get_device_descriptor(dev, &desc);
 		if (r < 0) {
 			printf("get dev desc failed %d", r);
@@ -45,6 +178,7 @@ int test_libusb(int argc, const char *argv[])
 		printf("devs[%d]: vid=%04x, pid=%04x\n", i,
 			(unsigned int)(desc.idVendor), (unsigned int)(desc.idProduct));
 
+		// open dev
 		handle = NULL;
 		r = libusb_open(dev, &handle);
 		if (r == LIBUSB_SUCCESS) {
@@ -67,6 +201,22 @@ int test_libusb(int argc, const char *argv[])
 			perror("libusb_open");
 			printf("open usb dev failed %d\n", r);
 		}
+
+		// get config desc
+		struct libusb_config_descriptor *cfg_desc;
+
+		r = libusb_get_config_descriptor(dev, 0, &cfg_desc);
+		if (r != LIBUSB_SUCCESS) {
+			perror("get config desc");
+		} else {
+			print_config_desc(cfg_desc);
+		}
+
+		//free config desc
+		libusb_free_config_descriptor(cfg_desc);
+
+
+		// close dev
 		if (handle) {
 			libusb_close(handle);
 		}
@@ -76,6 +226,14 @@ int test_libusb(int argc, const char *argv[])
 
 	libusb_exit(NULL);
 
+	return 0;
+}
+
+int test_libusb(int argc, const char *argv[])
+{
+
+	//list_device();
+	test_device();
 	return 0;
 }
 

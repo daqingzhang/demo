@@ -1,10 +1,13 @@
 AR	:=ar
 CC	:=gcc
 CCP	:=g++
-CFLAGS	:=-g -O2
-INC	:=-I./
+OBJDUMP :=objdump
 
 APP	:=main
+
+CFLAGS	:=-g -O2 -Wl,-Map=$(APP).map
+INC	:=-I./
+
 OBJS	:=main.o \
 		basefile.o \
 		datafile.o \
@@ -19,9 +22,9 @@ else
 LIBS	:=
 endif
 
-.PHONY: all clean lib
+.PHONY: all clean lib lst
 
-all: clean $(APP) $(LIBS)
+all: clean $(APP) $(LIBS) lst
 	@echo "done"
 
 $(APP): $(OBJS)
@@ -36,6 +39,11 @@ rel: $(LIBS)
 	cd ../
 	git archive --format=tar -o $@.tar.gz HEAD file
 
+lst: $(APP)
+	$(OBJDUMP) -d $< > $(APP).lst
+	$(OBJDUMP) -h $< > $(APP).sym
+	$(OBJDUMP) -t $< > $(APP).sec
+
 %.o: %.c
 	@echo "$< --> $@"
 	$(CC) -c $(INC)  $<
@@ -45,5 +53,5 @@ rel: $(LIBS)
 	$(CCP) -c $(INC) $<
 
 clean:
-	rm -rf *.o
+	rm -rf *.o *.lst *.sym *.sec *.map
 	rm -rf $(APP)

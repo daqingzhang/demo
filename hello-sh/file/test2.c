@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <libusb-1.0/libusb.h>
+#include <stdlib.h>
 #include <test2.h>
 
 int add(int a, int c)
@@ -96,13 +97,11 @@ int test_usb_read(libusb_device_handle *h, uint8_t opcode,
 	return status;
 }
 
-int test_device(void)
+int test_device(uint16_t vid, uint16_t pid)
 {
 	libusb_device_handle *handle = NULL;
 	libusb_device *dev;
 	struct libusb_device_descriptor dev_desc;
-
-	uint16_t vid = 0x0A5C, pid=0x216F;
 	int r;
 
 	r = libusb_init(NULL);
@@ -231,9 +230,34 @@ int list_device(void)
 
 int test_libusb(int argc, const char *argv[])
 {
+	char *cmd = NULL;
+	uint16_t vid=0, pid=0;
 
-	//list_device();
-	test_device();
+	if (argc > 1) {
+			cmd = argv[1];
+	}
+
+	if (cmd == NULL) {
+			printf("no cmds\n");
+			return -1;
+	}
+
+	if (!strcmp(cmd, "-l")) {
+		list_device();
+	} else if (!strcmp(cmd, "-o")){
+		if (argc < 4) {
+			printf("no vid pid\n");
+			return -1;
+		}
+		vid = strtoul(argv[2],NULL, 0);
+		pid = strtoul(argv[3],NULL, 0);
+		printf("vid=%x, pid=%x\n", vid, pid);
+
+		test_device(vid, pid);
+	} else {
+		printf("unknown cmd\n");
+		return -1;
+	}
 	return 0;
 }
 

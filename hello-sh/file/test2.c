@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
-#include <libusb-1.0/libusb.h>
 #include <stdlib.h>
+#include <libusb-1.0/libusb.h>
 #include <test2.h>
 
 int add(int a, int c)
@@ -22,7 +22,7 @@ void print_config_desc(struct libusb_config_descriptor *desc)
 struct usb_message {
 	struct libusb_control_setup b;
 	uint8_t  *data;
-	uint16_t wLength;
+	uint16_t length;
 };
 
 enum USB_OPCODE {
@@ -33,68 +33,82 @@ enum USB_OPCODE {
 	OP_RW_MEM,
 	OP_EXEC,
 	OP_RESET,
+	OP_RESET_CDC,
 };
 
 #define REQ_TYPE_WR (LIBUSB_ENDPOINT_OUT \
 		   | LIBUSB_REQUEST_TYPE_VENDOR \
-		   | LIBUSB_RECIPIENT_DEVICE)
+		   | LIBUSB_RECIPIENT_OTHER)
 
 #define REQ_TYPE_RD (LIBUSB_ENDPOINT_IN \
 		   | LIBUSB_REQUEST_TYPE_VENDOR \
-		   | LIBUSB_RECIPIENT_DEVICE)
+		   | LIBUSB_RECIPIENT_OTHER)
 
-int test_usb_write(libusb_device_handle *h, uint8_t opcode,
-		uint32_t addr, const uint8_t *data, uint32_t len)
+#if 0
+#define USBLOG       printf
+#else
+#define USBLOG(...)  do{}while(0)
+#endif
+
+int usb_raw_write(libusb_device_handle *h, uint8_t opcode,
+		uint32_t addr, uint8_t *data, uint32_t len)
 {
-	int status;
+	int r;
 	struct usb_message msg;
 
-	printf("%s, opcode=%x, addr=%x, data=%p, len=%d\n", __func__,
-		opcode, addr, data, len);
+	USBLOG("%s, opcode=%x, addr=%x, len=%d\n", __func__,
+		opcode, addr, len);
+
+	for(int i = 0; i < len; i++) {
+		USBLOG("write data[%d]=%2x\n", i, data[i]);
+	}
 
 	msg.b.bmRequestType = REQ_TYPE_WR;
 	msg.b.bRequest      = opcode;
 	msg.b.wValue        = addr & 0xFFFF;
 	msg.b.wIndex        = addr >> 16;
-	msg.data            = (uint8_t *)data;
-	msg.wLength         = (uint16_t)len;
+	msg.b.wLength       = (uint16_t)len;
+	msg.data            = data;
 
-	status = libusb_control_transfer(h, msg.b.bmRequestType,
+	r = libusb_control_transfer(h, msg.b.bmRequestType,
 		msg.b.bRequest, msg.b.wValue, msg.b.wIndex,
-		msg.data, msg.wLength, 1000);
+		msg.data, msg.b.wLength, 1000);
 
-	if (status < 0) {
+	if (r < 0) {
 		perror("write usb dev");
 	}
-	printf("status=%d\n", status);
-	return status;
+	USBLOG("r=%d\n", r);
+	return r;
 }
 
-int test_usb_read(libusb_device_handle *h, uint8_t opcode,
+int usb_raw_read(libusb_device_handle *h, uint8_t opcode,
 		uint32_t addr, uint8_t *data, uint32_t len)
 {
-	int status;
+	int r;
 	struct usb_message msg;
 
-	printf("%s, opcode=%x, addr=%x, data=%p, len=%d\n", __func__,
-		opcode, addr, data, len);
+	USBLOG("%s, opcode=%x, addr=%x, len=%d\n", __func__,
+		opcode, addr, len);
 
 	msg.b.bmRequestType = REQ_TYPE_RD;
 	msg.b.bRequest      = opcode;
 	msg.b.wValue        = addr & 0xFFFF;
 	msg.b.wIndex        = addr >> 16;
-	msg.data            = (uint8_t *)data;
-	msg.wLength         = (uint16_t)len;
+	msg.b.wLength       = (uint16_t)len;
+	msg.data            = data;
 
-	status = libusb_control_transfer(h, msg.b.bmRequestType,
+	r = libusb_control_transfer(h, msg.b.bmRequestType,
 		msg.b.bRequest, msg.b.wValue, msg.b.wIndex,
-		msg.data, msg.wLength, 1000);
+		msg.data, msg.b.wLength, 1000);
 
-	if (status < 0) {
+	if (r < 0) {
 		perror("read usb dev");
 	}
-	printf("status=%d\n", status);
-	return status;
+	for(int i = 0; i < r; i++) {
+		USBLOG("get data[%d]=%2x\n", i, data[i]);
+	}
+	USBLOG("r=%d\n", r);
+	return r;
 }
 
 int test_device(uint16_t vid, uint16_t pid)
@@ -118,12 +132,104 @@ int test_device(uint16_t vid, uint16_t pid)
 
 	uint32_t addr = 0x20000004;
 	uint32_t data = 0x12345678;
+	uint32_t recv_buf[32];
+	int rxlen = 32;
+	int i;
 
-	//test_usb_write(handle, OP_RW_MEM, addr, (const uint8_t *)data, 4);
+	//MEM test
+	addr = 0x20000000;
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_MEM, addr, (uint8_t *)recv_buf,4);
+	printf("mem 1[%x] = %x\n", addr, recv_buf[0]);
 
-	data = 0;
-	test_usb_read(handle, OP_RW_MEM, addr, (uint8_t *)&data, 4);
+	usb_raw_write(handle, OP_RW_MEM, addr, (uint8_t *)&data, 4);
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_MEM, addr, (uint8_t *)recv_buf,4);
+	printf("mem 2[%x] = %x\n", addr, recv_buf[0]);
+
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_MEM, addr, (uint8_t *)recv_buf,8);
+	printf("mem 3[%x] = %x\n", addr, recv_buf[0]);
+	printf("mem 4[%x] = %x\n", addr+4, recv_buf[1]);
+
+	//ANA test
+	addr = 0x60;
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_ANA, addr, (uint8_t *)recv_buf,2);
+	printf("ana 1[%x] = %x\n", addr, recv_buf[0]);
+
+	addr = 0x61;
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_ANA, addr, (uint8_t *)recv_buf,2);
+	printf("ana 2[%x] = %x\n", addr, recv_buf[0]);
+
+	recv_buf[1] = recv_buf[0];
+	data = recv_buf[0] | 0xF;
+	usb_raw_write(handle, OP_RW_ANA, addr, (uint8_t *)&data, 2);
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_ANA, addr, (uint8_t *)recv_buf,2);
+	printf("ana 3[%x] = %x\n", addr, recv_buf[0]);
+
+	data = recv_buf[1];
+	usb_raw_write(handle, OP_RW_ANA, addr, (uint8_t *)&data, 2);
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_ANA, addr, (uint8_t *)recv_buf,2);
+	printf("ana 4[%x] = %x\n", addr, recv_buf[0]);
+
+	// PMU test
+	addr = 0x00;
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_PMU, addr, (uint8_t *)recv_buf,2);
+	printf("pmu 1[%x] = %x\n", addr, recv_buf[0]);
+
+	addr = 0x01;
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_PMU, addr, (uint8_t *)recv_buf,2);
+	printf("pmu 2[%x] = %x\n", addr, recv_buf[0]);
+
+	data = recv_buf[0] | 0x7;
+	usb_raw_write(handle, OP_RW_PMU, addr, (uint8_t *)&data, 2);
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_PMU, addr, (uint8_t *)recv_buf,2);
+	printf("pmu 3[%x] = %x\n", addr, recv_buf[0]);
+
+	//DIG test
+	addr = 0x40300000;
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_DIG, addr, (uint8_t *)recv_buf,4);
+	printf("dig 1[%x] = %x\n", addr, recv_buf[0]);
+
+	data = recv_buf[0] | 1;
+	usb_raw_write(handle, OP_RW_DIG, addr, (uint8_t *)&data, 4);
+	recv_buf[0] = 0;
+	usb_raw_read(handle, OP_RW_DIG, addr, (uint8_t *)recv_buf,4);
+	printf("dig 2[%x] = %x\n", addr, recv_buf[0]);
+
+	usb_raw_write(handle, OP_RESET_CDC, addr, (uint8_t *)&data, 4);
+#if 0
+	usb_raw_write(handle, OP_RW_MEM, addr, (uint8_t *)&data, 4);
+
+	rxlen = usb_raw_read(handle, OP_RW_MEM, addr, (uint8_t *)recv_buf, 60);
+	data = *(uint32_t *)recv_buf;
+
 	printf("data=%x\n", data);
+
+	for(i = 0; i < rxlen / 4; i++) {
+		printf("[%8x] = %08x\n", addr, recv_buf[i]);
+		addr += 4;
+	}
+
+	addr = 0x6c000000;
+	rxlen = usb_raw_read(handle, OP_RW_MEM, addr, (uint8_t *)recv_buf, 60);
+	data = *(uint32_t *)recv_buf;
+
+	printf("data=%x\n", data);
+
+	for(i = 0; i < rxlen / 4; i++) {
+		printf("[%8x] = %08x\n", addr, recv_buf[i]);
+		addr += 4;
+	}
+#endif
 
 #if 0
 	dev = libusb_get_device(handle);
@@ -230,7 +336,7 @@ int list_device(void)
 
 int test_libusb(int argc, const char *argv[])
 {
-	char *cmd = NULL;
+	const char *cmd = NULL;
 	uint16_t vid=0, pid=0;
 
 	if (argc > 1) {

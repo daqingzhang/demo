@@ -201,3 +201,17 @@ git push origin --delete v0.1
 use patch
 -------------------------------------------------------------------------------
 git format-patch -1
+
+change git history
+-------------------------------------------
+# goto old commit, then use [edit] to one old commit
+git rebase -i HEAD~2
+
+# stash new changes to local repo
+git add .
+
+# submit changes to local repo
+git commit --amend
+
+# back to current HEAD
+git rebase --continue
